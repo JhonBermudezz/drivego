@@ -12,7 +12,7 @@ const STRIPE_LINKS = {
 // Form backend (Formspree, Basin, Getform...). Leave empty to fall back to
 // opening the visitor's email app with the message prefilled.
 const FORM_ENDPOINT = '';
-const CONTACT_EMAIL = 'hello@drivegolondon.ca';
+const CONTACT_EMAIL = 'info@drivegolondon.ca';
 
 const PACKAGE_TOPICS = {
   basic: 'Package 1 · Basic',
@@ -153,6 +153,31 @@ document.querySelectorAll('[data-checkout]').forEach((btn) => {
 
 document.querySelectorAll('[data-topic]').forEach((link) => {
   link.addEventListener('click', () => selectTopic(link.dataset.topic));
+});
+
+/* Single lesson length picker */
+document.querySelectorAll('.duration').forEach((group) => {
+  const price = group.parentElement.querySelector('[data-duration-price]');
+  const options = group.querySelectorAll('[role="radio"]');
+  options.forEach((option, i) => {
+    option.addEventListener('click', () => {
+      options.forEach((o) => o.setAttribute('aria-checked', String(o === option)));
+      if (price) price.textContent = option.dataset.price;
+    });
+    option.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const next = options[(i + (e.key === 'ArrowRight' ? 1 : options.length - 1)) % options.length];
+      next.focus();
+      next.click();
+    });
+  });
+});
+
+/* YouTube video: set data-youtube-id on .video__frame once the first video is live */
+document.querySelectorAll('.video__frame[data-youtube-id]').forEach((frame) => {
+  const id = frame.dataset.youtubeId;
+  if (!id) return;
+  frame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}" title="Drive Go London video" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
 });
 
 /* Contact form */
