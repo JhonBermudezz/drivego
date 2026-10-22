@@ -73,6 +73,35 @@ document.querySelectorAll('[data-words]').forEach((el) => {
   words.forEach((w) => wordObserver.observe(w));
 });
 
+/* Count up the About figures when they scroll into view */
+function formatCount(value, el) {
+  const decimals = Number(el.dataset.decimals || 0);
+  return value.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + (el.dataset.suffix || '');
+}
+
+const counterObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      counterObserver.unobserve(entry.target);
+      const el = entry.target;
+      const target = Number(el.dataset.count);
+      const duration = 1800;
+      const start = performance.now();
+      const tick = (now) => {
+        const t = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 4);
+        el.textContent = formatCount(t < 1 ? target * eased : target, el);
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      el.textContent = formatCount(0, el);
+      requestAnimationFrame(tick);
+    });
+  },
+  { threshold: 0.6 }
+);
+if (!reduceMotion) document.querySelectorAll('[data-count]').forEach((el) => counterObserver.observe(el));
+
 /* Mobile menu */
 const burger = document.querySelector('.burger');
 const menu = document.getElementById('mobile-menu');

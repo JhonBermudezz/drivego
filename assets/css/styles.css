@@ -293,7 +293,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 32px 0 40px; padding: 24px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .stats div { display: flex; flex-direction: column-reverse; gap: 4px; }
 .stats dt { color: var(--muted); font-size: 0.75rem; line-height: 1rem; }
-.stats dd { margin: 0; font-size: 2.25rem; line-height: 2.5rem; }
+.stats dd { margin: 0; font-variant-numeric: tabular-nums; font-size: 2.25rem; line-height: 2.5rem; }
 
 /* Reviews */
 .reviews { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
