@@ -99,7 +99,6 @@ const BOOKING = {
       dialog.innerHTML = `
         <div class="bk__panel">
           <aside class="bk__summary">
-            <p class="eyebrow">Book and pay</p>
             <h2 class="bk__title" id="bk-title"></h2>
             <dl class="bk__facts" data-bk-facts></dl>
             <p class="bk__note"><i class="ph ph-lock-simple" aria-hidden="true"></i>Secure payment with Square</p>

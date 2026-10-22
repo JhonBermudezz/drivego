@@ -63,7 +63,6 @@ def hero(eyebrow, title, sub, crumb, actions=''):
     return f'''    <section class="page-hero" aria-labelledby="page-title">
       <div class="container">
         <p class="crumbs"><a href="index.html">Home</a><span aria-hidden="true">/</span><span>{crumb}</span></p>
-        <p class="eyebrow">{eyebrow}</p>
         <h1 class="page-hero__title" id="page-title">{title}</h1>
         <p class="page-hero__sub">{sub}</p>{actions}
       </div>
@@ -95,7 +94,6 @@ def faq(items):
     return f'''    <section class="section" aria-labelledby="faq-title">
       <div class="container faq">
         <header class="faq__head reveal">
-          <p class="eyebrow">FAQ</p>
           <h2 class="section__title" id="faq-title">Good to know</h2>
           <p class="section__sub">Still not sure? Call or WhatsApp us at (519) 694 3762.</p>
         </header>
@@ -135,7 +133,6 @@ page('packages.html', 'Driving packages | Drive Go London',
     <section class="section" aria-labelledby="compare-title">
       <div class="container">
         <header class="section__head reveal">
-          <p class="eyebrow">Side by side</p>
           <h2 class="section__title" id="compare-title">Compare packages</h2>
         </header>
         <div class="compare reveal">
@@ -162,7 +159,6 @@ page('packages.html', 'Driving packages | Drive Go London',
     <section class="section section--soft" aria-labelledby="bde-title">
       <div class="container split">
         <div class="prose reveal">
-          <p class="eyebrow">Included in every package</p>
           <h2 class="section__title" id="bde-title">The BDE course, explained</h2>
           <p>Beginner Driver Education is the Ministry of Transportation program that turns a G1 into a confident, test ready driver. Drive Go London is an MTO approved BDE course provider.</p>
           <ul class="checklist">
@@ -199,7 +195,6 @@ def svc(num, id_, title, text, img, alt, items, extra, actions, reverse=False):
           <img src="{img}" alt="{alt}" loading="lazy">
         </figure>
         <div class="svc__body reveal">
-          <p class="eyebrow">Service {num}</p>
           <h2 class="section__title" id="{id_}-title">{title}</h2>
           <p class="svc__text">{text}</p>
 {extra}
@@ -260,7 +255,6 @@ page('services.html', 'Driving services | Drive Go London',
      + '''    <section class="section" aria-labelledby="how-title">
       <div class="container">
         <header class="section__head reveal">
-          <p class="eyebrow">How it works</p>
           <h2 class="section__title" id="how-title">Book in three steps</h2>
         </header>
         <ol class="steps">
@@ -284,7 +278,6 @@ page('road-test.html', 'G2 and G road test packages | Drive Go London',
      + f'''    <section class="section section--soft" aria-labelledby="tests-title">
       <div class="container">
         <header class="section__head reveal">
-          <p class="eyebrow">Road test packages</p>
           <h2 class="section__title" id="tests-title">Choose your test</h2>
         </header>
         <div class="tests">
@@ -320,7 +313,6 @@ page('road-test.html', 'G2 and G road test packages | Drive Go London',
 ''' + ROADTEST_BOOKING + '''    <section class="section" aria-labelledby="day-title">
       <div class="container">
         <header class="section__head reveal">
-          <p class="eyebrow">Test day</p>
           <h2 class="section__title" id="day-title">How test day works</h2>
         </header>
         <ol class="steps steps--4">
@@ -335,7 +327,6 @@ page('road-test.html', 'G2 and G road test packages | Drive Go London',
     <section class="section section--soft" aria-labelledby="tips-title">
       <div class="container split split--top">
         <div class="prose reveal">
-          <p class="eyebrow">From a former examiner</p>
           <h2 class="section__title" id="tips-title">What examiners look for</h2>
           <p>Steven spent years on the other side of the clipboard as a DriveTest examiner. These are the habits he trains first.</p>
           <ul class="checklist">
@@ -371,7 +362,6 @@ page('about.html', 'About us | Drive Go London',
           <img src="assets/img/gallery/20.webp" alt="The blue Drive Go London training car with a Student Driver sign in downtown London" width="900" height="1350" loading="lazy" class="split__img--tall">
         </figure>
         <div class="prose reveal">
-          <p class="eyebrow">Our story</p>
           <h2 class="section__title" id="story-title">A driving school built around you</h2>
           <p>Steven Bernal started Drive Go London after years as a DriveTest examiner. He watched too many nervous students fail for habits nobody had taught them, and decided to teach those habits from the very first lesson.</p>
           <p>With more than five years teaching in London, Steven leads every program and works alongside two more MTO certified instructors. Together they have helped more than 2,000 students get their licence in London and surrounding areas, in English and in Spanish.</p>
@@ -386,7 +376,6 @@ page('about.html', 'About us | Drive Go London',
     <section class="section section--soft" aria-labelledby="why-title">
       <div class="container">
         <header class="section__head reveal">
-          <p class="eyebrow">Why us</p>
           <h2 class="section__title" id="why-title">Why students choose us</h2>
         </header>
         <div class="cards">
@@ -401,13 +390,11 @@ page('about.html', 'About us | Drive Go London',
       <div class="container mv">
         <article class="mv__item reveal">
           <div class="card__icon"><i class="ph ph-target" aria-hidden="true"></i></div>
-          <p class="eyebrow">Mission</p>
           <h2 class="section__title" id="mission-title">Safe drivers for life</h2>
           <p>Help every student in London pass their test with confidence and keep the safe habits that protect them on the road for years.</p>
         </article>
         <article class="mv__item reveal">
           <div class="card__icon"><i class="ph ph-binoculars" aria-hidden="true"></i></div>
-          <p class="eyebrow">Vision</p>
           <h2 class="section__title">The school families recommend</h2>
           <p>Be the driving school London families, and especially the Hispanic community, trust and recommend first.</p>
         </article>
@@ -417,7 +404,6 @@ page('about.html', 'About us | Drive Go London',
     <section class="section section--soft" aria-labelledby="team-title">
       <div class="container">
         <header class="section__head reveal">
-          <p class="eyebrow">Our team</p>
           <h2 class="section__title" id="team-title">Meet our instructors</h2>
         </header>
         <div class="team">
