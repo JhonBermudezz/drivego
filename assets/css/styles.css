@@ -109,6 +109,20 @@ ul { margin: 0; padding: 0; list-style: none; }
 .eyebrow--wide { letter-spacing: 0.2em; }
 .eyebrow i { font-size: 1rem; }
 
+/* Official brand logos */
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.brand { display: block; width: 1em; height: 1em; flex: none; }
+.brand--whatsapp { fill: #25d366; }
+.brand--instagram { fill: url(#ig-grad); }
+.brand--facebook { fill: #0866ff; }
+.brand--tiktok .tt-cyan { fill: #25f4ee; }
+.brand--tiktok .tt-red { fill: #fe2c55; }
+.brand--tiktok .tt-main { fill: var(--white); }
+.btn .brand { font-size: 1.25rem; }
+.footer__social a { background: var(--white); border-color: var(--white); }
+.footer__social a:hover { border-color: var(--lime); }
+.footer__social .brand--tiktok .tt-main { fill: var(--black); }
+
 /* Top bar */
 .topbar { background: var(--black); color: rgba(255, 255, 255, 0.8); font-size: 0.75rem; line-height: 1rem; }
 .topbar__inner { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 8px; padding-bottom: 8px; }
@@ -116,7 +130,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .topbar__social { gap: 12px; }
 .topbar a { display: inline-flex; align-items: center; gap: 4px; text-decoration: none; transition: color 400ms var(--ease); }
 .topbar a:hover { color: var(--lime); }
-.topbar__social i { font-size: 1rem; }
+.topbar__social a { font-size: 1.125rem; }
 
 /* Header */
 .header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); }
