@@ -12,7 +12,7 @@ idx = open(f'{REPO}/index.html').read()
 HEAD = idx[:idx.index('<body>')]
 SHELL_TOP = idx[idx.index('<body>'):idx.index('  <main id="main">')]
 FOOTER = idx[idx.index('  <!-- 9 · Footer -->'):idx.index('</footer>') + len('</footer>')]
-TAIL = '\n\n  <script src="assets/js/main.js" defer></script>\n</body>\n</html>\n'
+TAIL = '\n\n  <script src="assets/js/main.js" defer></script>\n  <script src="assets/js/booking.js" defer></script>\n</body>\n</html>\n'
 
 
 def section(start, end):
@@ -298,7 +298,7 @@ page('road-test.html', 'G2 and G road test packages | Drive Go London',
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Our car for the test</li>
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Drop off after your test</li>
             </ul>
-            <a class="btn btn--dark btn--block" href="#book" data-select="rt-type:G2 road test">Book G2 test package</a>
+            <a class="btn btn--dark btn--block" href="#book" data-calendar-option="roadtest:0">Book G2 test package</a>
           </article>
           <article class="plan reveal">
             <h3 class="plan__name">Full G road test</h3>
@@ -310,7 +310,7 @@ page('road-test.html', 'G2 and G road test packages | Drive Go London',
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Our car for the test</li>
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Drop off after your test</li>
             </ul>
-            <a class="btn btn--dark btn--block" href="#book" data-select="rt-type:Full G road test">Book G test package</a>
+            <a class="btn btn--dark btn--block" href="#book" data-calendar-option="roadtest:1">Book G test package</a>
           </article>
         </div>
         <div class="note reveal" style="margin-top: 24px;"><i class="ph ph-info" aria-hidden="true"></i><p>DriveTest fees are paid by you directly to DriveTest and are not included. Book your test date at drivetest.ca, then send us the date and time.</p></div>

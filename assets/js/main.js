@@ -289,9 +289,11 @@ document.querySelectorAll('[data-book]').forEach((btn) => {
     btn.href = link;
     btn.target = '_blank';
     btn.rel = 'noopener';
-  } else if (btn.dataset.bookTopic) {
-    btn.href = contactHref(btn.dataset.bookTopic);
-    btn.addEventListener('click', () => selectTopic(btn.dataset.bookTopic));
+  } else {
+    // No Square link yet: open the booking calendar (assets/js/booking.js)
+    btn.addEventListener('click', (e) => {
+      if (window.openBooking && window.openBooking(btn.dataset.book, Number(btn.dataset.bookOption || 0))) e.preventDefault();
+    });
   }
 });
 
