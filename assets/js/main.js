@@ -173,13 +173,6 @@ document.querySelectorAll('.duration').forEach((group) => {
   });
 });
 
-/* YouTube video: set data-youtube-id on .video__frame once the first video is live */
-document.querySelectorAll('.video__frame[data-youtube-id]').forEach((frame) => {
-  const id = frame.dataset.youtubeId;
-  if (!id) return;
-  frame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}" title="Drive Go London video" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-});
-
 /* Contact form */
 const form = document.getElementById('contact-form');
 
