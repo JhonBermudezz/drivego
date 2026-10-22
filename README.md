@@ -23,14 +23,13 @@ python3 -m http.server 8080
 10. Contact (info, map, form)
 11. Footer
 
-Also `videos.html` (gallery with topic filters and a video player), `privacy.html`, `terms.html`, `404.html`, `robots.txt`, `sitemap.xml`.
+Also `gallery.html` (gallery with topic filters and a video player), `privacy.html`, `terms.html`, `404.html`, `robots.txt`, `sitemap.xml`.
 
 ## Before launch
 
 - **Stripe:** create one Payment Link per package and paste them in `STRIPE_LINKS` at the top of `assets/js/main.js`. While a link is empty, "Buy now" scrolls to the contact form with that package selected.
 - **Contact form:** set `FORM_ENDPOINT` in `assets/js/main.js` (Formspree, Basin...). Empty = opens the visitor's email app.
-- **Placeholder data to replace:** prices, hours per package, lesson and road test prices, phone, reviews, FAQ answers, social links, domain in meta tags.
-- **Videos:** list them in `VIDEOS` at the top of `assets/js/videos.js`. Upload the file to `assets/videos/` and set `src`, or set `youtube` with a YouTube id. Entries without either show "Coming soon".
-- **Steven's photo:** replace the `SB` placeholder in the About section.
+- **Placeholder data to replace:** prices, hours per package, lesson and road test prices, FAQ answers, social links (Instagram, Facebook, TikTok) and stats to confirm (2,000+ students vs 350+ on the flyers).
+- **Gallery:** items live in `ITEMS` at the top of `assets/js/gallery.js` (photos in `assets/img/gallery/`). For a video add `type: 'video'` with `src` (file in `assets/videos/`) or `youtube`, plus a cover `image`.
 - **Photos:** stock images from Unsplash in `assets/img/`. Replace with real photos of students, instructors and the car keeping the same file names.
 - **Legal pages:** drafts, have them reviewed.
