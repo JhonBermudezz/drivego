@@ -15,7 +15,7 @@ python3 -m http.server 8080
 2. Hero: full width photo with white card (client approved reference)
 3. Trust bar
 4. Packages with Stripe checkout: Basic (meet at White Oaks Mall), Standard (home pick up), Complete (car for the test). Payment methods: card, e-Transfer, cash
-5. Services: single lessons with 1 h / 1.5 h / 2 h picker, G2 and G road test, seniors and refresher
+5. Services: single lessons with 1 h / 1.5 h / 2 h picker, G2 and G road test, G-Full & G2 Refresher
 6. Tagline reveal (word by word on scroll)
 7. About us: only Steven's photo as lead instructor, mentions the other two instructors
 8. Student reviews
