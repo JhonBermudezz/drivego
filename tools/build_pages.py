@@ -327,21 +327,38 @@ page('road-test.html', 'G2 and G road test packages | Drive Go London',
       </div>
     </section>
 
-''' + ROADTEST_BOOKING + '''    <section class="section" aria-labelledby="day-title">
+''' + ROADTEST_BOOKING + '''    <section class="section section--soft" aria-labelledby="day-title">
       <div class="container">
         <header class="section__head reveal">
           <h2 class="section__title" id="day-title">How test day works</h2>
+          <p class="section__sub">From the moment we pick you up to the debrief at your door.</p>
         </header>
-        <ol class="steps steps--4">
-          <li class="step reveal"><h3>We pick you up</h3><p>90 minutes before your test, from home, school or work.</p></li>
-          <li class="step reveal"><h3>Warm up drive</h3><p>We drive the roads around the DriveTest centre so nothing surprises you.</p></li>
-          <li class="step reveal"><h3>Your test</h3><p>You take the test in the car you already practised in.</p></li>
-          <li class="step reveal"><h3>Back home</h3><p>We drop you off and go over the examiner notes together.</p></li>
+        <ol class="flow flow--4">
+          <li class="flow__step reveal">
+            <span class="flow__icon"><i class="ph-fill ph-car-profile" aria-hidden="true"></i></span>
+            <h3>We pick you up</h3>
+            <p>90 minutes before your test, from home, school or work.</p>
+          </li>
+          <li class="flow__step reveal">
+            <span class="flow__icon"><i class="ph-fill ph-steering-wheel" aria-hidden="true"></i></span>
+            <h3>Warm up drive</h3>
+            <p>We drive the roads around the DriveTest centre so nothing surprises you.</p>
+          </li>
+          <li class="flow__step reveal">
+            <span class="flow__icon"><i class="ph-fill ph-seal-check" aria-hidden="true"></i></span>
+            <h3>Your test</h3>
+            <p>You take the test in the car you already practised in.</p>
+          </li>
+          <li class="flow__step reveal">
+            <span class="flow__icon"><i class="ph-fill ph-house-line" aria-hidden="true"></i></span>
+            <h3>Back home</h3>
+            <p>We drop you off and go over the examiner notes together.</p>
+          </li>
         </ol>
       </div>
     </section>
 
-    <section class="section section--soft" aria-labelledby="tips-title">
+    <section class="section" aria-labelledby="tips-title">
       <div class="container split split--top">
         <div class="prose reveal">
           <h2 class="section__title" id="tips-title">What examiners look for</h2>
