@@ -119,7 +119,7 @@
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Our car for the test</li>
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Drop off after your test</li>
             </ul>
-            <a class="btn btn--dark btn--block" href="contact.html" data-topic="Road test package">Book G2 test package</a>
+            <a class="btn btn--dark btn--block" href="#book" data-select="rt-type:G2 road test">Book G2 test package</a>
           </article>
           <article class="plan reveal">
             <h3 class="plan__name">Full G road test</h3>
@@ -131,10 +131,87 @@
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Our car for the test</li>
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Drop off after your test</li>
             </ul>
-            <a class="btn btn--dark btn--block" href="contact.html" data-topic="Road test package">Book G test package</a>
+            <a class="btn btn--dark btn--block" href="#book" data-select="rt-type:Full G road test">Book G test package</a>
           </article>
         </div>
         <div class="note reveal" style="margin-top: 24px;"><i class="ph ph-info" aria-hidden="true"></i><p>DriveTest fees are paid by you directly to DriveTest and are not included. Book your test date at drivetest.ca, then send us the date and time.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="book" aria-labelledby="book-title">
+      <div class="container split split--top">
+        <div class="prose reveal">
+          <p class="eyebrow">Book your test package</p>
+          <h2 class="section__title" id="book-title">Send us your test date</h2>
+          <p>Already booked your road test at drivetest.ca? Tell us the date, time and where to pick you up. We confirm by phone or WhatsApp and plan your warm up around it.</p>
+          <ul class="checklist">
+            <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>Pay securely with Square, by Interac e&#8209;Transfer or in cash</span></li>
+            <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>Confirmation within one business day</span></li>
+            <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>Free reschedule if DriveTest moves your date</span></li>
+          </ul>
+        </div>
+        <div class="booking reveal" data-booking-embed="roadtest">
+          <form class="form" id="roadtest-form" data-form="Road test booking" data-done="Request sent. We will confirm your road test package within one business day." novalidate>
+            <h3 class="form__title">Road test booking</h3>
+            <p class="form__sub">Takes about one minute.</p>
+            <div class="field-row">
+              <div class="field">
+                <label for="rt-name">Full name</label>
+                <input id="rt-name" name="name" type="text" autocomplete="name" required>
+                <p class="field__error" id="rt-name-err"></p>
+              </div>
+              <div class="field">
+                <label for="rt-phone">Phone or WhatsApp</label>
+                <input id="rt-phone" name="phone" type="tel" autocomplete="tel" required placeholder="(519) 000 0000">
+                <p class="field__error" id="rt-phone-err"></p>
+              </div>
+            </div>
+            <div class="field">
+              <label for="rt-email">Email</label>
+              <input id="rt-email" name="email" type="email" autocomplete="email" required placeholder="you@email.com">
+              <p class="field__error" id="rt-email-err"></p>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="rt-type">Test</label>
+                <select id="rt-type" name="topic">
+                  <option>G2 road test</option>
+                  <option>Full G road test</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="rt-centre">DriveTest centre</label>
+                <select id="rt-centre" name="centre">
+                  <option>London</option>
+                  <option>St. Thomas</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="rt-date">Test date</label>
+                <input id="rt-date" name="test_date" type="date" required>
+                <p class="field__error" id="rt-date-err"></p>
+              </div>
+              <div class="field">
+                <label for="rt-time">Test time <span class="field__opt">(optional)</span></label>
+                <input id="rt-time" name="test_time" type="time">
+              </div>
+            </div>
+            <div class="field">
+              <label for="rt-pickup">Pick up address</label>
+              <input id="rt-pickup" name="pickup" type="text" autocomplete="street-address" required placeholder="Street, London, ON">
+              <p class="field__error" id="rt-pickup-err"></p>
+            </div>
+            <div class="field">
+              <label for="rt-notes">Anything we should know? <span class="field__opt">(optional)</span></label>
+              <textarea id="rt-notes" name="notes" rows="3" placeholder="For example, areas you want to practise."></textarea>
+            </div>
+            <button class="btn btn--dark btn--lg" type="submit" data-label="Request booking"><span class="btn__label">Request booking</span><i class="ph ph-paper-plane-tilt" aria-hidden="true"></i></button>
+            <p class="form__status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
       </div>
     </section>
 
@@ -182,11 +259,11 @@
     <section class="section section--soft">
       <div class="container cta-band">
         <div>
-          <h2 class="section__title">Have your test date?</h2>
-          <p class="section__sub">Send it to us and we will plan your warm up around it.</p>
+          <h2 class="section__title">Questions about your test?</h2>
+          <p class="section__sub">Call or WhatsApp Steven, he answers in English or Spanish.</p>
         </div>
         <div class="hero__actions">
-          <a class="btn btn--dark btn--lg" href="contact.html">Book your test package <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+          <a class="btn btn--dark btn--lg" href="contact.html">Contact us <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
           <a class="btn btn--outline btn--lg" href="https://wa.me/15196943762" target="_blank" rel="noopener"><svg class="brand brand--whatsapp" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-whatsapp"></use></svg>WhatsApp</a>
         </div>
       </div>
@@ -238,7 +315,7 @@
     </div>
     <div class="container footer__bottom">
       <p>© <span data-year>2026</span> Drive Go London · <a href="terms.html">Terms and conditions</a> · <a href="privacy.html">Privacy policy</a></p>
-      <p class="footer__stripe"><i class="ph ph-lock-simple" aria-hidden="true"></i>Payments secured by Stripe</p>
+      <p class="footer__secure"><i class="ph ph-lock-simple" aria-hidden="true"></i>Payments secured by Square</p>
     </div>
   </footer>
 

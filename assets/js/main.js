@@ -1,12 +1,23 @@
 /* Drive Go London · site behaviour */
 
-// Paste the Stripe Payment Links here (Stripe Dashboard > Payment Links).
+// Square checkout links for packages (Square Dashboard > Online checkout > Checkout links).
+// Packages start with the theory course, so they only take a payment.
 // While a link is empty, "Buy now" sends the visitor to the contact form
 // with that package preselected, so no button is ever dead.
-const STRIPE_LINKS = {
+const SQUARE_CHECKOUT_LINKS = {
   basic: '',
   standard: '',
   complete: '',
+};
+
+// Square Appointments booking links for services that are booked on a calendar
+// and paid at booking (Square Dashboard > Appointments > Online booking > share link).
+// When a link is set, "Book and pay" opens it and the road test page shows the
+// calendar inline instead of the request form.
+const SQUARE_BOOKING_LINKS = {
+  lessons: '',
+  refresher: '',
+  roadtest: '',
 };
 
 // Form backend (Formspree, Basin, Getform...). Leave empty to fall back to
@@ -250,13 +261,13 @@ function selectTopic(topic) {
   if (option) topicSelect.value = option.text;
 }
 
-/* Stripe checkout buttons */
+/* Square checkout buttons (packages) */
 // Pages without the form send the visitor to contact.html with the topic preselected
 const contactHref = (topic) => (topicSelect ? '#contact' : `contact.html?topic=${encodeURIComponent(topic)}#contact`);
 
 document.querySelectorAll('[data-checkout]').forEach((btn) => {
   const key = btn.dataset.checkout;
-  const link = STRIPE_LINKS[key];
+  const link = SQUARE_CHECKOUT_LINKS[key];
   if (link) {
     btn.href = link;
     btn.rel = 'noopener';
@@ -271,7 +282,35 @@ document.querySelectorAll('[data-topic]').forEach((link) => {
   link.addEventListener('click', () => selectTopic(link.dataset.topic));
 });
 
+/* Square Appointments booking (services) */
+document.querySelectorAll('[data-book]').forEach((btn) => {
+  const link = SQUARE_BOOKING_LINKS[btn.dataset.book];
+  if (link) {
+    btn.href = link;
+    btn.target = '_blank';
+    btn.rel = 'noopener';
+  } else if (btn.dataset.bookTopic) {
+    btn.href = contactHref(btn.dataset.bookTopic);
+    btn.addEventListener('click', () => selectTopic(btn.dataset.bookTopic));
+  }
+});
+
+document.querySelectorAll('[data-booking-embed]').forEach((box) => {
+  const link = SQUARE_BOOKING_LINKS[box.dataset.bookingEmbed];
+  if (!link) return;
+  box.innerHTML = `<iframe class="booking__frame" src="${link}" title="Book and pay online" loading="lazy"></iframe>`;
+});
+
 selectTopic(new URLSearchParams(window.location.search).get('topic'));
+
+// Buttons that preselect an option in a form, e.g. data-select="rt-type:Full G road test"
+document.querySelectorAll('[data-select]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const [id, value] = btn.dataset.select.split(':');
+    const field = document.getElementById(id);
+    if (field) field.value = value;
+  });
+});
 
 /* Single lesson length picker */
 document.querySelectorAll('.duration').forEach((group) => {
@@ -291,38 +330,44 @@ document.querySelectorAll('.duration').forEach((group) => {
   });
 });
 
-/* Contact form */
-const form = document.getElementById('contact-form');
+/* Forms (contact and road test booking requests) */
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const rules = {
+  name: (v) => (v.trim().length >= 2 ? '' : 'Please enter your full name.'),
+  email: (v) => {
+    if (!v.trim()) return 'Please enter your email.';
+    return emailPattern.test(v.trim()) ? '' : 'This email looks incomplete. Check it and try again.';
+  },
+  phone: (v, input) => {
+    if (!v.trim()) return input.required ? 'Please enter a phone number so we can confirm.' : '';
+    return v.replace(/\D/g, '').length >= 10 ? '' : 'Phone numbers need at least 10 digits.';
+  },
+  message: (v) => (v.trim().length >= 10 ? '' : 'Tell us a little more so we can help (10 characters minimum).'),
+  test_date: (v) => (v ? '' : 'Pick the date of your road test.'),
+  pickup: (v) => (v.trim().length >= 5 ? '' : 'Tell us where to pick you up.'),
+};
 
-if (form) {
+document.querySelectorAll('form[data-form]').forEach((form) => {
   const status = form.querySelector('.form__status');
   const submit = form.querySelector('button[type="submit"]');
   const label = submit.querySelector('.btn__label');
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-  const rules = {
-    name: (v) => (v.trim().length >= 2 ? '' : 'Please enter your full name.'),
-    email: (v) => {
-      if (!v.trim()) return 'Please enter your email.';
-      return emailPattern.test(v.trim()) ? '' : 'This email looks incomplete. Check it and try again.';
-    },
-    phone: (v) => (!v.trim() || v.replace(/\D/g, '').length >= 10 ? '' : 'Phone numbers need at least 10 digits.'),
-    message: (v) => (v.trim().length >= 10 ? '' : 'Tell us a little more so we can help (10 characters minimum).'),
-  };
+  const subject = form.dataset.form;
+  const done = form.dataset.done || 'Message sent. We will reply within one business day.';
 
   function validateField(input) {
     const rule = rules[input.name];
     if (!rule) return true;
-    const message = rule(input.value);
+    const message = rule(input.value, input);
     const error = document.getElementById(`${input.id}-err`);
     input.setAttribute('aria-invalid', message ? 'true' : 'false');
     if (error) error.textContent = message;
-    if (message) input.setAttribute('aria-describedby', error.id);
+    if (message && error) input.setAttribute('aria-describedby', error.id);
     else input.removeAttribute('aria-describedby');
     return !message;
   }
 
-  form.querySelectorAll('input, textarea').forEach((input) => {
+  const fields = Array.from(form.querySelectorAll('input, textarea'));
+  fields.forEach((input) => {
     input.addEventListener('blur', () => validateField(input));
     input.addEventListener('input', () => {
       if (input.getAttribute('aria-invalid') === 'true') validateField(input);
@@ -334,7 +379,6 @@ if (form) {
     status.textContent = '';
     status.className = 'form__status';
 
-    const fields = Array.from(form.querySelectorAll('input, textarea'));
     const invalid = fields.filter((f) => !validateField(f));
     if (invalid.length) {
       invalid[0].focus();
@@ -342,10 +386,11 @@ if (form) {
     }
 
     const data = Object.fromEntries(new FormData(form));
+    data.form = subject;
 
     if (!FORM_ENDPOINT) {
-      const body = `Name: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone || 'not given'}\nTopic: ${data.topic}\n\n${data.message}`;
-      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Website enquiry: ${data.topic}`)}&body=${encodeURIComponent(body)}`;
+      const body = Object.entries(data).map(([k, v]) => `${k}: ${v || 'not given'}`).join('\n');
+      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Website: ${data.topic || subject}`)}&body=${encodeURIComponent(body)}`;
       status.textContent = 'Your email app should open with the message ready to send.';
       status.classList.add('is-ok');
       return;
@@ -362,14 +407,14 @@ if (form) {
       if (!res.ok) throw new Error(String(res.status));
       form.reset();
       fields.forEach((f) => f.removeAttribute('aria-invalid'));
-      status.textContent = 'Message sent. We will reply within one business day.';
+      status.textContent = done;
       status.classList.add('is-ok');
     } catch {
-      status.textContent = `We could not send your message. Please try again or email ${CONTACT_EMAIL}.`;
+      status.textContent = `We could not send your request. Please try again or email ${CONTACT_EMAIL}.`;
       status.classList.add('is-err');
     } finally {
       submit.classList.remove('is-loading');
-      label.textContent = 'Send message';
+      label.textContent = submit.dataset.label || 'Send message';
     }
   });
-}
+});

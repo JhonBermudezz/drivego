@@ -14,7 +14,7 @@ python3 -m http.server 8080
 1. Top bar + header (phone, email, socials, nav with Road test shortcut, "Book now")
 2. Hero: full width photo with white card (client approved reference)
 3. Trust bar
-4. Packages with Stripe checkout: Basic (meet at White Oaks Mall), Standard (home pick up), Complete (car for the test). Payment methods: card, e-Transfer, cash
+4. Packages with Square checkout: Basic (meet at White Oaks Mall), Standard (home pick up), Complete (car for the test). Payment methods: card, e-Transfer, cash
 5. Services: single lessons with 1 h / 1.5 h / 2 h picker, G2 and G road test, G-Full & G2 Refresher
 6. Tagline reveal (word by word on scroll)
 7. About us: only Steven's photo as lead instructor, mentions the other two instructors
@@ -37,7 +37,9 @@ It rebuilds the sub pages (packages, services, road test, about, contact) and re
 
 ## Before launch
 
-- **Stripe:** create one Payment Link per package and paste them in `STRIPE_LINKS` at the top of `assets/js/main.js`. While a link is empty, "Buy now" scrolls to the contact form with that package selected.
+- **Square checkout (packages):** packages start with the theory course, so they only take a payment. Create one Square checkout link per package and paste it in `SQUARE_CHECKOUT_LINKS` at the top of `assets/js/main.js`.
+- **Square Appointments (services):** single lessons, road test packages and the G-Full and G2 refresher are booked on a calendar and paid at booking. Set up the services in Square Appointments (with intake questions such as licence level and pick up address) and paste each online booking link in `SQUARE_BOOKING_LINKS`. "Book and pay" buttons open it, and the road test page shows the calendar inline in place of the request form. Bookings, payments and customers appear in the Square dashboard.
+- While a link is empty, buttons fall back to the contact page with the topic preselected, so nothing is ever a dead end.
 - **Contact form:** set `FORM_ENDPOINT` in `assets/js/main.js` (Formspree, Basin...). Empty = opens the visitor's email app.
 - **Placeholder data to replace:** prices, hours per package, lesson and road test prices, FAQ answers, social links (Instagram, Facebook, TikTok) and stats to confirm (2,000+ students vs 350+ on the flyers).
 - **Gallery:** items live in `ITEMS` at the top of `assets/js/gallery.js` (photos in `assets/img/gallery/`). For a video add `type: 'video'` with `src` (file in `assets/videos/`) or `youtube`, plus a cover `image`.

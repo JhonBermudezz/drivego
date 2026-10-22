@@ -19,7 +19,7 @@ def section(start, end):
     return idx[idx.index(start):idx.index(end)]
 
 
-PACKAGES = section('    <!-- 4 · Packages + Stripe -->', '    <!-- 5 · Services -->')
+PACKAGES = section('    <!-- 4 · Packages + Square -->', '    <!-- 5 · Services -->')
 SERVICES = section('    <!-- 5 · Services -->', '    <!-- Tagline reveal -->')
 CONTACT = section('    <!-- 8 · Contact -->', '    <!-- FAQ -->')
 STARS = '<span class="stars" aria-hidden="true">' + '<i class="ph-fill ph-star"></i>' * 5 + '</span>'
@@ -123,7 +123,7 @@ def row(label, a, b, c):
 
 # Packages ---------------------------------------------------------------
 page('packages.html', 'Driving packages | Drive Go London',
-     'Compare Drive Go London driving packages: BDE course, lessons behind the wheel, home pick up and the car for your road test. Pay online with Stripe.',
+     'Compare Drive Go London driving packages: BDE course, lessons behind the wheel, home pick up and the car for your road test. Pay online with Square.',
      hero('Packages', 'Choose your driving package', 'Three packages built around the MTO approved BDE course. Pick the level of support you need and pay securely online in two minutes.', 'Packages')
      + f'''    <section class="section section--soft" id="packages" aria-label="Packages">
       <div class="container">
@@ -182,59 +182,100 @@ page('packages.html', 'Driving packages | Drive Go London',
 '''
      + faq([
          ('Do I need my G1 before I start?', 'You need a valid G1 for lessons behind the wheel. You can start the online BDE course before you have it.'),
-         ('Can I pay in instalments or in cash?', 'Pay online with any credit or debit card through Stripe, or pay by Interac e&#8209;Transfer or cash before your first lesson. Ask us about splitting the payment.'),
+         ('Can I pay in instalments or in cash?', 'Pay online with any credit or debit card through Square, or pay by Interac e&#8209;Transfer or cash before your first lesson. Ask us about splitting the payment.'),
          ('Can I upgrade my package later?', 'Yes. Pay the difference and we add the extra hours, home pick up or the car for your test.'),
          ('What happens after I pay?', 'We call or WhatsApp you within one business day to schedule your first lesson and send your BDE course access.'),
      ])
      + cta('Not sure which package fits?', 'Tell us your licence level and we will recommend one.', 'Ask us', 'contact.html'))
 
 # Services ---------------------------------------------------------------
-services_cards = SERVICE_CARDS.replace('<article class="service reveal">', '<article class="service reveal" id="lessons">', 1)
-services_cards = services_cards.replace('<article class="service reveal">', '<article class="service reveal" id="refresher">', 1)
-page('services.html', 'Driving services | Drive Go London',
-     'Single driving lessons of 1, 1.5 or 2 hours, G2 and G road test packages and G-Full and G2 refresher lessons in London, Ontario.',
-     hero('Services', 'Lessons and services on their own', 'Already have a package, or only need a few hours before your test? Book single services, priced by the lesson.', 'Services')
-     + f'''    <section class="section section--soft" aria-label="Services">
-      <div class="container">
-        {services_cards}
+def svc(num, id_, title, text, img, alt, items, extra, actions, reverse=False):
+    checks = '\n'.join(
+        f'            <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>{i}</span></li>' for i in items)
+    grid = 'svc__grid svc__grid--reverse' if reverse else 'svc__grid'
+    return f'''    <section class="svc" id="{id_}" aria-labelledby="{id_}-title">
+      <div class="container {grid}">
+        <figure class="svc__media reveal">
+          <img src="{img}" alt="{alt}" loading="lazy">
+        </figure>
+        <div class="svc__body reveal">
+          <p class="eyebrow">Service {num}</p>
+          <h2 class="section__title" id="{id_}-title">{title}</h2>
+          <p class="svc__text">{text}</p>
+{extra}
+          <ul class="checklist">
+{checks}
+          </ul>
+          <div class="hero__actions">
+{actions}
+          </div>
+        </div>
       </div>
     </section>
+'''
 
-    <section class="section" aria-labelledby="how-title">
+
+def book_actions(key, topic, second):
+    return (f'            <a class="btn btn--dark btn--lg" href="contact.html" data-book="{key}" data-book-topic="{topic}">'
+            f'<i class="ph ph-calendar-plus" aria-hidden="true"></i>Book and pay</a>\n{second}')
+
+
+CONTACT_BTN = '            <a class="btn btn--outline btn--lg" href="contact.html">Contact us</a>'
+
+LESSON_PRICE = '''          <div class="svc__price">
+            <div class="duration" role="radiogroup" aria-label="Lesson length">
+              <button type="button" role="radio" aria-checked="true" data-price="$65">1 h</button>
+              <button type="button" role="radio" aria-checked="false" data-price="$95">1.5 h</button>
+              <button type="button" role="radio" aria-checked="false" data-price="$125">2 h</button>
+            </div>
+            <p class="service__price"><span data-duration-price>$65</span> <span class="plan__tax">+ HST</span></p>
+          </div>'''
+
+TEST_PRICE = '''          <div class="svc__tests">
+            <div><p class="svc__tests-name">G2 road test</p><p class="service__price">$189 <span class="plan__tax">+ HST</span></p></div>
+            <div><p class="svc__tests-name">Full G road test</p><p class="service__price">$209 <span class="plan__tax">+ HST</span></p></div>
+          </div>'''
+
+REFRESH_PRICE = '          <p class="service__price">From $65 <span class="plan__tax">+ HST</span></p>'
+
+page('services.html', 'Driving services | Drive Go London',
+     'Book and pay online for single driving lessons, G2 and G road test packages and G-Full and G2 refresher lessons in London, Ontario.',
+     hero('Services', 'Our services', 'Lessons and programs for every kind of driver. Pick a day and time on our calendar and pay when you book.', 'Services')
+     + svc('01', 'lessons', 'Single lessons',
+           'One on one lessons with a certified instructor on real London routes, from parking lots to the 401. Choose the length that fits your schedule.',
+           'assets/img/incar.webp', 'View from the driver seat during a lesson on a city street',
+           ['One on one with a certified instructor', 'Flexible scheduling, weekdays and weekends', 'Pick up at home or meet us at White Oaks Mall', 'In English or Spanish'],
+           LESSON_PRICE, book_actions('lessons', 'Single lessons', CONTACT_BTN))
+     + svc('02', 'road-test-service', 'Road test package',
+           'A warm up on the real test route and our car on test day, coached by a former DriveTest examiner.',
+           'assets/img/car.webp', 'The blue Drive Go London training car with its Student Driver sign',
+           ['Vehicle for your road test', 'Pre test practice lesson on the DriveTest route', 'Pick up and drop off'],
+           TEST_PRICE, book_actions('roadtest', 'Road test package', '            <a class="btn btn--outline btn--lg" href="road-test.html">Road test details</a>'),
+           reverse=True)
+     + svc('03', 'refresher', 'G-Full &amp; G2 Refresher',
+           'For drivers who already drive and need polish before the G2 or full G test, or more confidence on the road.',
+           'assets/img/refresher.webp', 'Silver SUV parked on a quiet road, ready for a refresher lesson',
+           ['Assessment drive, then we work on your weak spots', 'Highway merging, parking and test route practice', 'Patient, supportive instructors'],
+           REFRESH_PRICE, book_actions('refresher', 'G-Full &amp; G2 Refresher', CONTACT_BTN))
+     + '''    <section class="section" aria-labelledby="how-title">
       <div class="container">
         <header class="section__head reveal">
           <p class="eyebrow">How it works</p>
           <h2 class="section__title" id="how-title">Book in three steps</h2>
         </header>
         <ol class="steps">
-          <li class="step reveal"><h3>Pick your service</h3><p>Choose a single lesson length, a road test package or a refresher.</p></li>
-          <li class="step reveal"><h3>Send us your details</h3><p>Use the form or WhatsApp with your licence level and the days that work for you.</p></li>
-          <li class="step reveal"><h3>Get on the road</h3><p>We confirm the time, pick you up or meet you at White Oaks Mall and start driving.</p></li>
+          <li class="step reveal"><h3>Pick your service</h3><p>Single lesson, road test package or refresher, in English or Spanish.</p></li>
+          <li class="step reveal"><h3>Choose a day and time</h3><p>See open slots on our calendar and answer a few quick questions about your licence.</p></li>
+          <li class="step reveal"><h3>Pay and get on the road</h3><p>Pay securely with Square when you book. We pick you up or meet you at White Oaks Mall.</p></li>
         </ol>
-      </div>
-    </section>
-
-    <section class="section section--soft" aria-labelledby="who-title">
-      <div class="container split">
-        <figure class="split__media reveal">
-          <img src="assets/img/car.webp" alt="The blue Drive Go London training car with its Student Driver sign" width="900" height="562" loading="lazy">
-        </figure>
-        <div class="prose reveal">
-          <p class="eyebrow">Who it is for</p>
-          <h2 class="section__title" id="who-title">Lessons for every level</h2>
-          <ul class="checklist">
-            <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>New G1 drivers who want extra practice between package lessons.</span></li>
-            <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>G2 drivers getting ready for the full G and highway driving.</span></li>
-            <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>Drivers new to Canada learning Ontario rules of the road.</span></li>
-            <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>Anyone getting back behind the wheel after time away.</span></li>
-          </ul>
-          <p>All lessons are available in English or Spanish.</p>
-        </div>
+        <div class="note reveal" style="margin-top: 32px;"><i class="ph ph-info" aria-hidden="true"></i><p>New drivers start with a package: the BDE theory course comes first, so packages are paid online and scheduled with us after you enrol. <a href="packages.html">See packages</a></p></div>
       </div>
     </section>
 
 '''
-     + cta('Want the full program?', 'Our packages include the BDE course and save you money on lessons.'))
+     + cta('Ready to get started?', 'See our packages or get in touch.', 'View packages', 'packages.html'))
+
+ROADTEST_BOOKING = open(f'{REPO}/tools/partials/roadtest-booking.html').read()
 
 # Road test --------------------------------------------------------------
 page('road-test.html', 'G2 and G road test packages | Drive Go London',
@@ -257,7 +298,7 @@ page('road-test.html', 'G2 and G road test packages | Drive Go London',
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Our car for the test</li>
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Drop off after your test</li>
             </ul>
-            <a class="btn btn--dark btn--block" href="contact.html" data-topic="Road test package">Book G2 test package</a>
+            <a class="btn btn--dark btn--block" href="#book" data-select="rt-type:G2 road test">Book G2 test package</a>
           </article>
           <article class="plan reveal">
             <h3 class="plan__name">Full G road test</h3>
@@ -269,14 +310,14 @@ page('road-test.html', 'G2 and G road test packages | Drive Go London',
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Our car for the test</li>
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Drop off after your test</li>
             </ul>
-            <a class="btn btn--dark btn--block" href="contact.html" data-topic="Road test package">Book G test package</a>
+            <a class="btn btn--dark btn--block" href="#book" data-select="rt-type:Full G road test">Book G test package</a>
           </article>
         </div>
         <div class="note reveal" style="margin-top: 24px;"><i class="ph ph-info" aria-hidden="true"></i><p>DriveTest fees are paid by you directly to DriveTest and are not included. Book your test date at drivetest.ca, then send us the date and time.</p></div>
       </div>
     </section>
 
-    <section class="section" aria-labelledby="day-title">
+''' + ROADTEST_BOOKING + '''    <section class="section" aria-labelledby="day-title">
       <div class="container">
         <header class="section__head reveal">
           <p class="eyebrow">Test day</p>
@@ -318,83 +359,102 @@ page('road-test.html', 'G2 and G road test packages | Drive Go London',
     </section>
 
 '''
-     + cta('Have your test date?', 'Send it to us and we will plan your warm up around it.', 'Book your test package', 'contact.html'))
+     + cta('Questions about your test?', 'Call or WhatsApp Steven, he answers in English or Spanish.', 'Contact us', 'contact.html'))
 
 # About ------------------------------------------------------------------
 page('about.html', 'About us | Drive Go London',
      'Meet Drive Go London: founded by Steven Bernal, former DriveTest examiner, and the first Hispanic driving school approved by the MTO in London, Ontario.',
-     hero('About us', 'A driving school built around you', 'Patient teaching, real test experience and lessons in English and Spanish, right here in London, Ontario.', 'About us')
-     + f'''    <section class="section" aria-labelledby="story-title">
-      <div class="container about">
-        <figure class="instructor reveal">
-          <div class="instructor__photo">
-            <img src="assets/img/steven.webp" alt="Steven Bernal, founder and lead instructor of Drive Go London" width="560" height="700" loading="lazy">
-            <img class="instructor__badge" src="assets/img/badge.webp" alt="Certified instructor, London" width="320" height="320" loading="lazy">
-          </div>
-          <figcaption>
-            <p class="instructor__name">Steven Bernal</p>
-            <p class="instructor__role">Founder, lead instructor and former DriveTest examiner</p>
-          </figcaption>
-        </figure>
-        <div class="about__copy reveal">
-          <p class="eyebrow">Our story</p>
-          <h2 class="section__title" id="story-title">From examiner to instructor</h2>
-          <p>Steven Bernal started Drive Go London after years as a DriveTest examiner. He watched too many nervous students fail for habits nobody had taught them, and decided to teach those habits from the very first lesson.</p>
-          <p>Today Steven leads every program and works alongside two more MTO certified instructors. Together they have helped more than 2,000 students get their licence in London and surrounding areas.</p>
-          <dl class="stats">
-            <div><dt>Students trained</dt><dd data-count="2000" data-suffix="+">2,000+</dd></div>
-            <div><dt>Certified instructors</dt><dd data-count="3">3</dd></div>
-            <div><dt>Google rating</dt><dd data-count="5" data-decimals="1">5.0</dd></div>
-          </dl>
-        </div>
-      </div>
-    </section>
-
-    <section class="section section--soft" aria-labelledby="first-title">
+     hero('About us', 'About Drive Go London', 'Who we are and how we teach.', 'About us')
+     + '''    <section class="section" aria-labelledby="story-title">
       <div class="container split">
-        <div class="prose reveal">
-          <p class="eyebrow">A first for London</p>
-          <h2 class="section__title" id="first-title">The first Hispanic driving school approved by the MTO in London</h2>
-          <p lang="es"><strong>La primera escuela de conducción hispana avalada por el MTO en London.</strong></p>
-          <p>The Ministry of Transportation approved Drive Go London as a Beginner Driver Education course provider. Spanish speaking families can now learn to drive and earn their BDE certificate in the language they are most comfortable with.</p>
-        </div>
         <figure class="split__media reveal">
-          <img src="assets/img/gallery/73.webp" alt="Announcement: Drive Go London is the first Hispanic driving school approved by the MTO in London" width="900" height="1352" loading="lazy">
+          <img src="assets/img/gallery/20.webp" alt="The blue Drive Go London training car with a Student Driver sign in downtown London" width="900" height="1350" loading="lazy" class="split__img--tall">
         </figure>
+        <div class="prose reveal">
+          <p class="eyebrow">Our story</p>
+          <h2 class="section__title" id="story-title">A driving school built around you</h2>
+          <p>Steven Bernal started Drive Go London after years as a DriveTest examiner. He watched too many nervous students fail for habits nobody had taught them, and decided to teach those habits from the very first lesson.</p>
+          <p>Today Steven leads every program and works alongside two more MTO certified instructors. Together they have helped more than 2,000 students get their licence in London and surrounding areas, in English and in Spanish.</p>
+          <p>We are proud to be the first Hispanic driving school approved by the MTO in London as a Beginner Driver Education course provider.</p>
+          <div class="hero__actions">
+            <a class="btn btn--outline btn--lg" href="packages.html">View packages</a>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="section" aria-labelledby="values-title">
+    <section class="section section--soft" aria-labelledby="why-title">
       <div class="container">
         <header class="section__head reveal">
-          <p class="eyebrow">What we stand for</p>
-          <h2 class="section__title" id="values-title">Professional. Patient. Results driven.</h2>
+          <p class="eyebrow">Why us</p>
+          <h2 class="section__title" id="why-title">Why students choose us</h2>
         </header>
         <div class="cards">
-          <article class="card reveal"><div class="card__icon"><i class="ph ph-briefcase" aria-hidden="true"></i></div><h3>Professional</h3><p>MTO certified instructors, a modern and comfortable training car and a clear plan for every lesson.</p></article>
-          <article class="card reveal"><div class="card__icon"><i class="ph ph-hand-heart" aria-hidden="true"></i></div><h3>Patient</h3><p>Small classes and calm instruction for nervous first timers, in English or Spanish.</p></article>
-          <article class="card reveal"><div class="card__icon"><i class="ph ph-trophy" aria-hidden="true"></i></div><h3>Results driven</h3><p>Every lesson builds toward the test routes you will drive, with insight from a former examiner.</p></article>
+          <article class="card reveal"><div class="card__icon"><i class="ph ph-identification-badge" aria-hidden="true"></i></div><h3>Certified instructors</h3><p>MTO certified instructors led by a former DriveTest examiner who knows exactly what examiners look for.</p></article>
+          <article class="card reveal"><div class="card__icon"><i class="ph ph-seal-check" aria-hidden="true"></i></div><h3>MTO approved courses</h3><p>Our Beginner Driver Education course can get you to your G2 test four months sooner and lower your insurance.</p></article>
+          <article class="card reveal"><div class="card__icon"><i class="ph ph-hand-heart" aria-hidden="true"></i></div><h3>Personal attention</h3><p>One on one lessons, home pick up and calm teaching for nervous first timers, in English or Spanish.</p></article>
         </div>
       </div>
     </section>
 
-    <section class="section section--soft" aria-labelledby="mission-title">
-      <div class="container split split--top">
-        <div class="prose reveal">
+    <section class="section" aria-labelledby="mission-title">
+      <div class="container mv">
+        <article class="mv__item reveal">
+          <div class="card__icon"><i class="ph ph-target" aria-hidden="true"></i></div>
           <p class="eyebrow">Mission</p>
           <h2 class="section__title" id="mission-title">Safe drivers for life</h2>
           <p>Help every student in London pass their test with confidence and keep the safe habits that protect them on the road for years.</p>
-        </div>
-        <div class="prose reveal">
+        </article>
+        <article class="mv__item reveal">
+          <div class="card__icon"><i class="ph ph-binoculars" aria-hidden="true"></i></div>
           <p class="eyebrow">Vision</p>
           <h2 class="section__title">The school families recommend</h2>
           <p>Be the driving school London families, and especially the Hispanic community, trust and recommend first.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--soft" aria-labelledby="team-title">
+      <div class="container">
+        <header class="section__head reveal">
+          <p class="eyebrow">Our team</p>
+          <h2 class="section__title" id="team-title">Meet our instructors</h2>
+        </header>
+        <div class="team">
+          <figure class="instructor reveal">
+            <div class="instructor__photo">
+              <img src="assets/img/steven.webp" alt="Steven Bernal, founder and lead instructor of Drive Go London" width="560" height="700" loading="lazy">
+              <img class="instructor__badge" src="assets/img/badge.webp" alt="Certified instructor, London" width="320" height="320" loading="lazy">
+            </div>
+            <figcaption>
+              <p class="instructor__name">Steven Bernal</p>
+              <p class="instructor__role">Founder, lead instructor and former DriveTest examiner</p>
+            </figcaption>
+          </figure>
+          <div class="team__copy reveal">
+            <h3 class="team__title">Steven and two more certified instructors</h3>
+            <p>Every Drive Go London lesson follows Steven's program. He trains our two MTO certified instructors in the same test focused method, so you get the same standard no matter who is in the passenger seat.</p>
+            <ul class="checklist">
+              <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>MTO certified and background checked</span></li>
+              <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>Lessons in English and Spanish</span></li>
+              <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>Trained to teach nervous first time drivers</span></li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>
 
+    <section class="figures" aria-label="Drive Go London in numbers">
+      <dl class="container figures__grid">
+        <div><dt>Students trained</dt><dd data-count="2000" data-suffix="+">2,000+</dd></div>
+        <div><dt>Certified instructors</dt><dd data-count="3">3</dd></div>
+        <div><dt>Google reviews</dt><dd data-count="43">43</dd></div>
+        <div><dt>Average rating</dt><dd data-count="5" data-decimals="1">5.0</dd></div>
+      </dl>
+    </section>
+
 '''
-     + cta('Learn with Steven and the team', 'Pick a package and book your first lesson this week.'))
+     + cta('Ready to start driving?', 'Pick the package that fits you.'))
 
 # Contact ----------------------------------------------------------------
 contact_inner = re.sub(r'\s*<ul class="contact__list">.*?</ul>', '', CONTACT_INNER, flags=re.S)
