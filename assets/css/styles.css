@@ -119,9 +119,10 @@ ul { margin: 0; padding: 0; list-style: none; }
 .brand--tiktok .tt-red { fill: #fe2c55; }
 .brand--tiktok .tt-main { fill: var(--white); }
 .btn .brand { font-size: 1.25rem; }
-.footer__social a { background: var(--white); border-color: var(--white); }
-.footer__social a:hover { border-color: var(--lime); }
-.footer__social .brand--tiktok .tt-main { fill: var(--black); }
+.topbar__social .brand, .footer__social .brand { fill: var(--white); }
+.topbar__social .brand--tiktok .tt-cyan, .topbar__social .brand--tiktok .tt-red,
+.footer__social .brand--tiktok .tt-cyan, .footer__social .brand--tiktok .tt-red { display: none; }
+.topbar__social a:hover .brand, .footer__social a:hover .brand { fill: var(--lime); }
 
 /* Top bar */
 .topbar { background: var(--black); color: rgba(255, 255, 255, 0.8); font-size: 0.75rem; line-height: 1rem; }
@@ -216,14 +217,9 @@ ul { margin: 0; padding: 0; list-style: none; }
 .hero__rating strong { color: var(--ink); }
 /* Slides 2 and 3: background photo, card on the left */
 .hero__inner--left { justify-content: flex-start; }
-.slide--car .hero__bg { object-position: center 70%; }
+.slide--car .hero__bg { object-position: 72% center; }
+.slide--stories .hero__bg { object-position: 70% center; }
 .slide__es { margin-top: 16px; color: var(--green); font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; }
-.slide__car {
-  position: absolute; z-index: 1; bottom: 40px;
-  right: max(0px, (100vw - var(--container)) / 2 - 64px);
-  width: min(44vw, 660px); height: auto;
-  filter: drop-shadow(0 32px 24px rgba(0, 0, 0, 0.28));
-}
 .slide__photos {
   position: absolute; z-index: 1; top: 50%; transform: translateY(-50%);
   right: max(24px, (100vw - var(--container)) / 2 + 24px);
@@ -517,11 +513,11 @@ ul { margin: 0; padding: 0; list-style: none; }
   .burger { display: block; }
   .hero__inner { justify-content: center; padding-top: 240px; padding-bottom: 96px; }
   .slide { min-height: 0; align-items: stretch; }
-  .slide__car { top: 24px; bottom: auto; right: 50%; transform: translateX(50%); width: min(70vw, 420px); }
   .slide__photos { top: 32px; right: 50%; transform: translateX(50%); width: min(80vw, 420px); gap: 12px; }
   .slide__photos img:nth-child(2) { transform: translateY(16px); }
-  .slide--car .hero__inner { padding-top: 352px; }
   .slide--stories .hero__inner { padding-top: 272px; }
+  .slide--car .hero__bg { height: 520px; object-position: 78% 70%; }
+  .slide--car .hero__inner { padding-top: 420px; }
   .trust__grid { grid-template-columns: repeat(2, 1fr); }
   .plans, .services { grid-template-columns: 1fr; max-width: 560px; margin-left: auto; margin-right: auto; }
   .plan--featured { order: -1; }
@@ -539,12 +535,12 @@ ul { margin: 0; padding: 0; list-style: none; }
   .topbar__contact a:last-child { display: none; }
   .header__logo img { height: 56px; }
   .hero__inner { padding-top: 200px; padding-bottom: 96px; }
-  .slide__car { width: 82vw; }
   .slide__photos { width: calc(100vw - 48px); gap: 8px; }
   .slide__photos img { border-width: 4px; }
   .slider__progress { bottom: 24px; }
-  .slide--car .hero__inner { padding-top: 264px; }
   .slide--stories .hero__inner { padding-top: 232px; }
+  .slide--car .hero__bg { height: 400px; object-position: 80% 75%; }
+  .slide--car .hero__inner { padding-top: 300px; }
   .hero__card { padding: 24px; }
   .hero__title { font-size: 2.25rem; line-height: 2.5rem; }
   .hero__title br { display: none; }
