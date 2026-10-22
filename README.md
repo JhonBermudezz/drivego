@@ -23,7 +23,17 @@ python3 -m http.server 8080
 10. Contact (info, map, form)
 11. Footer
 
-Also `gallery.html` (gallery with topic filters and a video player), `privacy.html`, `terms.html`, `404.html`, `robots.txt`, `sitemap.xml`.
+Sub pages: `packages.html`, `services.html`, `road-test.html`, `about.html`, `gallery.html` and `contact.html`, plus `privacy.html`, `terms.html`, `404.html`, `robots.txt`, `sitemap.xml`.
+
+### Header, menu and footer
+
+They are edited in `index.html` only. Then run:
+
+```bash
+python3 tools/build_pages.py .
+```
+
+It rebuilds the sub pages (packages, services, road test, about, contact) and refreshes the gallery menu so every page stays in sync. Page specific content lives in `tools/build_pages.py`.
 
 ## Before launch
 

@@ -251,6 +251,9 @@ function selectTopic(topic) {
 }
 
 /* Stripe checkout buttons */
+// Pages without the form send the visitor to contact.html with the topic preselected
+const contactHref = (topic) => (topicSelect ? '#contact' : `contact.html?topic=${encodeURIComponent(topic)}#contact`);
+
 document.querySelectorAll('[data-checkout]').forEach((btn) => {
   const key = btn.dataset.checkout;
   const link = STRIPE_LINKS[key];
@@ -258,13 +261,17 @@ document.querySelectorAll('[data-checkout]').forEach((btn) => {
     btn.href = link;
     btn.rel = 'noopener';
   } else {
+    btn.href = contactHref(PACKAGE_TOPICS[key]);
     btn.addEventListener('click', () => selectTopic(PACKAGE_TOPICS[key]));
   }
 });
 
 document.querySelectorAll('[data-topic]').forEach((link) => {
+  link.href = contactHref(link.dataset.topic);
   link.addEventListener('click', () => selectTopic(link.dataset.topic));
 });
+
+selectTopic(new URLSearchParams(window.location.search).get('topic'));
 
 /* Single lesson length picker */
 document.querySelectorAll('.duration').forEach((group) => {
