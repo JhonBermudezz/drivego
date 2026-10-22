@@ -775,3 +775,23 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
 
 /* Cards sit one tone step off their section ground */
 .section--soft .plan, .section--soft .service, .section--soft .step, .section--soft .card, .section--soft .mv__item, .section--soft .contact-card, .section--soft .svc__tests > div, .svc:nth-of-type(even) .svc__tests > div { background: var(--white); }
+
+/* Booking flow (Services page) */
+.flow { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.flow__step { position: relative; padding: 40px 32px; border-radius: 24px; background: var(--white); }
+.flow__step:not(:last-child)::after {
+  content: ""; position: absolute; z-index: 1; top: 72px; right: -21px; width: 18px; height: 18px;
+  border-top: 4px solid var(--black); border-right: 4px solid var(--black); transform: rotate(45deg);
+}
+.flow__icon { display: grid; place-items: center; width: 72px; height: 72px; margin-bottom: 24px; border-radius: 9999px; background: var(--lime); color: var(--black); font-size: 2rem; }
+.flow__step h3 { font-size: 1.375rem; line-height: 1.75rem; }
+.flow__step p { margin-top: 12px; color: #3a3b37; }
+.flow__note { display: flex; align-items: center; gap: 24px; margin-top: 24px; padding: 24px 32px; border-radius: 24px; background: var(--lime); }
+.flow__note-icon { flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 9999px; background: var(--black); color: var(--lime); font-size: 1.75rem; }
+.flow__note p { flex: 1; color: var(--ink); }
+.flow__note .btn { flex: none; }
+@media (max-width: 900px) {
+  .flow { grid-template-columns: 1fr; }
+  .flow__step:not(:last-child)::after { top: auto; right: auto; bottom: -21px; left: 50%; margin-left: -9px; transform: rotate(135deg); }
+  .flow__note { flex-direction: column; align-items: flex-start; }
+}

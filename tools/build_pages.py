@@ -252,17 +252,34 @@ page('services.html', 'Driving services | Drive Go London',
            'assets/img/refresher.webp', 'Silver SUV parked on a quiet road, ready for a refresher lesson',
            ['Assessment drive, then we work on your weak spots', 'Highway merging, parking and test route practice', 'Patient, supportive instructors'],
            REFRESH_PRICE, book_actions('refresher', 'G-Full &amp; G2 Refresher', CONTACT_BTN))
-     + '''    <section class="section" aria-labelledby="how-title">
+     + '''    <section class="section section--soft" aria-labelledby="how-title">
       <div class="container">
         <header class="section__head reveal">
           <h2 class="section__title" id="how-title">Book in three steps</h2>
+          <p class="section__sub">From choosing a lesson to your first drive in about two minutes.</p>
         </header>
-        <ol class="steps">
-          <li class="step reveal"><h3>Pick your service</h3><p>Single lesson, road test package or refresher, in English or Spanish.</p></li>
-          <li class="step reveal"><h3>Choose a day and time</h3><p>See open slots on our calendar and answer a few quick questions about your licence.</p></li>
-          <li class="step reveal"><h3>Pay and get on the road</h3><p>Pay securely with Square when you book. We pick you up or meet you at White Oaks Mall.</p></li>
+        <ol class="flow">
+          <li class="flow__step reveal">
+            <span class="flow__icon"><i class="ph-fill ph-steering-wheel" aria-hidden="true"></i></span>
+            <h3>Pick your service</h3>
+            <p>Single lesson, road test package or refresher, in English or Spanish.</p>
+          </li>
+          <li class="flow__step reveal">
+            <span class="flow__icon"><i class="ph-fill ph-calendar-check" aria-hidden="true"></i></span>
+            <h3>Choose a day and time</h3>
+            <p>See open slots on our calendar and answer a few quick questions about your licence.</p>
+          </li>
+          <li class="flow__step reveal">
+            <span class="flow__icon"><i class="ph-fill ph-credit-card" aria-hidden="true"></i></span>
+            <h3>Pay and get on the road</h3>
+            <p>Pay securely with Square when you book. We pick you up or meet you at White Oaks Mall.</p>
+          </li>
         </ol>
-        <div class="note reveal" style="margin-top: 32px;"><i class="ph ph-info" aria-hidden="true"></i><p>New drivers start with a package: the BDE theory course comes first, so packages are paid online and scheduled with us after you enrol. <a href="packages.html">See packages</a></p></div>
+        <div class="flow__note reveal">
+          <span class="flow__note-icon"><i class="ph-fill ph-graduation-cap" aria-hidden="true"></i></span>
+          <p><strong>New driver?</strong> Start with a package. The BDE theory course comes first, so packages are paid online and scheduled with us after you enrol.</p>
+          <a class="btn btn--dark" href="packages.html">See packages <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+        </div>
       </div>
     </section>
 
