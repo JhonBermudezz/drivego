@@ -304,6 +304,9 @@ ul { margin: 0; padding: 0; list-style: none; }
 .review blockquote { margin: 0; color: #3a3b37; font-size: 0.875rem; line-height: 1.25rem; }
 .reviews__note { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 32px; color: var(--muted); font-size: 0.875rem; line-height: 1.25rem; }
 .reviews__note i { color: var(--star); }
+.reviews__note a { display: inline-flex; align-items: center; gap: 4px; color: var(--ink); font-weight: 700; text-decoration: none; }
+.reviews__note a i { color: currentColor; transition: transform 500ms var(--ease); }
+.reviews__note a:hover i { transform: translate(2px, -2px); }
 
 /* FAQ */
 .faq { display: grid; grid-template-columns: 1fr 1.6fr; gap: 64px; align-items: start; }
@@ -331,6 +334,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .contact__list a:hover { text-decoration: underline; }
 .contact__icon { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 9999px; background: var(--black); color: var(--lime); font-size: 1.25rem; }
 .contact__map { overflow: hidden; border: 1px solid var(--line); border-radius: 24px; aspect-ratio: 16 / 10; max-width: 100%; background: var(--line); }
+.contact__maplink { margin-top: 16px; }
 .contact__map iframe { width: 100%; height: 100%; border: 0; }
 
 .form { padding: 40px; border: 1px solid var(--line); border-radius: 24px; background: var(--white); }
