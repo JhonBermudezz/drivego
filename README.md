@@ -2,6 +2,10 @@
 
 Static site (HTML, CSS, vanilla JS). No build step: upload the folder to any static host (Netlify, Vercel, Cloudflare Pages, GitHub Pages).
 
+## Live preview (GitHub Pages)
+
+Settings > Pages > Build and deployment > Source: **Deploy from a branch**, branch `claude/elegant-planck-osohs1`, folder `/ (root)`. The site is then published at https://jhonbermudezz.github.io/drivego/ and updates on every push.
+
 ## Local preview
 
 ```bash

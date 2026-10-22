@@ -703,7 +703,7 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
 .notfound { min-height: 70vh; display: grid; place-items: center; text-align: center; background: var(--white); padding: 96px 24px; }
 .notfound__code { font-size: 8rem; line-height: 1; color: var(--green); }
 .notfound h1 { margin: 24px 0 12px; font-size: 2.25rem; line-height: 2.5rem; }
-.notfound p { color: var(--muted); max-width: 480px; margin: 0 auto 32px; }
+.notfound p:not(.notfound__code) { color: var(--muted); max-width: 480px; margin: 0 auto 32px; }
 .notfound .hero__actions { justify-content: center; margin-top: 0; }
 
 /* Responsive */

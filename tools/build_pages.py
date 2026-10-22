@@ -482,3 +482,19 @@ g_tail = g[g.index('</footer>') + len('</footer>'):]
 g_head = g[:g.index('<body>')]
 open(f'{REPO}/gallery.html', 'w').write(g_head + shell('gallery.html') + g_main + FOOTER + g_tail)
 print('refreshed gallery.html')
+
+
+# Legal pages and 404 -------------------------------------------------------
+def simple_page(path, title, desc, partial, robots=False):
+    body = open(f'{REPO}/tools/partials/{partial}').read()
+    h = head(title, desc, path)
+    if robots:
+        h = h.replace('</head>', '  <meta name="robots" content="noindex">\n</head>')
+    html = h + shell(path) + body + '\n' + FOOTER + '\n\n  <script src="assets/js/main.js" defer></script>\n</body>\n</html>\n'
+    open(f'{REPO}/{path}', 'w').write(html)
+    print('wrote', path)
+
+
+simple_page('privacy.html', 'Privacy policy | Drive Go London', 'How Drive Go London collects, uses and protects your personal information.', 'privacy-main.html')
+simple_page('terms.html', 'Terms and conditions | Drive Go London', 'Booking, payment, cancellation and refund terms for Drive Go London driving lessons and packages.', 'terms-main.html')
+simple_page('404.html', 'Page not found | Drive Go London', 'This page does not exist.', '404-main.html', robots=True)
