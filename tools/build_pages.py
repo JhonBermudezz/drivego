@@ -72,7 +72,7 @@ def hero(eyebrow, title, sub, crumb, actions=''):
 
 
 def cta(title, sub, label='View packages', href='packages.html'):
-    return f'''    <section class="section section--soft">
+    return f'''    <section class="section section--lime">
       <div class="container cta-band">
         <div>
           <h2 class="section__title">{title}</h2>

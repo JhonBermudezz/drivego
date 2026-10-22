@@ -17,8 +17,8 @@
   --ink-2: #181818;
   --ink-3: #272727;
   --muted: #5b5d57;
-  --line: #e4e6df;
-  --soft: #f6f7f3;
+  --line: #dfe6d4;
+  --soft: #eef8e2;
   --white: #ffffff;
   --error: #c62828;
   --font-display: "Hanken Grotesk", "Arial Narrow", system-ui, sans-serif;
@@ -662,6 +662,31 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
   .bk__note { display: none; }
   .bk__main { padding: 24px; }
 }
+
+/* Colour punch: brand lime and green across the page */
+.trust { background: var(--lime); border-bottom: 0; }
+.trust__icon { background: var(--black); color: var(--lime); }
+.trust__text { color: rgba(0, 0, 0, 0.72); }
+.section--lime { background: var(--lime); }
+.section--lime .section__sub { color: rgba(0, 0, 0, 0.72); }
+.section--lime .btn--outline { border-color: var(--black); }
+.page-hero { position: relative; overflow: hidden; background: var(--lime); border-bottom: 0; }
+.page-hero::after {
+  content: ""; position: absolute; right: -80px; top: 50%; width: 420px; height: 420px; transform: translateY(-50%);
+  border-radius: 9999px; border: 48px solid rgba(255, 255, 255, 0.32); pointer-events: none;
+}
+.page-hero .container { position: relative; z-index: 1; }
+.page-hero .eyebrow, .page-hero .crumbs, .page-hero__sub { color: rgba(0, 0, 0, 0.72); }
+.page-hero .crumbs a:hover { color: var(--black); text-decoration: underline; }
+.eyebrow { padding: 4px 12px; border-radius: 9999px; background: var(--green-soft); }
+.page-hero .eyebrow, .section--lime .eyebrow { background: rgba(255, 255, 255, 0.48); }
+.hero__card .eyebrow { background: var(--green-soft); }
+.card__icon { background: var(--lime); color: var(--black); }
+.stats dd, .step::before { color: var(--green); }
+.plan--featured { border: 2px solid var(--green); background: var(--green-soft); }
+.plan--featured .plan__price { border-color: rgba(47, 125, 0, 0.2); }
+.story__tag { background: var(--yellow); }
+.contact__icon { background: var(--lime); color: var(--black); }
 
 /* Simple pages (legal, 404) */
 .page { padding: 80px 0 96px; }
