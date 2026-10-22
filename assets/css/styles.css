@@ -175,13 +175,6 @@ ul { margin: 0; padding: 0; list-style: none; }
   width: 100%; max-width: 600px; padding: 48px;
   border-radius: 24px; background: var(--white);
 }
-.hero__badge {
-  display: inline-flex; align-items: flex-start; gap: 8px; margin-bottom: 24px; padding: 8px 12px; border-radius: 12px;
-  background: var(--green-soft); color: var(--green);
-  font-size: 0.75rem; line-height: 1rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-}
-.hero__badge i { flex: none; font-size: 1rem; }
-.hero__badge span { text-wrap: balance; }
 .hero__title {
   max-width: 680px;
   font-size: 3rem; line-height: 1;
@@ -209,25 +202,6 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .trust__title { font-size: 0.875rem; line-height: 1.25rem; font-weight: 700; }
 .trust__text { color: var(--muted); font-size: 0.75rem; line-height: 1rem; }
-
-/* First Hispanic MTO approved school */
-.first { background: var(--black); color: var(--white); padding: 96px 0; overflow: hidden; }
-.first__inner { display: grid; grid-template-columns: 1.15fr 1fr; gap: 64px; align-items: center; }
-.first__kicker { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 24px; padding: 4px 12px; border-radius: 9999px; background: var(--lime); color: var(--black); font-size: 0.75rem; line-height: 1rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
-.first__kicker i { font-size: 1rem; }
-.first__title { max-width: 680px; font-size: 3rem; line-height: 1; }
-.first__title span { color: var(--lime); }
-.first__es { margin-top: 16px; color: var(--yellow); font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; }
-.first__text { max-width: 600px; margin-top: 24px; color: rgba(255, 255, 255, 0.72); }
-.first__points { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; margin-top: 32px; }
-.first__points li { display: flex; align-items: flex-start; gap: 12px; font-size: 0.875rem; line-height: 1.25rem; color: rgba(255, 255, 255, 0.64); }
-.first__points i { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--ink-3); border-radius: 9999px; color: var(--lime); font-size: 1.25rem; }
-.first__points strong { display: block; color: var(--white); font-weight: 700; }
-.first__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
-.btn--ghost-light { border-color: rgba(255, 255, 255, 0.32); color: var(--white); }
-.btn--ghost-light:hover { border-color: var(--white); background: rgba(255, 255, 255, 0.08); }
-.first__media { position: relative; margin: 0; justify-self: center; max-width: 440px; }
-.first__media img { width: 100%; border-radius: 24px; transform: rotate(2deg); border: 1px solid var(--ink-3); }
 
 /* Sections */
 .section { padding: 96px 0; }
@@ -482,8 +456,7 @@ ul { margin: 0; padding: 0; list-style: none; }
   .trust__grid { grid-template-columns: repeat(2, 1fr); }
   .plans, .services { grid-template-columns: 1fr; max-width: 560px; margin-left: auto; margin-right: auto; }
   .plan--featured { order: -1; }
-  .about, .contact, .faq, .first__inner { grid-template-columns: 1fr; gap: 48px; }
-  .first__title { font-size: 2.25rem; line-height: 2.5rem; }
+  .about, .contact, .faq { grid-template-columns: 1fr; gap: 48px; }
   .instructor { max-width: 420px; }
   .footer__grid { grid-template-columns: 1fr 1fr; }
   .stories { grid-template-columns: repeat(2, 1fr); }
@@ -513,9 +486,6 @@ ul { margin: 0; padding: 0; list-style: none; }
   .field-row { grid-template-columns: 1fr; gap: 0; }
   .stats dd { font-size: 1.875rem; line-height: 2.25rem; }
   .tagline { padding: 80px 0; }
-  .first { padding: 64px 0; }
-  .first__points { grid-template-columns: 1fr; }
-  .first__actions .btn { flex: 1 1 auto; }
   .tagline__text { font-size: 2.25rem; line-height: 2.5rem; }
   .footer__grid { grid-template-columns: 1fr; gap: 32px; padding-top: 64px; }
   .gallery { column-count: 2; column-gap: 8px; }
