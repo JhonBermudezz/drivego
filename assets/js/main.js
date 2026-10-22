@@ -102,6 +102,78 @@ const counterObserver = new IntersectionObserver(
 );
 if (!reduceMotion) document.querySelectorAll('[data-count]').forEach((el) => counterObserver.observe(el));
 
+/* Hero slider */
+const slider = document.querySelector('[data-slider]');
+
+if (slider) {
+  const slides = Array.from(slider.querySelectorAll('[data-slide]'));
+  const dots = Array.from(slider.querySelectorAll('[data-dot]'));
+  const toggle = slider.querySelector('[data-toggle]');
+  const DELAY = 7000;
+  let current = 0;
+  let timer = null;
+  let paused = reduceMotion;
+  let hovering = false;
+
+  function show(index) {
+    current = (index + slides.length) % slides.length;
+    slides.forEach((slide, i) => {
+      const active = i === current;
+      slide.classList.toggle('is-active', active);
+      slide.setAttribute('aria-hidden', String(!active));
+      slide.inert = !active;
+    });
+    dots.forEach((dot, i) => {
+      if (i === current) dot.setAttribute('aria-current', 'true');
+      else dot.removeAttribute('aria-current');
+    });
+  }
+
+  function schedule() {
+    clearTimeout(timer);
+    if (!paused && !hovering) timer = setTimeout(() => { show(current + 1); schedule(); }, DELAY);
+  }
+
+  function setPaused(value) {
+    paused = value;
+    toggle.setAttribute('aria-label', paused ? 'Play slides' : 'Pause slides');
+    toggle.innerHTML = `<i class="ph ph-${paused ? 'play' : 'pause'}" aria-hidden="true"></i>`;
+    schedule();
+  }
+
+  slider.querySelector('[data-next]').addEventListener('click', () => { show(current + 1); schedule(); });
+  slider.querySelector('[data-prev]').addEventListener('click', () => { show(current - 1); schedule(); });
+  dots.forEach((dot) => dot.addEventListener('click', () => { show(Number(dot.dataset.dot)); schedule(); }));
+  toggle.addEventListener('click', () => setPaused(!paused));
+
+  // Hold still while the visitor reads or uses a slide
+  slider.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') { hovering = true; schedule(); } });
+  slider.addEventListener('pointerleave', () => { hovering = false; schedule(); });
+  slider.addEventListener('focusin', () => { hovering = true; schedule(); });
+  slider.addEventListener('focusout', () => { hovering = false; schedule(); });
+
+  slider.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') { show(current + 1); schedule(); }
+    if (e.key === 'ArrowLeft') { show(current - 1); schedule(); }
+  });
+
+  // Swipe on touch screens
+  let startX = null;
+  slider.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
+  slider.addEventListener('touchend', (e) => {
+    if (startX === null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) { show(current + (dx < 0 ? 1 : -1)); schedule(); }
+    startX = null;
+  });
+
+  // Stop rotating while the tab is hidden
+  document.addEventListener('visibilitychange', () => { if (document.hidden) clearTimeout(timer); else schedule(); });
+
+  show(0);
+  setPaused(paused);
+}
+
 /* Mobile menu */
 const burger = document.querySelector('.burger');
 const menu = document.getElementById('mobile-menu');

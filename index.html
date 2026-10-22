@@ -107,22 +107,83 @@
 
   <main id="main">
 
-    <!-- 2 · Hero -->
-    <section class="hero" aria-labelledby="hero-title">
-      <img class="hero__bg" src="assets/img/hero-wide.webp" alt="" width="2000" height="1100" fetchpriority="high">
-      <div class="container hero__inner">
-        <div class="hero__card reveal">
-          <p class="eyebrow eyebrow--wide"><i class="ph-fill ph-seal-check" aria-hidden="true"></i>MTO approved driving school</p>
-          <h1 class="hero__title" id="hero-title">Learn to drive with <span class="hl">confidence</span><br> in London, Ontario</h1>
-          <p class="hero__sub">Ministry approved packages, certified instructors and lessons that fit your schedule. Book and pay online in two minutes.</p>
-          <div class="hero__actions">
-            <a class="btn btn--dark btn--lg" href="#packages">View packages <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
-            <a class="btn btn--outline btn--lg" href="#contact">Contact us</a>
+    <!-- 2 · Hero slider -->
+    <section class="hero" aria-roledescription="carousel" aria-label="Highlights" data-slider>
+      <div class="hero__slides">
+        <!-- Slide 1 -->
+        <article class="slide slide--photo is-active" aria-roledescription="slide" aria-label="1 of 3" data-slide>
+          <img class="hero__bg" src="assets/img/hero-wide.webp" alt="" width="2000" height="1100" fetchpriority="high">
+          <div class="container hero__inner">
+            <div class="hero__card">
+              <p class="eyebrow eyebrow--wide"><i class="ph-fill ph-seal-check" aria-hidden="true"></i>MTO approved driving school</p>
+              <h1 class="hero__title" id="hero-title">Learn to drive with <span class="hl">confidence</span><br> in London, Ontario</h1>
+              <p class="hero__sub">Ministry approved packages, certified instructors and lessons that fit your schedule. Book and pay online in two minutes.</p>
+              <div class="hero__actions">
+                <a class="btn btn--dark btn--lg" href="#packages">View packages <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+                <a class="btn btn--outline btn--lg" href="#contact">Contact us</a>
+              </div>
+              <a class="hero__rating" href="#reviews">
+                <span class="stars" aria-hidden="true"><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i></span>
+                <span><strong>5.0</strong> from 43 Google reviews</span>
+              </a>
+            </div>
           </div>
-          <a class="hero__rating" href="#reviews">
-            <span class="stars" aria-hidden="true"><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i></span>
-            <span><strong>5.0</strong> from 43 Google reviews</span>
-          </a>
+        </article>
+
+        <!-- Slide 2 -->
+        <article class="slide slide--car" aria-roledescription="slide" aria-label="2 of 3" data-slide>
+          <div class="container slide__grid">
+            <div class="slide__copy">
+              <p class="eyebrow eyebrow--wide"><i class="ph-fill ph-seal-check" aria-hidden="true"></i>A first for London</p>
+              <h2 class="slide__title">The first Hispanic driving school approved by the <span class="hl">MTO</span> in London</h2>
+              <p class="slide__es" lang="es">La primera escuela de conducción hispana avalada por el MTO en London.</p>
+              <p class="hero__sub">Approved BDE course provider with lessons in English and Spanish.</p>
+              <div class="hero__actions">
+                <a class="btn btn--dark btn--lg" href="#packages">Enrol today <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+                <a class="btn btn--outline btn--lg" href="https://wa.me/15196943762" target="_blank" rel="noopener"><i class="ph ph-whatsapp-logo" aria-hidden="true"></i>WhatsApp</a>
+              </div>
+            </div>
+            <div class="slide__car">
+              <img src="assets/img/car-cutout.webp" alt="The blue Drive Go London training car with its Student Driver roof sign" width="979" height="702" loading="lazy">
+            </div>
+          </div>
+        </article>
+
+        <!-- Slide 3 -->
+        <article class="slide slide--stories" aria-roledescription="slide" aria-label="3 of 3" data-slide>
+          <div class="container slide__grid">
+            <div class="slide__copy">
+              <p class="eyebrow eyebrow--wide"><i class="ph-fill ph-identification-card" aria-hidden="true"></i>Success stories</p>
+              <h2 class="slide__title">Licence in hand. <span class="hl">Every week.</span></h2>
+              <p class="hero__sub">Our students pass their G2 and G road tests with a former DriveTest examiner in their corner.</p>
+              <div class="hero__actions">
+                <a class="btn btn--dark btn--lg" href="#packages">Book your lessons <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+                <a class="btn btn--outline btn--lg" href="gallery.html">See the gallery</a>
+              </div>
+              <a class="hero__rating" href="#reviews">
+                <span class="stars" aria-hidden="true"><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i></span>
+                <span><strong>5.0</strong> from 43 Google reviews</span>
+              </a>
+            </div>
+            <div class="slide__photos">
+              <img src="assets/img/stories/story-4.webp" alt="Student laughing as she shows her new licence" width="640" height="640" loading="lazy">
+              <img src="assets/img/stories/story-2.webp" alt="Student in a black hoodie holding his new licence" width="640" height="640" loading="lazy">
+              <img src="assets/img/stories/story-6.webp" alt="Student smiling with her licence outside the DriveTest centre" width="640" height="640" loading="lazy">
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="slider__controls container">
+        <div class="slider__dots" role="group" aria-label="Choose a slide">
+          <button type="button" class="slider__dot" aria-label="Show slide 1" aria-current="true" data-dot="0"></button>
+          <button type="button" class="slider__dot" aria-label="Show slide 2" data-dot="1"></button>
+          <button type="button" class="slider__dot" aria-label="Show slide 3" data-dot="2"></button>
+        </div>
+        <div class="slider__buttons">
+          <button type="button" class="slider__btn" aria-label="Pause slides" data-toggle><i class="ph ph-pause" aria-hidden="true"></i></button>
+          <button type="button" class="slider__btn" aria-label="Previous slide" data-prev><i class="ph ph-arrow-left" aria-hidden="true"></i></button>
+          <button type="button" class="slider__btn" aria-label="Next slide" data-next><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
         </div>
       </div>
     </section>
