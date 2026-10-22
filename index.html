@@ -132,29 +132,33 @@
 
         <!-- Slide 2 -->
         <article class="slide slide--car" aria-roledescription="slide" aria-label="2 of 3" data-slide>
-          <div class="container slide__grid">
-            <div class="slide__copy">
+          <img class="hero__bg" src="assets/img/bg-car.webp" alt="" width="1520" height="656" loading="lazy">
+          <img class="slide__car" src="assets/img/car-cutout.webp" alt="The blue Drive Go London training car with its Student Driver roof sign" width="979" height="702" loading="lazy">
+          <div class="container hero__inner hero__inner--left">
+            <div class="hero__card">
               <p class="eyebrow eyebrow--wide"><i class="ph-fill ph-seal-check" aria-hidden="true"></i>A first for London</p>
-              <h2 class="slide__title">The first Hispanic driving school approved by the <span class="hl">MTO</span> in London</h2>
+              <h2 class="hero__title">The first Hispanic driving school approved by the <span class="hl">MTO</span> in London</h2>
               <p class="slide__es" lang="es">La primera escuela de conducción hispana avalada por el MTO en London.</p>
-              <p class="hero__sub">Approved BDE course provider with lessons in English and Spanish.</p>
               <div class="hero__actions">
                 <a class="btn btn--dark btn--lg" href="#packages">Enrol today <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
                 <a class="btn btn--outline btn--lg" href="https://wa.me/15196943762" target="_blank" rel="noopener"><i class="ph ph-whatsapp-logo" aria-hidden="true"></i>WhatsApp</a>
               </div>
-            </div>
-            <div class="slide__car">
-              <img src="assets/img/car-cutout.webp" alt="The blue Drive Go London training car with its Student Driver roof sign" width="979" height="702" loading="lazy">
             </div>
           </div>
         </article>
 
         <!-- Slide 3 -->
         <article class="slide slide--stories" aria-roledescription="slide" aria-label="3 of 3" data-slide>
-          <div class="container slide__grid">
-            <div class="slide__copy">
+          <img class="hero__bg" src="assets/img/bg-stories.webp" alt="" width="1520" height="656" loading="lazy">
+          <div class="slide__photos">
+            <img src="assets/img/stories/story-4.webp" alt="Student laughing as she shows her new licence" width="640" height="640" loading="lazy">
+            <img src="assets/img/stories/story-2.webp" alt="Student in a black hoodie holding his new licence" width="640" height="640" loading="lazy">
+            <img src="assets/img/stories/story-6.webp" alt="Student smiling with her licence outside the DriveTest centre" width="640" height="640" loading="lazy">
+          </div>
+          <div class="container hero__inner hero__inner--left">
+            <div class="hero__card">
               <p class="eyebrow eyebrow--wide"><i class="ph-fill ph-identification-card" aria-hidden="true"></i>Success stories</p>
-              <h2 class="slide__title">Licence in hand. <span class="hl">Every week.</span></h2>
+              <h2 class="hero__title">Licence in hand. <span class="hl">Every week.</span></h2>
               <p class="hero__sub">Our students pass their G2 and G road tests with a former DriveTest examiner in their corner.</p>
               <div class="hero__actions">
                 <a class="btn btn--dark btn--lg" href="#packages">Book your lessons <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
@@ -165,26 +169,14 @@
                 <span><strong>5.0</strong> from 43 Google reviews</span>
               </a>
             </div>
-            <div class="slide__photos">
-              <img src="assets/img/stories/story-4.webp" alt="Student laughing as she shows her new licence" width="640" height="640" loading="lazy">
-              <img src="assets/img/stories/story-2.webp" alt="Student in a black hoodie holding his new licence" width="640" height="640" loading="lazy">
-              <img src="assets/img/stories/story-6.webp" alt="Student smiling with her licence outside the DriveTest centre" width="640" height="640" loading="lazy">
-            </div>
           </div>
         </article>
       </div>
 
-      <div class="slider__controls container">
-        <div class="slider__dots" role="group" aria-label="Choose a slide">
-          <button type="button" class="slider__dot" aria-label="Show slide 1" aria-current="true" data-dot="0"></button>
-          <button type="button" class="slider__dot" aria-label="Show slide 2" data-dot="1"></button>
-          <button type="button" class="slider__dot" aria-label="Show slide 3" data-dot="2"></button>
-        </div>
-        <div class="slider__buttons">
-          <button type="button" class="slider__btn" aria-label="Pause slides" data-toggle><i class="ph ph-pause" aria-hidden="true"></i></button>
-          <button type="button" class="slider__btn" aria-label="Previous slide" data-prev><i class="ph ph-arrow-left" aria-hidden="true"></i></button>
-          <button type="button" class="slider__btn" aria-label="Next slide" data-next><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
-        </div>
+      <div class="slider__progress" role="group" aria-label="Choose a slide">
+        <button type="button" class="slider__line" aria-label="Show slide 1" aria-current="true" data-dot="0"><span></span></button>
+        <button type="button" class="slider__line" aria-label="Show slide 2" data-dot="1"><span></span></button>
+        <button type="button" class="slider__line" aria-label="Show slide 3" data-dot="2"><span></span></button>
       </div>
     </section>
 
@@ -400,49 +392,8 @@
       </div>
     </section>
 
-    <!-- FAQ -->
-    <section class="section" id="faq" aria-labelledby="faq-title">
-      <div class="container faq">
-        <header class="faq__head reveal">
-          <p class="eyebrow">FAQ</p>
-          <h2 class="section__title" id="faq-title">Questions before your first lesson</h2>
-          <p class="section__sub">Still not sure? Call us at (519) 694 3762.</p>
-        </header>
-        <div class="faq__list reveal">
-          <details>
-            <summary>Do I need my G1 before I start?</summary>
-            <p>You need a valid G1 for lessons behind the wheel. You can start the BDE classroom course before you have it.</p>
-          </details>
-          <details>
-            <summary>How does the BDE course get me to my G2 sooner?</summary>
-            <p>Completing an MTO approved Beginner Driver Education course lets you take your G2 road test after 8 months with your G1 instead of 12.</p>
-          </details>
-          <details>
-            <summary>Where do lessons start?</summary>
-            <p>With the Basic package we meet you at White Oaks Mall. Standard and Complete include pick up and drop off at home, school or work in London.</p>
-          </details>
-          <details>
-            <summary>Can I use your car for my road test?</summary>
-            <p>Yes. The Complete package includes it, and you can add it to any plan with a road test package for G2 or G.</p>
-          </details>
-          <details>
-            <summary>Can I take lessons in Spanish?</summary>
-            <p>Yes. Steven teaches in English and Spanish, and our BDE course is available for Spanish speakers too.</p>
-          </details>
-          <details>
-            <summary>How can I pay?</summary>
-            <p>Pay online with any credit or debit card through Stripe, or pay by Interac e&#8209;Transfer or cash before your first lesson.</p>
-          </details>
-          <details>
-            <summary>What if I need to cancel a lesson?</summary>
-            <p>Reschedule or cancel at least 24 hours before your lesson at no cost. See our terms for full refund details.</p>
-          </details>
-        </div>
-      </div>
-    </section>
-
     <!-- 8 · Contact -->
-    <section class="section section--soft" id="contact" aria-labelledby="contact-title">
+    <section class="section" id="contact" aria-labelledby="contact-title">
       <div class="container contact">
         <div class="contact__info reveal">
           <p class="eyebrow">Contact</p>
@@ -501,6 +452,47 @@
           <button class="btn btn--dark btn--lg" type="submit"><span class="btn__label">Send message</span><i class="ph ph-paper-plane-tilt" aria-hidden="true"></i></button>
           <p class="form__status" role="status" aria-live="polite"></p>
         </form>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section section--soft" id="faq" aria-labelledby="faq-title">
+      <div class="container faq">
+        <header class="faq__head reveal">
+          <p class="eyebrow">FAQ</p>
+          <h2 class="section__title" id="faq-title">Questions before your first lesson</h2>
+          <p class="section__sub">Still not sure? Call us at (519) 694 3762.</p>
+        </header>
+        <div class="faq__list reveal">
+          <details>
+            <summary>Do I need my G1 before I start?</summary>
+            <p>You need a valid G1 for lessons behind the wheel. You can start the BDE classroom course before you have it.</p>
+          </details>
+          <details>
+            <summary>How does the BDE course get me to my G2 sooner?</summary>
+            <p>Completing an MTO approved Beginner Driver Education course lets you take your G2 road test after 8 months with your G1 instead of 12.</p>
+          </details>
+          <details>
+            <summary>Where do lessons start?</summary>
+            <p>With the Basic package we meet you at White Oaks Mall. Standard and Complete include pick up and drop off at home, school or work in London.</p>
+          </details>
+          <details>
+            <summary>Can I use your car for my road test?</summary>
+            <p>Yes. The Complete package includes it, and you can add it to any plan with a road test package for G2 or G.</p>
+          </details>
+          <details>
+            <summary>Can I take lessons in Spanish?</summary>
+            <p>Yes. Steven teaches in English and Spanish, and our BDE course is available for Spanish speakers too.</p>
+          </details>
+          <details>
+            <summary>How can I pay?</summary>
+            <p>Pay online with any credit or debit card through Stripe, or pay by Interac e&#8209;Transfer or cash before your first lesson.</p>
+          </details>
+          <details>
+            <summary>What if I need to cancel a lesson?</summary>
+            <p>Reschedule or cancel at least 24 hours before your lesson at no cost. See our terms for full refund details.</p>
+          </details>
+        </div>
       </div>
     </section>
   </main>

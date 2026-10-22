@@ -107,13 +107,16 @@ const slider = document.querySelector('[data-slider]');
 
 if (slider) {
   const slides = Array.from(slider.querySelectorAll('[data-slide]'));
-  const dots = Array.from(slider.querySelectorAll('[data-dot]'));
-  const toggle = slider.querySelector('[data-toggle]');
+  const lines = Array.from(slider.querySelectorAll('[data-dot]'));
   const DELAY = 7000;
   let current = 0;
   let timer = null;
-  let paused = reduceMotion;
-  let hovering = false;
+  let startedAt = 0;
+  let remaining = DELAY;
+  let holding = false;
+
+  slider.style.setProperty('--slide-delay', `${DELAY}ms`);
+  if (reduceMotion) slider.classList.add('is-static');
 
   function show(index) {
     current = (index + slides.length) % slides.length;
@@ -123,55 +126,62 @@ if (slider) {
       slide.setAttribute('aria-hidden', String(!active));
       slide.inert = !active;
     });
-    dots.forEach((dot, i) => {
-      if (i === current) dot.setAttribute('aria-current', 'true');
-      else dot.removeAttribute('aria-current');
+    lines.forEach((line, i) => {
+      line.removeAttribute('aria-current');
+      if (i === current) {
+        void line.offsetWidth; // restart the fill animation
+        line.setAttribute('aria-current', 'true');
+      }
     });
+    remaining = DELAY;
+    run();
   }
 
-  function schedule() {
+  function run() {
     clearTimeout(timer);
-    if (!paused && !hovering) timer = setTimeout(() => { show(current + 1); schedule(); }, DELAY);
+    if (reduceMotion || holding || document.hidden) return;
+    startedAt = performance.now();
+    timer = setTimeout(() => show(current + 1), remaining);
   }
 
-  function setPaused(value) {
-    paused = value;
-    toggle.setAttribute('aria-label', paused ? 'Play slides' : 'Pause slides');
-    toggle.innerHTML = `<i class="ph ph-${paused ? 'play' : 'pause'}" aria-hidden="true"></i>`;
-    schedule();
+  // Pause while the visitor reads or uses a slide, then finish the remaining time
+  function hold(value) {
+    if (value === holding) return;
+    holding = value;
+    slider.classList.toggle('is-paused', holding);
+    if (holding) {
+      clearTimeout(timer);
+      remaining = Math.max(0, remaining - (performance.now() - startedAt));
+    } else {
+      run();
+    }
   }
 
-  slider.querySelector('[data-next]').addEventListener('click', () => { show(current + 1); schedule(); });
-  slider.querySelector('[data-prev]').addEventListener('click', () => { show(current - 1); schedule(); });
-  dots.forEach((dot) => dot.addEventListener('click', () => { show(Number(dot.dataset.dot)); schedule(); }));
-  toggle.addEventListener('click', () => setPaused(!paused));
-
-  // Hold still while the visitor reads or uses a slide
-  slider.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') { hovering = true; schedule(); } });
-  slider.addEventListener('pointerleave', () => { hovering = false; schedule(); });
-  slider.addEventListener('focusin', () => { hovering = true; schedule(); });
-  slider.addEventListener('focusout', () => { hovering = false; schedule(); });
-
+  lines.forEach((line) => line.addEventListener('click', () => show(Number(line.dataset.dot))));
+  slider.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hold(true); });
+  slider.addEventListener('pointerleave', () => hold(false));
+  slider.addEventListener('focusin', () => hold(true));
+  slider.addEventListener('focusout', () => hold(false));
   slider.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight') { show(current + 1); schedule(); }
-    if (e.key === 'ArrowLeft') { show(current - 1); schedule(); }
+    if (e.key === 'ArrowRight') show(current + 1);
+    if (e.key === 'ArrowLeft') show(current - 1);
   });
 
-  // Swipe on touch screens
   let startX = null;
   slider.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
   slider.addEventListener('touchend', (e) => {
     if (startX === null) return;
     const dx = e.changedTouches[0].clientX - startX;
-    if (Math.abs(dx) > 50) { show(current + (dx < 0 ? 1 : -1)); schedule(); }
+    if (Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
     startX = null;
   });
 
-  // Stop rotating while the tab is hidden
-  document.addEventListener('visibilitychange', () => { if (document.hidden) clearTimeout(timer); else schedule(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) hold(true);
+    else hold(false);
+  });
 
   show(0);
-  setPaused(paused);
 }
 
 /* Mobile menu */
