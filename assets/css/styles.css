@@ -344,6 +344,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .instructor__role { color: var(--muted); font-size: 0.875rem; line-height: 1.25rem; }
 .about__copy .section__title { margin-bottom: 24px; }
 .about__copy p { color: var(--muted); margin-bottom: 16px; }
+@media (min-width: 641px) { .about__copy p { text-align: justify; hyphens: auto; } }
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 32px 0 40px; padding: 24px 0; }
 .stats div { display: flex; flex-direction: column-reverse; gap: 4px; }
 .stats dt { color: var(--muted); font-size: 0.8125rem; line-height: 1rem; }
