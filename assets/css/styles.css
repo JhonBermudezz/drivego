@@ -803,3 +803,10 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
 .flow__step:not(:last-child) { z-index: 2; }
 .topbar { background: var(--black); }
 .header .btn--primary:hover { background: var(--lime-hover); }
+
+/* Dark scrim over the slide photos so the card and the photos lead, not the background */
+.slide--photo::after, .slide--stories::after {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0.62) 100%);
+}
+.hero__inner { z-index: 1; }
