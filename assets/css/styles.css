@@ -657,7 +657,7 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
 }
 
 /* Colour punch: brand lime and green across the page */
-.trust { background: var(--lime); border-bottom: 0; }
+.trust { background: var(--soft); border-bottom: 0; }
 .trust__icon { background: var(--black); color: var(--lime); }
 .trust__text { color: rgba(0, 0, 0, 0.72); }
 .section--lime { background: var(--lime); }
