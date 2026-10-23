@@ -217,7 +217,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 /* Slides 2 and 3: background photo, card on the left */
 .hero__inner--left { justify-content: flex-start; }
 .slide--car .hero__bg { object-position: 72% center; }
-.slide--stories .hero__bg { object-position: 70% center; }
+.slide--stories .hero__bg { object-position: 50% 62%; }
 .slide__photos {
   position: absolute; z-index: 1; top: 50%; transform: translateY(-50%);
   right: max(24px, (100vw - var(--container)) / 2 + 24px);
