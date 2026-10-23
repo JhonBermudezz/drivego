@@ -810,16 +810,3 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
   background: linear-gradient(90deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0.62) 100%);
 }
 .hero__inner { z-index: 1; }
-
-/* Green gradients */
-:root {
-  --grad-lime: linear-gradient(115deg, #a2f933 0%, #c4fb6a 100%);
-  --grad-deep: linear-gradient(115deg, #031a00 0%, #0d3a00 55%, #2f7d00 100%);
-}
-.slide--photo::after, .slide--stories::after {
-  background: linear-gradient(100deg, rgba(3, 26, 0, 0.82) 0%, rgba(13, 58, 0, 0.62) 55%, rgba(47, 125, 0, 0.4) 100%);
-}
-.trust, .section--lime, .page-hero { background: var(--grad-lime); }
-.tagline { background: var(--grad-deep); }
-.footer { background: linear-gradient(180deg, #000000 0%, #031a00 100%); }
-.btn--primary { background: linear-gradient(115deg, #a2f933 0%, #c4fb6a 100%); }
