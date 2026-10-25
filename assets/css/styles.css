@@ -827,3 +827,6 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
 .section--soft .faq details { background: var(--white); }
 .section--soft .faq summary::after { background: var(--soft); }
 .section--soft .faq details[open] summary::after { background: var(--lime); }
+
+/* FAQ plus drawn with bars so it is perfectly centred */
+.faq summary::after { content: ""; position: relative; background-image: linear-gradient(var(--ink), var(--ink)), linear-gradient(var(--ink), var(--ink)); background-repeat: no-repeat; background-position: center; background-size: 12px 2px, 2px 12px; }
