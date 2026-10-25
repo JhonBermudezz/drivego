@@ -822,3 +822,8 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
 /* About text on a pastel card */
 .about__copy { padding: 48px; border-radius: 24px; background: var(--soft); }
 @media (max-width: 640px) { .about__copy { padding: 28px 24px; } }
+
+/* FAQ cards stay visible when the section is pastel */
+.section--soft .faq details { background: var(--white); }
+.section--soft .faq summary::after { background: var(--soft); }
+.section--soft .faq details[open] summary::after { background: var(--lime); }
