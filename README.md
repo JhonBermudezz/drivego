@@ -50,3 +50,7 @@ It rebuilds the sub pages (packages, services, road test, about, contact) and re
 - **Gallery:** items live in `ITEMS` at the top of `assets/js/gallery.js` (photos in `assets/img/gallery/`). For a video add `type: 'video'` with `src` (file in `assets/videos/`) or `youtube`, plus a cover `image`.
 - **Photos:** stock images from Unsplash in `assets/img/`. Replace with real photos of students, instructors and the car keeping the same file names.
 - **Legal pages:** drafts, have them reviewed.
+
+## WordPress booking plugin
+
+`wordpress-plugin/drivego-booking.zip` is a WordPress plugin with a real booking calendar (free times update as people book, no double bookings), an admin list with Confirm and Cancel, emails to the owner and the customer, and Square payments through the Square API. Install it with Plugins > Add New > Upload Plugin, then fill in Bookings > Settings. See `wordpress-plugin/drivego-booking/readme.txt`.
