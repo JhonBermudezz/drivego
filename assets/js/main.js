@@ -23,7 +23,7 @@ const SQUARE_BOOKING_LINKS = {
 // Form backend (Formspree, Basin, Getform...). Leave empty to fall back to
 // opening the visitor's email app with the message prefilled.
 const FORM_ENDPOINT = '';
-const CONTACT_EMAIL = 'info@drivegolondon.ca';
+const CONTACT_EMAIL = 'info@drivegodrivingschool.com';
 
 const PACKAGE_TOPICS = {
   basic: 'Package 1 · Basic',

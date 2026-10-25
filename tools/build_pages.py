@@ -45,8 +45,8 @@ def head(title, desc, path):
     h = HEAD
     h = re.sub(r'<title>.*?</title>', f'<title>{title}</title>', h, flags=re.S)
     h = re.sub(r'<meta name="description" content="[^"]*">', f'<meta name="description" content="{desc}">', h)
-    h = re.sub(r'<link rel="canonical" href="[^"]*">', f'<link rel="canonical" href="https://drivegolondon.ca/{path}">', h)
-    h = re.sub(r'<meta property="og:url" content="[^"]*">', f'<meta property="og:url" content="https://drivegolondon.ca/{path}">', h)
+    h = re.sub(r'<link rel="canonical" href="[^"]*">', f'<link rel="canonical" href="https://drivegodrivingschool.com/{path}">', h)
+    h = re.sub(r'<meta property="og:url" content="[^"]*">', f'<meta property="og:url" content="https://drivegodrivingschool.com/{path}">', h)
     h = re.sub(r'<meta property="og:title" content="[^"]*">', f'<meta property="og:title" content="{title}">', h)
     h = re.sub(r'<meta property="og:description" content="[^"]*">', f'<meta property="og:description" content="{desc}">', h)
     h = re.sub(r'\s*<script type="application/ld\+json">.*?</script>', '', h, flags=re.S)
@@ -487,7 +487,7 @@ page('contact.html', 'Contact | Drive Go London',
       <div class="contact-cards container">
         <a class="contact-card" href="tel:+15196943762"><span class="contact__icon"><i class="ph ph-phone" aria-hidden="true"></i></span><strong>Call</strong><span>(519) 694 3762</span></a>
         <a class="contact-card" href="https://wa.me/15196943762" target="_blank" rel="noopener"><span class="contact__icon">{WA_ICON}</span><strong>WhatsApp</strong><span>Message us now</span></a>
-        <a class="contact-card" href="mailto:info@drivegolondon.ca"><span class="contact__icon"><i class="ph ph-envelope-simple" aria-hidden="true"></i></span><strong>Email</strong><span>info@drivegolondon.ca</span></a>
+        <a class="contact-card" href="mailto:info@drivegodrivingschool.com"><span class="contact__icon"><i class="ph ph-envelope-simple" aria-hidden="true"></i></span><strong>Email</strong><span>info@drivegodrivingschool.com</span></a>
         <div class="contact-card"><span class="contact__icon"><i class="ph ph-clock" aria-hidden="true"></i></span><strong>Hours</strong><span>Weekdays and weekends, by appointment</span></div>
       </div>
       {contact_inner}

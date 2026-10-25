@@ -361,7 +361,7 @@ const BOOKING = {
           const res = await fetch(FORM_ENDPOINT, { method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
           if (!res.ok) throw new Error(String(res.status));
         } else if (!window.DRIVEGO_PREVIEW) {
-          const email = typeof CONTACT_EMAIL !== 'undefined' ? CONTACT_EMAIL : 'info@drivegolondon.ca';
+          const email = typeof CONTACT_EMAIL !== 'undefined' ? CONTACT_EMAIL : 'info@drivegodrivingschool.com';
           const text = Object.entries(data).map(([k, v]) => `${k}: ${v || 'not given'}`).join('\n');
           window.location.href = `mailto:${email}?subject=${encodeURIComponent(`Booking: ${data.service} on ${data.date}`)}&body=${encodeURIComponent(text)}`;
         }
