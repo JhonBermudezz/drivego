@@ -833,7 +833,7 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
 
 /* Floating WhatsApp button */
 .wa-float{position:fixed;right:20px;bottom:20px;z-index:90;display:flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:9999px;background:#25d366;color:#fff;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.28);transition:transform 400ms cubic-bezier(.32,.72,0,1);}
-.wa-float svg{width:32px;height:32px;display:block;}
+.wa-float,.wa-float:visited{color:#fff!important;}.wa-float svg{width:32px;height:32px;display:block;fill:#fff!important;}.wa-float svg path{fill:#fff!important;}
 .wa-float:hover{transform:scale(1.08);}
 .wa-float::before{content:"";position:absolute;inset:0;border-radius:inherit;background:#25d366;opacity:.5;z-index:-1;animation:wa-pulse 2.4s ease-out infinite;}
 .wa-float__tip{position:absolute;right:72px;white-space:nowrap;padding:8px 14px;border-radius:9999px;background:#000;color:#fff;font:600 .875rem/1.25rem Montserrat,system-ui,sans-serif;opacity:0;transform:translateX(8px);pointer-events:none;transition:opacity 300ms,transform 300ms;}
