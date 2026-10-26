@@ -24,6 +24,22 @@
   function isFormRequest(url, body) {
     return typeof url === 'string' && url.indexOf('admin-ajax.php') > -1 && body && typeof body.get === 'function' && String(body.get('action')) === 'elementor_pro_atomic_forms_send_form';
   }
+  /* Loader: the request waits on reCAPTCHA and the mail server, so show the visitor that it is sending. */
+  var lastForm = null;
+  var css = document.createElement('style');
+  css.textContent = '@keyframes dgbspin{to{transform:rotate(360deg)}}' +
+    'form.e-form-base.dgb-sending button[type=submit]{pointer-events:none;opacity:.8;position:relative}' +
+    'form.e-form-base.dgb-sending button[type=submit]::after{content:"";display:inline-block;width:1em;height:1em;margin-left:.6em;vertical-align:-.15em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:dgbspin .7s linear infinite}' +
+    '@media (prefers-reduced-motion:reduce){form.e-form-base.dgb-sending button[type=submit]::after{animation-duration:2s}}';
+  document.head.appendChild(css);
+  document.addEventListener('submit', function (e) { if (e.target && e.target.matches && e.target.matches('form.e-form-base')) lastForm = e.target; }, true);
+  function busy(on) {
+    var f = lastForm || document.querySelector('form.e-form-base');
+    if (!f) return function () {};
+    f.classList.toggle('dgb-sending', on);
+    f.setAttribute('aria-busy', on ? 'true' : 'false');
+    return function () { f.classList.remove('dgb-sending'); f.setAttribute('aria-busy', 'false'); };
+  }
   function decorate(body) {
     body.set('dgb_ts', String(started));
     body.set('dgb_hp', (document.querySelector('input[name="dgb_hp"]') || { value: '' }).value);
@@ -35,7 +51,10 @@
     window.fetch = function (input, init) {
       var url = typeof input === 'string' ? input : (input && input.url) || '';
       var body = init && init.body;
-      if (isFormRequest(url, body)) { return decorate(body).then(function () { return nativeFetch.call(window, input, init); }); }
+      if (isFormRequest(url, body)) {
+        var done = busy(true);
+        return decorate(body).then(function () { return nativeFetch.call(window, input, init); }).then(function (r) { done(); return r; }, function (e) { done(); throw e; });
+      }
       return nativeFetch.apply(window, arguments);
     };
   }
@@ -43,7 +62,12 @@
   XMLHttpRequest.prototype.open = function (m, u) { this.__dgbUrl = u; return open.apply(this, arguments); };
   XMLHttpRequest.prototype.send = function (body) {
     var xhr = this, args = arguments;
-    if (isFormRequest(this.__dgbUrl, body)) { decorate(body).then(function () { send.apply(xhr, args); }); return; }
+    if (isFormRequest(this.__dgbUrl, body)) {
+      var done = busy(true);
+      xhr.addEventListener('loadend', done);
+      decorate(body).then(function () { send.apply(xhr, args); });
+      return;
+    }
     return send.apply(this, args);
   };
   /* Trap field: invisible to people, tempting to bots. */
