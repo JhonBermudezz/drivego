@@ -18,3 +18,6 @@ Emails use wp_mail(). Install an SMTP plugin so messages are delivered reliably.
 
 == Home pick up price ==
 In Bookings > Settings each option has "Extra for home pick up". It is added to the price when the student chooses "Pick me up at home" (and always for road tests), and it is included in the Square charge. Leave 0 when pick up is included. The price is always calculated on the server.
+
+== Contact form emails ==
+Messages from the Elementor contact forms (subject starts with "New message from") are turned into a styled HTML card automatically, with Reply-To set to the sender's email.
