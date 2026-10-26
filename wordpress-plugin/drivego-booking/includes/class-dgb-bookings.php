@@ -44,6 +44,17 @@ class DGB_Bookings {
 		return $out;
 	}
 
+	/** Does this booking include a home pick up? Road tests always do; lessons only when the student asks for it. */
+	public static function needs_pickup( $service, $meet ) {
+		return 'roadtest' === $service || 'Pick me up at home' === $meet;
+	}
+
+	/** Server-side total so the price can never be changed from the browser. */
+	public static function price_for( array $opt, $service, $meet ) {
+		$extra = self::needs_pickup( $service, $meet ) ? (float) ( isset( $opt['pickup'] ) ? $opt['pickup'] : 0 ) : 0.0;
+		return array( 'base' => (float) $opt['price'], 'extra' => $extra, 'total' => (float) $opt['price'] + $extra );
+	}
+
 	public static function now_minute_if_today( $date ) {
 		return ( wp_date( 'Y-m-d' ) === $date ) ? ( (int) wp_date( 'G' ) * 60 + (int) wp_date( 'i' ) ) : -1;
 	}
@@ -77,12 +88,13 @@ class DGB_Bookings {
 			if ( ! in_array( (int) $d['start'], self::free_slots( $d['date'], (int) $opt['minutes'] ), true ) ) {
 				return new WP_Error( 'dgb_taken', 'Sorry, that time was just taken. Please pick another one.', array( 'status' => 409 ) );
 			}
+			$price = self::price_for( $opt, $d['service'], $d['meet'] );
 			$title = sprintf( '%s · %s · %s %s', $d['name'], $svc['name'] . ' (' . $opt['label'] . ')', $d['date'], self::fmt_time( (int) $d['start'] ) );
 			$id = wp_insert_post( array( 'post_type' => self::CPT, 'post_status' => 'publish', 'post_title' => $title ), true );
 			if ( is_wp_error( $id ) ) { return $id; }
 			$meta = array(
 				'_dgb_status' => 'pending', '_dgb_payment' => 'unpaid', '_dgb_service' => $d['service'], '_dgb_service_name' => $svc['name'],
-				'_dgb_option' => $opt['label'], '_dgb_price' => $opt['price'], '_dgb_minutes' => (int) $opt['minutes'],
+				'_dgb_option' => $opt['label'], '_dgb_price' => $price['total'], '_dgb_base_price' => $price['base'], '_dgb_pickup_extra' => $price['extra'], '_dgb_minutes' => (int) $opt['minutes'],
 				'_dgb_date' => $d['date'], '_dgb_start' => (int) $d['start'],
 				'_dgb_name' => $d['name'], '_dgb_email' => $d['email'], '_dgb_phone' => $d['phone'],
 				'_dgb_licence' => $d['licence'], '_dgb_lang' => $d['lang'], '_dgb_meet' => $d['meet'], '_dgb_centre' => $d['centre'],
@@ -103,7 +115,7 @@ class DGB_Bookings {
 			'Service' => $g( 'service_name' ) . ' · ' . $g( 'option' ),
 			'When'    => wp_date( 'l, F j, Y', strtotime( $g( 'date' ) . ' 12:00:00' ) ) . ' at ' . self::fmt_time( (int) $g( 'start' ) ),
 			'Where'   => $where,
-			'Price'   => '$' . number_format( (float) $g( 'price' ), 2 ) . ' + HST',
+			'Price'   => '$' . number_format( (float) $g( 'price' ), 2 ) . ' + HST' . ( (float) $g( 'pickup_extra' ) > 0 ? ' (includes $' . number_format( (float) $g( 'pickup_extra' ), 2 ) . ' home pick up)' : '' ),
 			'Name'    => $g( 'name' ),
 			'Phone'   => $g( 'phone' ),
 			'Email'   => $g( 'email' ),

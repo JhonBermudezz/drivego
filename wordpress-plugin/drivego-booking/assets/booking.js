@@ -60,10 +60,16 @@
     }
 
     function opt() { return state.service.options[state.option]; }
+    function pickupOn() { return state.key === 'roadtest' || (state.details.meet || 'Pick me up at home') === 'Pick me up at home'; }
+    function extra() { var o = opt(); return o.pickup > 0 && pickupOn() ? o.pickup : 0; }
+    function total() { return opt().price + extra(); }
 
     function summary() {
       var o = opt();
-      var rows = [['Option', o.label], ['Price', money(o.price) + ' + HST'], ['Day', state.date ? fmtDate(state.date) : 'Not chosen yet'], ['Time', state.time !== null ? fmtTime(state.time) : 'Not chosen yet']];
+      var rows = [['Option', o.label], ['Price', money(o.price) + ' + HST']];
+      if (o.pickup > 0 && state.step >= 3) rows.push(['Home pick up', extra() ? '+ ' + money(extra()) : 'Not needed']);
+      if (extra()) rows[1] = ['Total', money(total()) + ' + HST'];
+      rows = rows.concat([['Day', state.date ? fmtDate(state.date) : 'Not chosen yet'], ['Time', state.time !== null ? fmtTime(state.time) : 'Not chosen yet']]);
       dialog.querySelector('[data-bk-facts]').innerHTML = rows.map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('');
     }
 
@@ -90,7 +96,7 @@
     function renderOption(body) {
       body.innerHTML = '<h3 class="bk__h">Choose an option</h3><div class="bk__options">' + state.service.options.map(function (o, i) {
         return '<button type="button" class="bk__option" aria-pressed="' + (i === state.option) + '" data-i="' + i + '"><span class="bk__option-name">' + esc(o.label) + '</span><span class="bk__option-price">' + money(o.price) + ' <small>+ HST</small></span></button>';
-      }).join('') + '</div>';
+      }).join('') + '</div>' + (state.key !== 'roadtest' && state.service.options.some(function (o) { return o.pickup > 0; }) ? '<p class="bk__small">Meeting us at White Oaks Mall is the base price. Home pick up adds ' + state.service.options.filter(function (o) { return o.pickup > 0; }).map(function (o) { return money(o.pickup) + ' (' + esc(o.label) + ')'; }).join(', ') + '.</p>' : '');
       body.querySelectorAll('.bk__option').forEach(function (b) {
         b.addEventListener('click', function () {
           state.option = +b.dataset.i; state.time = null; state.date = null; state.free = {};
@@ -163,7 +169,7 @@
         field('bk-notes', 'Anything we should know?', '<textarea id="bk-notes" rows="2" placeholder="For example, what you want to practise.">' + v('notes') + '</textarea>', true) + '</div>';
       var meet = body.querySelector('#bk-meet'), addr = body.querySelector('#bk-address').closest('.field');
       var sync = function () { addr.hidden = meet && meet.value !== 'Pick me up at home'; };
-      if (meet) { meet.addEventListener('change', sync); sync(); }
+      if (meet) { meet.addEventListener('change', function () { state.details.meet = meet.value; sync(); summary(); }); sync(); }
     }
 
     function validDetails() {
@@ -194,7 +200,7 @@
       }
       body.innerHTML = '<h3 class="bk__h">Check your booking</h3><ul class="bk__review"><li><span>Service</span><strong>' + esc(state.service.name) + ' · ' + esc(o.label) + '</strong></li>' +
         '<li><span>When</span><strong>' + esc(fmtDate(state.date)) + ' at ' + esc(fmtTime(state.time)) + '</strong></li><li><span>Where</span><strong>' + esc(where) + '</strong></li>' +
-        '<li><span>Name</span><strong>' + esc(d.name) + ' · ' + esc(d.phone) + '</strong></li><li><span>Total</span><strong>' + money(o.price) + ' + HST</strong></li></ul>' +
+        '<li><span>Name</span><strong>' + esc(d.name) + ' · ' + esc(d.phone) + '</strong></li><li><span>Total</span><strong>' + money(total()) + ' + HST' + (extra() ? ' <small>(includes ' + money(extra()) + ' home pick up)</small>' : '') + '</strong></li></ul>' +
         '<p class="bk__small">We confirm every booking. Free reschedule up to 24 hours before.</p><p class="bk__hint" data-bk-hint hidden></p>';
       nb.textContent = 'Request booking and pay';
     }

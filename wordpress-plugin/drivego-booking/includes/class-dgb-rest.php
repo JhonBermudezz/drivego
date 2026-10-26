@@ -76,8 +76,10 @@ class DGB_Rest {
 		$services = DGB_Settings::get( 'services' );
 		$opt      = $services[ $d['service'] ]['options'][ $d['option'] ];
 		$pay_url  = '';
-		if ( DGB_Square::enabled() && $opt['price'] > 0 ) {
-			$res = DGB_Square::create_payment_link( $id, $services[ $d['service'] ]['name'] . ' · ' . $opt['label'], (float) $opt['price'], $d['email'], home_url( '/' ) );
+		$total = (float) get_post_meta( $id, '_dgb_price', true );
+		if ( DGB_Square::enabled() && $total > 0 ) {
+			$label = $services[ $d['service'] ]['name'] . ' · ' . $opt['label'] . ( (float) get_post_meta( $id, '_dgb_pickup_extra', true ) > 0 ? ' + home pick up' : '' );
+			$res = DGB_Square::create_payment_link( $id, $label, $total, $d['email'], home_url( '/' ) );
 			if ( is_wp_error( $res ) ) {
 				update_post_meta( $id, '_dgb_square_error', $res->get_error_message() );
 			} else {

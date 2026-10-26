@@ -6,9 +6,9 @@ class DGB_Settings {
 
 	public static function defaults() {
 		$opts = array(
-			array( 'label' => '1 hour', 'minutes' => 60, 'price' => 65, 'pay' => '' ),
-			array( 'label' => '1.5 hours', 'minutes' => 90, 'price' => 95, 'pay' => '' ),
-			array( 'label' => '2 hours', 'minutes' => 120, 'price' => 125, 'pay' => '' ),
+			array( 'label' => '1 hour', 'minutes' => 60, 'price' => 65, 'pickup' => 0, 'pay' => '' ),
+			array( 'label' => '1.5 hours', 'minutes' => 90, 'price' => 95, 'pickup' => 0, 'pay' => '' ),
+			array( 'label' => '2 hours', 'minutes' => 120, 'price' => 125, 'pickup' => 0, 'pay' => '' ),
 		);
 		return array(
 			'notify_email'   => get_option( 'admin_email' ),
@@ -35,8 +35,8 @@ class DGB_Settings {
 				'lessons'   => array( 'name' => 'Single lesson', 'when' => 'Lesson day and start time', 'options' => $opts ),
 				'refresher' => array( 'name' => 'G-Full & G2 Refresher', 'when' => 'Lesson day and start time', 'options' => $opts ),
 				'roadtest'  => array( 'name' => 'Road test package', 'when' => 'Your DriveTest date and test time', 'options' => array(
-					array( 'label' => 'G2 road test', 'minutes' => 120, 'price' => 189, 'pay' => '' ),
-					array( 'label' => 'Full G road test', 'minutes' => 120, 'price' => 209, 'pay' => '' ),
+					array( 'label' => 'G2 road test', 'minutes' => 120, 'price' => 189, 'pickup' => 0, 'pay' => '' ),
+					array( 'label' => 'Full G road test', 'minutes' => 120, 'price' => 209, 'pickup' => 0, 'pay' => '' ),
 				) ),
 			),
 		);
@@ -66,7 +66,7 @@ class DGB_Settings {
 			$opts = array();
 			foreach ( $svc['options'] as $o ) {
 				if ( '' === trim( $o['label'] ) ) { continue; }
-				$opts[] = array( 'label' => $o['label'], 'minutes' => (int) $o['minutes'], 'price' => (float) $o['price'] );
+				$opts[] = array( 'label' => $o['label'], 'minutes' => (int) $o['minutes'], 'price' => (float) $o['price'], 'pickup' => isset( $o['pickup'] ) ? (float) $o['pickup'] : 0 );
 			}
 			$out[ $key ] = array( 'name' => $svc['name'], 'when' => $svc['when'], 'options' => $opts );
 		}
@@ -113,6 +113,7 @@ class DGB_Settings {
 							'label'   => $label,
 							'minutes' => max( 15, min( 600, (int) ( isset( $o['minutes'] ) ? $o['minutes'] : 60 ) ) ),
 							'price'   => max( 0, (float) ( isset( $o['price'] ) ? $o['price'] : 0 ) ),
+							'pickup'  => max( 0, (float) ( isset( $o['pickup'] ) ? $o['pickup'] : 0 ) ),
 							'pay'     => esc_url_raw( isset( $o['pay'] ) ? $o['pay'] : '' ),
 						);
 					}

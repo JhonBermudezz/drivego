@@ -15,3 +15,6 @@ Optional: add a webhook for payment.updated pointing to the URL shown on the set
 
 == Notes ==
 Emails use wp_mail(). Install an SMTP plugin so messages are delivered reliably.
+
+== Home pick up price ==
+In Bookings > Settings each option has "Extra for home pick up". It is added to the price when the student chooses "Pick me up at home" (and always for road tests), and it is included in the Square charge. Leave 0 when pick up is included. The price is always calculated on the server.
