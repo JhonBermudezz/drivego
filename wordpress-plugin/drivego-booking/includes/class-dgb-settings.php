@@ -12,7 +12,7 @@ class DGB_Settings {
 		);
 		return array(
 			'notify_email'   => get_option( 'admin_email' ),
-			'from_name'      => 'Drive Go London',
+			'from_name'      => 'DriveGo London',
 			'phone'          => '(519) 694 3762',
 			'hours'          => array(
 				0 => array( '09:00', '16:00' ), 1 => array( '09:00', '18:00' ), 2 => array( '09:00', '18:00' ),

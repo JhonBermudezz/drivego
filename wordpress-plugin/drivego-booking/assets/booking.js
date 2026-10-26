@@ -1,4 +1,4 @@
-/* Drive Go Booking · front end. Talks to the server for free days and times, then books. */
+/* DriveGo Booking · front end. Talks to the server for free days and times, then books. */
 (function () {
   'use strict';
   if (!window.DGB) return;

@@ -140,8 +140,8 @@ class DGB_Bookings {
 		$phone = DGB_Settings::get( 'phone' );
 		self::send( DGB_Settings::get( 'notify_email' ), 'New booking request: ' . get_the_title( $id ),
 			"A new booking request came in from the website.\n\n" . self::block( $id ) . "\nConfirm or cancel it here:\n" . admin_url( 'post.php?post=' . $id . '&action=edit' ) . "\n" );
-		self::send( get_post_meta( $id, '_dgb_email', true ), 'We received your Drive Go London booking request',
-			'Hi ' . get_post_meta( $id, '_dgb_name', true ) . ",\n\nThanks for booking with Drive Go London. We received your request and will confirm it by phone or WhatsApp within one business day.\n\n" . self::block( $id ) .
+		self::send( get_post_meta( $id, '_dgb_email', true ), 'We received your DriveGo London booking request',
+			'Hi ' . get_post_meta( $id, '_dgb_name', true ) . ",\n\nThanks for booking with DriveGo London. We received your request and will confirm it by phone or WhatsApp within one business day.\n\n" . self::block( $id ) .
 			( $pay_url ? "\nPay securely with Square:\n" . $pay_url . "\n" : '' ) . "\nFree reschedule up to 24 hours before. Questions? Call or WhatsApp " . $phone . ".\n" );
 	}
 
@@ -154,9 +154,9 @@ class DGB_Bookings {
 		$name  = get_post_meta( $id, '_dgb_name', true );
 		$to    = get_post_meta( $id, '_dgb_email', true );
 		if ( 'confirmed' === $status ) {
-			self::send( $to, 'Your Drive Go London booking is confirmed', "Hi $name,\n\nYour booking is confirmed.\n\n" . self::block( $id ) . "\nNeed to move it? Let us know at least 24 hours before: $phone.\n" );
+			self::send( $to, 'Your DriveGo London booking is confirmed', "Hi $name,\n\nYour booking is confirmed.\n\n" . self::block( $id ) . "\nNeed to move it? Let us know at least 24 hours before: $phone.\n" );
 		} elseif ( 'cancelled' === $status ) {
-			self::send( $to, 'Your Drive Go London booking was cancelled', "Hi $name,\n\nYour booking was cancelled. If this is a surprise or you want a new time, call or WhatsApp us at $phone.\n\n" . self::block( $id ) );
+			self::send( $to, 'Your DriveGo London booking was cancelled', "Hi $name,\n\nYour booking was cancelled. If this is a surprise or you want a new time, call or WhatsApp us at $phone.\n\n" . self::block( $id ) );
 		}
 	}
 }

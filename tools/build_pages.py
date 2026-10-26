@@ -1,4 +1,4 @@
-"""Generate Drive Go London sub pages from the shared shell in index.html.
+"""Generate DriveGo London sub pages from the shared shell in index.html.
 
 Usage: python3 tools/build_pages.py .
 The header, menus and footer are copied from index.html so every page stays in sync.
@@ -120,8 +120,8 @@ def row(label, a, b, c):
 
 
 # Packages ---------------------------------------------------------------
-page('packages.html', 'Driving packages | Drive Go London',
-     'Compare Drive Go London driving packages: BDE course, lessons behind the wheel, home pick up and the car for your road test. Pay online with Square.',
+page('packages.html', 'Driving packages | DriveGo London',
+     'Compare DriveGo London driving packages: BDE course, lessons behind the wheel, home pick up and the car for your road test. Pay online with Square.',
      hero('Packages', 'Choose your driving package', 'Three packages built around the MTO approved BDE course. Pick the level of support you need and pay securely online in two minutes.', 'Packages')
      + f'''    <section class="section section--soft" id="packages" aria-label="Packages">
       <div class="container">
@@ -160,7 +160,7 @@ page('packages.html', 'Driving packages | Drive Go London',
       <div class="container split">
         <div class="prose reveal">
           <h2 class="section__title" id="bde-title">The BDE course, explained</h2>
-          <p>Beginner Driver Education is the Ministry of Transportation program that turns a G1 into a confident, test ready driver. Drive Go London is an MTO approved BDE course provider.</p>
+          <p>Beginner Driver Education is the Ministry of Transportation program that turns a G1 into a confident, test ready driver. DriveGo London is an MTO approved BDE course provider.</p>
           <ul class="checklist">
             <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span><strong>30 hours of online learning</strong> at your own pace, anytime, anywhere.</span></li>
             <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span><strong>10 hours of in car training</strong> with a certified instructor.</span></li>
@@ -233,7 +233,7 @@ TEST_PRICE = '''          <div class="svc__tests">
 
 REFRESH_PRICE = '          <p class="service__price">From $65 <span class="plan__tax">+ HST</span></p>'
 
-page('services.html', 'Driving services | Drive Go London',
+page('services.html', 'Driving services | DriveGo London',
      'Book and pay online for single driving lessons, G2 and G road test packages and G-Full and G2 refresher lessons in London, Ontario.',
      hero('Services', 'Our services', 'Lessons and programs for every kind of driver. Pick a day and time on our calendar and pay when you book.', 'Services')
      + svc('01', 'lessons', 'Single lessons',
@@ -243,7 +243,7 @@ page('services.html', 'Driving services | Drive Go London',
            LESSON_PRICE, book_actions('lessons', 'Single lessons', CONTACT_BTN))
      + svc('02', 'road-test-service', 'Road test package',
            'A warm up on the real test route and our car on test day, coached by a former DriveTest examiner.',
-           'assets/img/car.webp', 'The blue Drive Go London training car with its Student Driver sign',
+           'assets/img/car.webp', 'The blue DriveGo London training car with its Student Driver sign',
            ['Vehicle for your road test', 'Pre test practice lesson on the DriveTest route', 'Pick up and drop off'],
            TEST_PRICE, book_actions('roadtest', 'Road test package', '            <a class="btn btn--outline btn--lg" href="road-test.html">Road test details</a>'),
            reverse=True)
@@ -289,7 +289,7 @@ page('services.html', 'Driving services | Drive Go London',
 ROADTEST_BOOKING = open(f'{REPO}/tools/partials/roadtest-booking.html').read()
 
 # Road test --------------------------------------------------------------
-page('road-test.html', 'G2 and G road test packages | Drive Go London',
+page('road-test.html', 'G2 and G road test packages | DriveGo London',
      'G2 and full G road test packages in London, Ontario: warm up lesson on the test route, our car for the test and tips from a former DriveTest examiner.',
      hero('Road test', 'Walk into your road test ready', 'Prepare with a former DriveTest examiner, warm up on the real test route and use our car on test day.', 'Road test')
      + f'''    <section class="section section--soft" aria-labelledby="tests-title">
@@ -387,17 +387,17 @@ page('road-test.html', 'G2 and G road test packages | Drive Go London',
      + cta('Questions about your test?', 'Call or WhatsApp Steven, he answers in English or Spanish.', 'Contact us', 'contact.html'))
 
 # About ------------------------------------------------------------------
-page('about.html', 'About us | Drive Go London',
-     'Meet Drive Go London: founded by Steven Bernal, former DriveTest examiner, and the first Hispanic driving school approved by the MTO in London, Ontario.',
-     hero('About us', 'About Drive Go London', 'Who we are and how we teach.', 'About us')
+page('about.html', 'About us | DriveGo London',
+     'Meet DriveGo London: founded by Steven Bernal, former DriveTest examiner, and the first Hispanic driving school approved by the MTO in London, Ontario.',
+     hero('About us', 'About DriveGo London', 'Who we are and how we teach.', 'About us')
      + '''    <section class="section" aria-labelledby="story-title">
       <div class="container split">
         <figure class="split__media reveal">
-          <img src="assets/img/gallery/20.webp" alt="The blue Drive Go London training car with a Student Driver sign in downtown London" width="900" height="1350" loading="lazy" class="split__img--tall">
+          <img src="assets/img/gallery/20.webp" alt="The blue DriveGo London training car with a Student Driver sign in downtown London" width="900" height="1350" loading="lazy" class="split__img--tall">
         </figure>
         <div class="prose reveal">
           <h2 class="section__title" id="story-title">A driving school built around you</h2>
-          <p>Steven Bernal started Drive Go London after years as a DriveTest examiner. He watched too many nervous students fail for habits nobody had taught them, and decided to teach those habits from the very first lesson.</p>
+          <p>Steven Bernal started DriveGo London after years as a DriveTest examiner. He watched too many nervous students fail for habits nobody had taught them, and decided to teach those habits from the very first lesson.</p>
           <p>With more than five years teaching in London, Steven leads every program and works alongside two more MTO certified instructors. Together they have helped more than 2,000 students get their licence in London and surrounding areas, in English and in Spanish.</p>
           <p>We are proud to be the first Hispanic driving school approved by the MTO in London as a Beginner Driver Education course provider.</p>
           <div class="hero__actions">
@@ -443,7 +443,7 @@ page('about.html', 'About us | Drive Go London',
         <div class="team">
           <figure class="instructor reveal">
             <div class="instructor__photo">
-              <img src="assets/img/steven.webp" alt="Steven Bernal, founder and lead instructor of Drive Go London" width="560" height="700" loading="lazy">
+              <img src="assets/img/steven.webp" alt="Steven Bernal, founder and lead instructor of DriveGo London" width="560" height="700" loading="lazy">
               <img class="instructor__badge" src="assets/img/badge.webp" alt="Certified instructor, London" width="320" height="320" loading="lazy">
             </div>
             <figcaption>
@@ -453,7 +453,7 @@ page('about.html', 'About us | Drive Go London',
           </figure>
           <div class="team__copy reveal">
             <h3 class="team__title">Steven and two more certified instructors</h3>
-            <p>Every Drive Go London lesson follows Steven's program. He trains our two MTO certified instructors in the same test focused method, so you get the same standard no matter who is in the passenger seat.</p>
+            <p>Every DriveGo London lesson follows Steven's program. He trains our two MTO certified instructors in the same test focused method, so you get the same standard no matter who is in the passenger seat.</p>
             <ul class="checklist">
               <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>MTO certified and background checked</span></li>
               <li><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>Lessons in English and Spanish</span></li>
@@ -464,7 +464,7 @@ page('about.html', 'About us | Drive Go London',
       </div>
     </section>
 
-    <section class="figures" aria-label="Drive Go London in numbers">
+    <section class="figures" aria-label="DriveGo London in numbers">
       <dl class="container figures__grid">
         <div><dt>Years of experience</dt><dd data-count="5" data-suffix="+">5+</dd></div>
         <div><dt>Students trained</dt><dd data-count="2000" data-suffix="+">2,000+</dd></div>
@@ -480,8 +480,8 @@ page('about.html', 'About us | Drive Go London',
 contact_inner = re.sub(r'\s*<ul class="contact__list">.*?</ul>', '', CONTACT_INNER, flags=re.S)
 contact_inner = contact_inner.replace('<p class="eyebrow">Contact</p>', '<p class="eyebrow">Where we meet</p>')
 contact_inner = contact_inner.replace('<h2 class="section__title" id="contact-title">Let\'s get you on the road</h2>', '<h2 class="section__title" id="contact-title">White Oaks Mall and home pick up</h2>')
-page('contact.html', 'Contact | Drive Go London',
-     'Call, WhatsApp or message Drive Go London, an MTO approved driving school in London, Ontario. Lessons weekdays and weekends.',
+page('contact.html', 'Contact | DriveGo London',
+     'Call, WhatsApp or message DriveGo London, an MTO approved driving school in London, Ontario. Lessons weekdays and weekends.',
      hero('Contact', "Let's get you on the road", 'Call, WhatsApp or send a message. We reply within one business day, in English or Spanish.', 'Contact')
      + f'''    <section class="section section--tight" id="contact" aria-labelledby="contact-title">
       <div class="contact-cards container">
@@ -515,6 +515,6 @@ def simple_page(path, title, desc, partial, robots=False):
     print('wrote', path)
 
 
-simple_page('privacy.html', 'Privacy policy | Drive Go London', 'How Drive Go London collects, uses and protects your personal information.', 'privacy-main.html')
-simple_page('terms.html', 'Terms and conditions | Drive Go London', 'Booking, payment, cancellation and refund terms for Drive Go London driving lessons and packages.', 'terms-main.html')
-simple_page('404.html', 'Page not found | Drive Go London', 'This page does not exist.', '404-main.html', robots=True)
+simple_page('privacy.html', 'Privacy policy | DriveGo London', 'How DriveGo London collects, uses and protects your personal information.', 'privacy-main.html')
+simple_page('terms.html', 'Terms and conditions | DriveGo London', 'Booking, payment, cancellation and refund terms for DriveGo London driving lessons and packages.', 'terms-main.html')
+simple_page('404.html', 'Page not found | DriveGo London', 'This page does not exist.', '404-main.html', robots=True)

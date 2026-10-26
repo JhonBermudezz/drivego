@@ -1,4 +1,4 @@
-/* Drive Go London · booking calendar for services
+/* DriveGo London · booking calendar for services
    Opens from any [data-book] button when no Square Appointments link is set
    (see SQUARE_BOOKING_LINKS in main.js). Visitors pick an option, a day and a
    time, answer a few questions and either pay with a Square checkout link or

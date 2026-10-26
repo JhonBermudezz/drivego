@@ -1,5 +1,5 @@
-=== Drive Go Booking ===
-Booking calendar for Drive Go London: lessons, refresher and road test packages, with Square payments and a dashboard.
+=== DriveGo Booking ===
+Booking calendar for DriveGo London: lessons, refresher and road test packages, with Square payments and a dashboard.
 
 == Install ==
 1. Plugins > Add New > Upload Plugin > choose drivego-booking.zip > Install > Activate.
