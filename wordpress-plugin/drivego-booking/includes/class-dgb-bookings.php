@@ -41,6 +41,11 @@ class DGB_Bookings {
 			$start = (int) get_post_meta( $id, '_dgb_start', true );
 			$out[] = array( 'start' => $start, 'end' => $start + (int) get_post_meta( $id, '_dgb_minutes', true ) );
 		}
+		// Time marked busy in Google Calendar blocks the slot completely, whatever the capacity.
+		$cap = max( 1, (int) DGB_Settings::get( 'capacity' ) );
+		foreach ( DGB_Google::busy_on( $date ) as $b ) {
+			for ( $i = 0; $i < $cap; $i++ ) { $out[] = $b; }
+		}
 		return $out;
 	}
 
@@ -85,6 +90,7 @@ class DGB_Bookings {
 		for ( $i = 0; $i < 20 && get_transient( $lock ); $i++ ) { usleep( 150000 ); }
 		set_transient( $lock, 1, 15 );
 		try {
+			DGB_Google::forget_busy( $d['date'] ); // last-second check against Google, not the one-minute cache
 			if ( ! in_array( (int) $d['start'], self::free_slots( $d['date'], (int) $opt['minutes'] ), true ) ) {
 				return new WP_Error( 'dgb_taken', 'Sorry, that time was just taken. Please pick another one.', array( 'status' => 409 ) );
 			}
@@ -150,6 +156,7 @@ class DGB_Bookings {
 		$prev = get_post_meta( $id, '_dgb_status', true );
 		if ( $prev === $status ) { return; }
 		update_post_meta( $id, '_dgb_status', $status );
+		DGB_Google::push( $id );
 		$phone = DGB_Settings::get( 'phone' );
 		$name  = get_post_meta( $id, '_dgb_name', true );
 		$to    = get_post_meta( $id, '_dgb_email', true );

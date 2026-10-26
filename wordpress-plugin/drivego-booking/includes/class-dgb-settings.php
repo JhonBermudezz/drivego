@@ -34,6 +34,11 @@ class DGB_Settings {
 			'recaptcha_site'   => '',
 			'recaptcha_secret' => '',
 			'recaptcha_score'  => 0.5,
+			'google_client_id'     => '',
+			'google_client_secret' => '',
+			'google_calendar'      => 'primary',
+			'google_instructors'   => '',
+			'google_invite_customer' => 1,
 			'services'       => array(
 				'lessons'   => array( 'name' => 'Single lesson', 'when' => 'Lesson day and start time', 'options' => $opts ),
 				'refresher' => array( 'name' => 'G-Full & G2 Refresher', 'when' => 'Lesson day and start time', 'options' => $opts ),
@@ -107,6 +112,11 @@ class DGB_Settings {
 		if ( isset( $in['recaptcha_secret'] ) && '' !== trim( $in['recaptcha_secret'] ) ) { $out['recaptcha_secret'] = sanitize_text_field( $in['recaptcha_secret'] ); }
 		if ( ! empty( $in['recaptcha_secret_clear'] ) ) { $out['recaptcha_secret'] = ''; }
 		if ( isset( $in['recaptcha_score'] ) ) { $out['recaptcha_score'] = max( 0.1, min( 0.9, (float) $in['recaptcha_score'] ) ); }
+		if ( isset( $in['google_client_id'] ) ) { $out['google_client_id'] = sanitize_text_field( $in['google_client_id'] ); }
+		if ( isset( $in['google_client_secret'] ) && '' !== trim( $in['google_client_secret'] ) ) { $out['google_client_secret'] = sanitize_text_field( $in['google_client_secret'] ); }
+		if ( isset( $in['google_calendar'] ) ) { $out['google_calendar'] = sanitize_text_field( $in['google_calendar'] ) ?: 'primary'; }
+		if ( isset( $in['google_instructors'] ) ) { $out['google_instructors'] = sanitize_text_field( $in['google_instructors'] ); }
+		if ( isset( $in['google_calendar'] ) ) { $out['google_invite_customer'] = empty( $in['google_invite_customer'] ) ? 0 : 1; }
 		if ( isset( $in['services'] ) && is_array( $in['services'] ) ) {
 			foreach ( array_keys( $d['services'] ) as $key ) {
 				if ( ! isset( $in['services'][ $key ] ) ) { continue; }

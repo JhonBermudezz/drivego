@@ -2,20 +2,21 @@
 /**
  * Plugin Name: DriveGo Booking
  * Description: Booking calendar for DriveGo London: lessons, refresher and road test packages, with Square payments and an admin dashboard.
- * Version:     1.4.1
+ * Version:     1.5.0
  * Requires PHP: 7.4
  * Author: DriveGo London
  * Text Domain: drivego-booking
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'DGB_VERSION', '1.4.1' );
+define( 'DGB_VERSION', '1.5.0' );
 define( 'DGB_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DGB_URL', plugin_dir_url( __FILE__ ) );
 
 require_once DGB_DIR . 'includes/class-dgb-slots.php';
 require_once DGB_DIR . 'includes/class-dgb-settings.php';
 require_once DGB_DIR . 'includes/class-dgb-square.php';
+require_once DGB_DIR . 'includes/class-dgb-google.php';
 require_once DGB_DIR . 'includes/class-dgb-bookings.php';
 require_once DGB_DIR . 'includes/class-dgb-rest.php';
 require_once DGB_DIR . 'includes/class-dgb-admin.php';
@@ -24,6 +25,7 @@ require_once DGB_DIR . 'includes/class-dgb-spam.php';
 
 add_action( 'plugins_loaded', function () {
 	DGB_Bookings::init();
+	DGB_Google::init();
 	DGB_Rest::init();
 	DGB_Admin::init();
 	DGB_Mail::init();
@@ -66,4 +68,8 @@ register_activation_hook( __FILE__, function () {
 	DGB_Settings::ensure_defaults();
 	DGB_Bookings::register_post_type();
 	flush_rewrite_rules();
+} );
+
+register_deactivation_hook( __FILE__, function () {
+	wp_clear_scheduled_hook( DGB_Google::CRON );
 } );

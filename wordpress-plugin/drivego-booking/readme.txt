@@ -26,3 +26,6 @@ The confirmation email that the form sends to the customer (subject starting "We
 
 == Spam protection ==
 The Elementor contact forms get three server-side checks: a hidden trap field, a minimum time on the page, and Google reCAPTCHA v3 when the site key and secret key are filled in under Bookings > Settings. Without the keys the first two still work.
+
+== Google Calendar (1.5.0) ==
+Bookings → Settings → Google Calendar. Create an OAuth client (Web application) in Google Cloud Console with the Google Calendar API enabled, paste the Client ID and secret, press Connect and approve. New bookings become events (instructors invited), busy time in Google blocks website slots, and events moved or deleted in Google update the booking within 10 minutes.

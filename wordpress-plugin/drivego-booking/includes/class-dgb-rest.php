@@ -71,6 +71,7 @@ class DGB_Rest {
 		}
 		$id = DGB_Bookings::create( $d );
 		if ( is_wp_error( $id ) ) { return $id; }
+		DGB_Google::push( $id );
 
 		// Payment: Square API when connected, otherwise the static checkout link set for that option.
 		$services = DGB_Settings::get( 'services' );

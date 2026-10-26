@@ -77,6 +77,10 @@ class DGB_Admin {
 		echo '<tr><th>Status</th><td>' . esc_html( DGB_Bookings::statuses()[ $st ] ) . '</td></tr>';
 		echo '<tr><th>Payment</th><td>' . ( 'paid' === get_post_meta( $post->ID, '_dgb_payment', true ) ? 'Paid' : 'Unpaid' ) . '</td></tr>';
 		if ( $err = get_post_meta( $post->ID, '_dgb_square_error', true ) ) { echo '<tr><th>Square error</th><td>' . esc_html( $err ) . '</td></tr>'; }
+		if ( DGB_Google::connected() ) {
+			$gerr = get_post_meta( $post->ID, '_dgb_gcal_error', true );
+			echo '<tr><th>Google Calendar</th><td>' . ( $gerr ? 'Error: ' . esc_html( $gerr ) : ( get_post_meta( $post->ID, '_dgb_gcal_event', true ) ? 'Event on the calendar' : 'No event' ) ) . ( 'google' === get_post_meta( $post->ID, '_dgb_cancel_src', true ) ? ' · cancelled from Google' : '' ) . '</td></tr>';
+		}
 		if ( $url = get_post_meta( $post->ID, '_dgb_pay_url', true ) ) { echo '<tr><th>Payment link</th><td><a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">Open</a></td></tr>'; }
 		echo '</tbody></table><p>';
 		foreach ( array( 'confirmed' => 'Confirm booking', 'cancelled' => 'Cancel booking' ) as $s => $label ) {
@@ -146,6 +150,25 @@ class DGB_Admin {
 			<tr><th>Webhook signature key</th><td><input type="password" class="regular-text" autocomplete="new-password" name="<?php echo esc_attr( $n ); ?>[square_webhook_key]" placeholder="<?php echo $s['square_webhook_key'] ? 'Saved. Type a new one to replace it.' : 'Optional: marks bookings as paid automatically'; ?>">
 				<p class="description">In Square → Webhooks, add a subscription for <strong>payment.updated</strong> with this URL:<br><code><?php echo esc_html( $webhook ); ?></code></p></td></tr>
 		</table>
+		<h2 id="google">Google Calendar</h2>
+		<?php $note = get_transient( 'dgb_google_notice' ); if ( $note ) { delete_transient( 'dgb_google_notice' ); echo '<div class="notice notice-' . ( $note['ok'] ? 'success' : 'error' ) . ' inline"><p>' . esc_html( $note['msg'] ) . '</p></div>'; }
+		$ga = DGB_Google::auth(); $gn = wp_create_nonce( 'dgb_google' ); ?>
+		<table class="form-table">
+			<tr><th>Status</th><td><?php if ( DGB_Google::connected() ) : ?><strong style="color:#1a7f37">Connected</strong><?php echo ! empty( $ga['email'] ) ? ' as ' . esc_html( $ga['email'] ) : ''; ?>
+				&nbsp; <a class="button" href="<?php echo esc_url( admin_url( 'admin-post.php?action=dgb_google_test&_wpnonce=' . $gn ) ); ?>">Test connection</a>
+				<a class="button" href="<?php echo esc_url( admin_url( 'admin-post.php?action=dgb_google_disconnect&_wpnonce=' . $gn ) ); ?>">Disconnect</a>
+				<?php elseif ( DGB_Google::configured() ) : ?>Not connected yet. Save the settings, then
+				<a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin-post.php?action=dgb_google_connect&_wpnonce=' . $gn ) ); ?>">Connect Google Calendar</a>
+				<?php else : ?>Fill in the Client ID and secret below, save, and a Connect button will appear.<?php endif; ?></td></tr>
+			<tr><th>OAuth Client ID</th><td><input type="text" class="large-text" name="<?php echo esc_attr( $n ); ?>[google_client_id]" value="<?php echo esc_attr( $s['google_client_id'] ); ?>"></td></tr>
+			<tr><th>OAuth Client secret</th><td><input type="password" class="regular-text" autocomplete="new-password" name="<?php echo esc_attr( $n ); ?>[google_client_secret]" placeholder="<?php echo $s['google_client_secret'] ? 'Saved. Type a new one to replace it.' : 'Paste the client secret'; ?>">
+				<p class="description">Google Cloud Console → APIs &amp; Services → enable <strong>Google Calendar API</strong> → Credentials → Create OAuth client ID → <strong>Web application</strong>. Add this under "Authorized redirect URIs":<br><code><?php echo esc_html( DGB_Google::redirect_uri() ); ?></code></p></td></tr>
+			<tr><th>Calendar</th><td><input type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[google_calendar]" value="<?php echo esc_attr( $s['google_calendar'] ); ?>"> <span class="description">"primary" is the main calendar of the connected account. For a dedicated calendar paste its ID (Calendar settings → Integrate calendar).</span></td></tr>
+			<tr><th>Instructor email(s)</th><td><input type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[google_instructors]" value="<?php echo esc_attr( $s['google_instructors'] ); ?>" placeholder="instructor@gmail.com, another@gmail.com"> <span class="description">Each booking is sent to them as an invitation, so it shows on their calendar too. Separate several with commas.</span></td></tr>
+			<tr><th>Invite the student</th><td><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[google_invite_customer]" value="1" <?php checked( $s['google_invite_customer'] ); ?>> When you confirm a booking, send the student a calendar invitation</label></td></tr>
+		</table>
+		<p class="description">Both directions: new bookings appear in Google Calendar, and anything you or the instructor add there (as busy) blocks those hours on the website. Events moved or deleted in Google update the booking within 10 minutes. Mark an event as "Free" in Google if it should not block the website.</p>
+
 		<h2>Spam protection (contact forms)</h2>
 		<table class="form-table">
 			<tr><th>reCAPTCHA v3 site key</th><td><input type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[recaptcha_site]" value="<?php echo esc_attr( $s['recaptcha_site'] ); ?>"><p class="description">Create a <strong>reCAPTCHA v3</strong> key at google.com/recaptcha/admin and add your domain.</p></td></tr>
