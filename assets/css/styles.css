@@ -699,11 +699,11 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
 @media (max-width: 1080px) {
   .nav, .header__cta { display: none; }
   .burger { display: block; }
-  .hero__inner { justify-content: center; padding-top: 240px; padding-bottom: 96px; }
+  .hero__inner { justify-content: center; padding-top: 32px; padding-bottom: 88px; }
   .slide { min-height: 0; align-items: stretch; }
-  .slide__photos { top: 32px; right: 50%; transform: translateX(50%); width: min(80vw, 420px); gap: 12px; }
-  .slide__photos img:nth-child(2) { transform: translateY(16px); }
-  .slide--stories .hero__inner { padding-top: 272px; }
+  .slide__photos { top: auto; bottom: 72px; right: 50%; transform: translateX(50%); width: min(80vw, 420px); gap: 12px; }
+  .slide__photos img:nth-child(2) { transform: translateY(-12px); }
+  .slide--stories .hero__inner { padding-top: 32px; padding-bottom: 260px; }
   .slide--car .hero__bg { height: 520px; object-position: 78% 70%; }
   .slide--car .hero__inner { padding-top: 420px; }
   .trust__grid { grid-template-columns: repeat(2, 1fr); }
@@ -729,11 +729,11 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
   .container { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
   .topbar__contact a:last-child { display: none; }
   .header__logo img { height: 56px; }
-  .hero__inner { padding-top: 200px; padding-bottom: 96px; }
-  .slide__photos { width: calc(100vw - 48px); gap: 8px; }
+  .hero__inner { padding-top: 20px; padding-bottom: 84px; }
+  .slide__photos { width: calc(100vw - 48px); gap: 8px; bottom: 68px; }
   .slide__photos img { border-width: 4px; }
   .slider__progress { bottom: 24px; }
-  .slide--stories .hero__inner { padding-top: 232px; }
+  .slide--stories .hero__inner { padding-top: 20px; padding-bottom: 230px; }
   .slide--car .hero__bg { height: 400px; object-position: 80% 75%; }
   .slide--car .hero__inner { padding-top: 300px; }
   .hero__card { padding: 24px; }
