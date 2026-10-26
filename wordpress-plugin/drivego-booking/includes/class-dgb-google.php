@@ -246,6 +246,7 @@ class DGB_Google {
 			'status' => 'confirmed' === $status ? 'confirmed' : 'tentative',
 			'colorId' => 'confirmed' === $status ? '10' : '5',
 			'attendees' => $att,
+			'guestsCanModify' => false, 'guestsCanInviteOthers' => false, 'guestsCanSeeOtherGuests' => false,
 			'reminders' => array( 'useDefault' => false, 'overrides' => array( array( 'method' => 'popup', 'minutes' => 60 ) ) ),
 			'extendedProperties' => array( 'private' => array( 'dgb_booking' => (string) $id ) ),
 		);
@@ -301,6 +302,15 @@ class DGB_Google {
 			return;
 		}
 		if ( isset( $r['status'] ) && 'cancelled' === $r['status'] ) { self::cancelled_in_google( $id ); return; }
+		// A student who declines the invitation does not cancel anything: tell the owner once, who decides.
+		$cust = strtolower( (string) get_post_meta( $id, '_dgb_email', true ) );
+		foreach ( isset( $r['attendees'] ) ? $r['attendees'] : array() as $a ) {
+			if ( strtolower( isset( $a['email'] ) ? $a['email'] : '' ) === $cust && isset( $a['responseStatus'] ) && 'declined' === $a['responseStatus'] && ! get_post_meta( $id, '_dgb_declined_notice', true ) ) {
+				update_post_meta( $id, '_dgb_declined_notice', 1 );
+				wp_mail( DGB_Settings::get( 'notify_email' ), 'Student declined the calendar invitation: ' . get_the_title( $id ),
+					"The student declined the Google Calendar invitation. The booking is still active until you cancel it.\n\nContact them: " . get_post_meta( $id, '_dgb_phone', true ) . ' / ' . $cust . "\n" . admin_url( 'post.php?post=' . $id . '&action=edit' ) );
+			}
+		}
 		if ( empty( $r['start']['dateTime'] ) || empty( $r['end']['dateTime'] ) ) { return; }
 		$tz = wp_timezone();
 		$s  = ( new DateTime( $r['start']['dateTime'] ) )->setTimezone( $tz );
