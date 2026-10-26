@@ -64,7 +64,38 @@ class DGB_Mail {
 			. '</div></body></html>';
 	}
 
+	/** Confirmation sent to the customer: plain paragraphs from Elementor become a branded card. */
+	public static function build_confirmation( $text, $phone ) {
+		$text  = str_replace( array( '<br>', '<br/>', '<br />', '</p>', '</div>' ), "\n", (string) $text );
+		$text  = html_entity_decode( wp_strip_all_tags_safe( $text ), ENT_QUOTES, 'UTF-8' );
+		$paras = preg_split( '/\R{2,}/', trim( $text ) );
+		$body  = '';
+		foreach ( $paras as $i => $p ) {
+			$p = trim( $p );
+			if ( '' === $p ) { continue; }
+			$style = 0 === $i ? 'font-size:18px;font-weight:700;margin:0 0 14px' : 'margin:0 0 14px;line-height:1.6';
+			$body .= '<p style="' . $style . '">' . nl2br( esc_html( $p ) ) . '</p>';
+		}
+		$digits = preg_replace( '/\D/', '', $phone );
+		return '<!doctype html><html><body style="margin:0;padding:24px;background:#f4f6f0">'
+			. '<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;background:#fff;border:1px solid #dfe6d4;border-radius:12px;overflow:hidden;color:#111">'
+			. '<div style="background:#111;padding:20px 24px"><span style="color:#a2f933;font-size:20px;font-weight:800;letter-spacing:.5px">DRIVEGO LONDON</span><br><span style="color:#fff;font-size:14px">MTO approved driving school · London, Ontario</span></div>'
+			. '<div style="padding:24px;font-size:15px">' . $body
+			. '<p style="margin:20px 0 0"><a href="https://wa.me/1' . esc_attr( ltrim( $digits, '1' ) ) . '" style="display:inline-block;background:#a2f933;color:#000;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:999px">Message us on WhatsApp</a></p></div>'
+			. '<div style="background:#eef8e2;padding:14px 24px;font-size:13px;color:#5b5d57">' . ( $phone ? 'Call ' . esc_html( $phone ) . ' · ' : '' ) . 'Weekdays and weekends, by appointment</div>'
+			. '</div></body></html>';
+	}
+
 	public static function style_form_email( $args ) {
+		if ( ! empty( $args['subject'] ) && 0 === strpos( $args['subject'], 'We received your message' ) ) {
+			$headers = isset( $args['headers'] ) ? $args['headers'] : array();
+			if ( is_string( $headers ) ) { $headers = preg_split( '/\R/', $headers, -1, PREG_SPLIT_NO_EMPTY ); }
+			$headers = array_values( array_filter( (array) $headers, function ( $h ) { return 0 !== stripos( $h, 'content-type:' ); } ) );
+			$headers[] = 'Content-Type: text/html; charset=UTF-8';
+			$args['headers'] = $headers;
+			$args['message'] = self::build_confirmation( is_array( $args['message'] ) ? implode( "\n", $args['message'] ) : $args['message'], DGB_Settings::get( 'phone' ) );
+			return $args;
+		}
 		if ( empty( $args['subject'] ) || 0 !== strpos( $args['subject'], 'New message from' ) ) { return $args; }
 		$rows = self::parse_lines( is_array( $args['message'] ) ? implode( "\n", $args['message'] ) : $args['message'] );
 		if ( count( $rows ) < 2 ) { return $args; }
