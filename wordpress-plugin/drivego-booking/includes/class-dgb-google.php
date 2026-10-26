@@ -18,6 +18,7 @@ class DGB_Google {
 		add_action( 'admin_post_dgb_google_cb', array( __CLASS__, 'callback' ) );
 		add_action( 'admin_post_dgb_google_connect', array( __CLASS__, 'connect' ) );
 		add_action( 'admin_post_dgb_google_disconnect', array( __CLASS__, 'disconnect' ) );
+		add_action( 'admin_post_dgb_google_push', array( __CLASS__, 'push_now' ) );
 		add_action( 'admin_post_dgb_google_test', array( __CLASS__, 'test' ) );
 		add_filter( 'cron_schedules', function ( $s ) { $s['dgb_ten_minutes'] = array( 'interval' => 600, 'display' => 'Every 10 minutes' ); return $s; } );
 		add_action( self::CRON, array( __CLASS__, 'sync' ) );
@@ -95,6 +96,15 @@ class DGB_Google {
 		delete_transient( 'dgb_google_access' );
 		wp_clear_scheduled_hook( self::CRON );
 		self::admin_back( 'Google Calendar disconnected. Existing events stay in Google.' );
+	}
+
+	/** Admin button on a booking: send it to Google again and show the answer. */
+	public static function push_now() {
+		$id = isset( $_GET['id'] ) ? (int) $_GET['id'] : 0;
+		if ( ! current_user_can( 'edit_post', $id ) || ! wp_verify_nonce( isset( $_GET['_wpnonce'] ) ? $_GET['_wpnonce'] : '', 'dgb_gpush_' . $id ) ) { wp_die( 'Not allowed.' ); }
+		self::push( $id );
+		wp_safe_redirect( admin_url( 'post.php?post=' . $id . '&action=edit' ) );
+		exit;
 	}
 
 	/** Creates a test event for the instructors, checks it can be read back, then removes it. */

@@ -83,6 +83,9 @@ class DGB_Admin {
 		}
 		if ( $url = get_post_meta( $post->ID, '_dgb_pay_url', true ) ) { echo '<tr><th>Payment link</th><td><a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">Open</a></td></tr>'; }
 		echo '</tbody></table><p>';
+		if ( DGB_Google::connected() ) {
+			echo '<a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=dgb_google_push&id=' . $post->ID ), 'dgb_gpush_' . $post->ID ) ) . '">Send to Google Calendar again</a> ';
+		}
 		foreach ( array( 'confirmed' => 'Confirm booking', 'cancelled' => 'Cancel booking' ) as $s => $label ) {
 			$url = wp_nonce_url( admin_url( 'admin-post.php?action=dgb_status&id=' . $post->ID . '&status=' . $s ), 'dgb_status_' . $post->ID );
 			echo '<a class="button' . ( 'confirmed' === $s ? ' button-primary' : '' ) . '" href="' . esc_url( $url ) . '">' . esc_html( $label ) . '</a> ';
