@@ -31,6 +31,9 @@ class DGB_Settings {
 			'square_token'   => '',
 			'square_location'=> '',
 			'square_webhook_key' => '',
+			'recaptcha_site'   => '',
+			'recaptcha_secret' => '',
+			'recaptcha_score'  => 0.5,
 			'services'       => array(
 				'lessons'   => array( 'name' => 'Single lesson', 'when' => 'Lesson day and start time', 'options' => $opts ),
 				'refresher' => array( 'name' => 'G-Full & G2 Refresher', 'when' => 'Lesson day and start time', 'options' => $opts ),
@@ -100,6 +103,10 @@ class DGB_Settings {
 		if ( ! empty( $in['square_token_clear'] ) ) { $out['square_token'] = ''; }
 		$out['square_location'] = isset( $in['square_location'] ) ? sanitize_text_field( $in['square_location'] ) : $old['square_location'];
 		if ( isset( $in['square_webhook_key'] ) && '' !== trim( $in['square_webhook_key'] ) ) { $out['square_webhook_key'] = sanitize_text_field( $in['square_webhook_key'] ); }
+		if ( isset( $in['recaptcha_site'] ) ) { $out['recaptcha_site'] = sanitize_text_field( $in['recaptcha_site'] ); }
+		if ( isset( $in['recaptcha_secret'] ) && '' !== trim( $in['recaptcha_secret'] ) ) { $out['recaptcha_secret'] = sanitize_text_field( $in['recaptcha_secret'] ); }
+		if ( ! empty( $in['recaptcha_secret_clear'] ) ) { $out['recaptcha_secret'] = ''; }
+		if ( isset( $in['recaptcha_score'] ) ) { $out['recaptcha_score'] = max( 0.1, min( 0.9, (float) $in['recaptcha_score'] ) ); }
 		if ( isset( $in['services'] ) && is_array( $in['services'] ) ) {
 			foreach ( array_keys( $d['services'] ) as $key ) {
 				if ( ! isset( $in['services'][ $key ] ) ) { continue; }

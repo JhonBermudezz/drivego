@@ -841,3 +841,6 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
 @keyframes wa-pulse{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.6);opacity:0}}
 @media (max-width:640px){.wa-float{right:14px;bottom:14px;width:56px;height:56px}.wa-float__tip{display:none}}
 @media (prefers-reduced-motion:reduce){.wa-float::before{animation:none;opacity:0}}
+
+/* Comparison table fits a phone */
+@media (max-width:640px){ .compare{overflow:visible} .compare table{min-width:0} .compare th,.compare td{padding:12px 6px;font-size:0.8125rem;line-height:1.2rem} .compare th:first-child,.compare td:first-child{padding-left:14px} .compare thead th{font-size:0.8125rem;line-height:1.1rem} .compare thead th small{font-size:0.6875rem;line-height:1rem} }

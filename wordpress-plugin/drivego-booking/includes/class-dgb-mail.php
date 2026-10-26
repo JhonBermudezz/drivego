@@ -19,6 +19,7 @@ class DGB_Mail {
 		foreach ( preg_split( '/\R/', trim( $text ) ) as $line ) {
 			$line = trim( $line );
 			if ( '' === $line ) { continue; }
+			if ( preg_match( '/^dgb_\w+\s*:/i', $line ) ) { continue; } // spam-protection helper fields
 			if ( preg_match( '/^([^:]{1,80}):\s*(.*)$/u', $line, $m ) && ( ! $rows || ! self::looks_like_url_or_time( $m[1] ) ) ) {
 				$rows[] = array( trim( $m[1] ), trim( $m[2] ) );
 			} elseif ( $rows ) {

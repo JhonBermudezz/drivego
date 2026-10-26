@@ -146,6 +146,14 @@ class DGB_Admin {
 			<tr><th>Webhook signature key</th><td><input type="password" class="regular-text" autocomplete="new-password" name="<?php echo esc_attr( $n ); ?>[square_webhook_key]" placeholder="<?php echo $s['square_webhook_key'] ? 'Saved. Type a new one to replace it.' : 'Optional: marks bookings as paid automatically'; ?>">
 				<p class="description">In Square → Webhooks, add a subscription for <strong>payment.updated</strong> with this URL:<br><code><?php echo esc_html( $webhook ); ?></code></p></td></tr>
 		</table>
+		<h2>Spam protection (contact forms)</h2>
+		<table class="form-table">
+			<tr><th>reCAPTCHA v3 site key</th><td><input type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[recaptcha_site]" value="<?php echo esc_attr( $s['recaptcha_site'] ); ?>"><p class="description">Create a <strong>reCAPTCHA v3</strong> key at google.com/recaptcha/admin and add your domain.</p></td></tr>
+			<tr><th>reCAPTCHA v3 secret key</th><td><input type="password" class="regular-text" autocomplete="new-password" name="<?php echo esc_attr( $n ); ?>[recaptcha_secret]" placeholder="<?php echo $s['recaptcha_secret'] ? 'Saved. Type a new one to replace it.' : 'Paste the secret key'; ?>">
+				<?php if ( $s['recaptcha_secret'] ) : ?><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[recaptcha_secret_clear]" value="1"> remove saved key</label><?php endif; ?></td></tr>
+			<tr><th>Minimum score</th><td><input type="number" min="0.1" max="0.9" step="0.1" style="width:80px" name="<?php echo esc_attr( $n ); ?>[recaptcha_score]" value="<?php echo esc_attr( $s['recaptcha_score'] ); ?>"> <span class="description">0.5 is the usual value. Raise it to block more, lower it if real people are blocked.</span></td></tr>
+		</table>
+		<p class="description">Without the keys the forms are still protected by a hidden trap field and a minimum time on the page.</p>
 		<?php submit_button(); ?></form></div>
 		<?php
 	}

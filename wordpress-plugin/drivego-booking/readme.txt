@@ -23,3 +23,6 @@ In Bookings > Settings each option has "Extra for home pick up". It is added to 
 Messages from the Elementor contact forms (subject starts with "New message from") are turned into a styled HTML card automatically, with Reply-To set to the sender's email.
 
 The confirmation email that the form sends to the customer (subject starting "We received your message") is styled the same way, with a WhatsApp button.
+
+== Spam protection ==
+The Elementor contact forms get three server-side checks: a hidden trap field, a minimum time on the page, and Google reCAPTCHA v3 when the site key and secret key are filled in under Bookings > Settings. Without the keys the first two still work.
