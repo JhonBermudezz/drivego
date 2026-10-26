@@ -33,7 +33,7 @@
       dialog.className = modal ? 'bk' : 'bk bk--inline';
       dialog.setAttribute('aria-labelledby', 'bk-title');
       dialog.innerHTML = '<div class="bk__panel"><aside class="bk__summary"><h2 class="bk__title" id="bk-title"></h2><dl class="bk__facts" data-bk-facts></dl>' +
-        '<p class="bk__note">' + ICON.lock + 'Secure payment with Square</p></aside><div class="bk__main">' +
+        '<p class="bk__note">' + ICON.lock + (CFG.pay && CFG.pay.square ? 'Secure payment with Square' : 'Your details are kept private') + '</p></aside><div class="bk__main">' +
         '<button type="button" class="bk__close" data-bk-close aria-label="Close booking">' + ICON.close + '</button>' +
         '<ol class="bk__steps" data-bk-steps></ol><div class="bk__body" data-bk-body></div>' +
         '<div class="bk__nav"><button type="button" class="dgb-btn dgb-btn--outline" data-bk-back>Back</button><button type="button" class="dgb-btn dgb-btn--dark" data-bk-next>Continue</button></div></div></div>';
@@ -165,6 +165,7 @@
         field('bk-email', 'Email', '<input id="bk-email" type="email" autocomplete="email" placeholder="you@email.com" value="' + v('email') + '">') +
         '<div class="field-row">' + field('bk-licence', 'Licence you have now', '<select id="bk-licence">' + sel('licence', ['G1', 'G2', 'Full G', 'Licence from another country']) + '</select>') + field('bk-lang', 'Lesson language', '<select id="bk-lang">' + sel('lang', ['English', 'Spanish']) + '</select>') + '</div>' +
         (isTest ? field('bk-centre', 'DriveTest centre', '<select id="bk-centre">' + sel('centre', ['London', 'St. Thomas', 'Other']) + '</select>') : field('bk-meet', 'Where should we start?', '<select id="bk-meet">' + sel('meet', ['Pick me up at home', 'Meet at White Oaks Mall']) + '</select>')) +
+        (Object.keys(CFG.pay || {}).length > 1 ? field('bk-pay', 'How would you like to pay?', '<select id="bk-pay">' + Object.keys(CFG.pay).map(function (k) { return '<option value="' + k + '"' + (d.pay === k ? ' selected' : '') + '>' + esc(CFG.pay[k]) + '</option>'; }).join('') + '</select>') : '') +
         field('bk-address', 'Pick up address', '<input id="bk-address" type="text" autocomplete="street-address" placeholder="Street, London, ON" value="' + v('address') + '">') +
         field('bk-notes', 'Anything we should know?', '<textarea id="bk-notes" rows="2" placeholder="For example, what you want to practise.">' + v('notes') + '</textarea>', true) + '</div>';
       var meet = body.querySelector('#bk-meet'), addr = body.querySelector('#bk-address').closest('.field');
@@ -176,7 +177,7 @@
       var g = function (id) { return dialog.querySelector('#' + id); }, d = state.details;
       d.name = g('bk-name').value.trim(); d.phone = g('bk-phone').value.trim(); d.email = g('bk-email').value.trim();
       d.licence = g('bk-licence').value; d.lang = g('bk-lang').value; d.centre = g('bk-centre') ? g('bk-centre').value : ''; d.meet = g('bk-meet') ? g('bk-meet').value : '';
-      d.address = g('bk-address').value.trim(); d.notes = g('bk-notes').value.trim(); d.website = g('bk-website').value;
+      d.pay = g('bk-pay') ? g('bk-pay').value : Object.keys(CFG.pay || {})[0] || ''; d.address = g('bk-address').value.trim(); d.notes = g('bk-notes').value.trim(); d.website = g('bk-website').value;
       var needAddr = state.key === 'roadtest' || d.meet === 'Pick me up at home';
       var errors = {
         'bk-name': d.name.length >= 2 ? '' : 'Please enter your full name.',
@@ -195,27 +196,27 @@
       var where = state.key === 'roadtest' ? 'DriveTest ' + d.centre + (d.address ? ', pick up at ' + d.address : '') : (d.meet === 'Meet at White Oaks Mall' ? 'White Oaks Mall' : 'Pick up at ' + d.address);
       if (state.sent) {
         body.innerHTML = '<div class="bk__done"><span class="bk__done-icon">' + ICON.check + '</span><h3 class="bk__h">Request sent</h3><p>We will confirm your ' + esc(state.service.name.toLowerCase()) + ' on ' + esc(fmtDate(state.date)) + ' at ' + esc(fmtTime(state.time)) + ' by phone or WhatsApp within one business day. A copy was sent to your email.</p>' +
-          (state.payUrl ? '<p>Your payment page opened in a new tab. If it did not, use the button below.</p>' : '<p>You can pay with Square, Interac e-Transfer or cash when we confirm.</p>') + '</div>';
+          (state.payUrl ? '<p>Your payment page opened in a new tab. If it did not, use the button below.</p>' : state.payMethod === 'etransfer' ? '<p>To pay, send an Interac e-Transfer to <strong>' + esc(state.etransfer || '') + '</strong> and write your name in the message. We also emailed you these steps.</p>' : state.payMethod === 'cash' ? '<p>You will pay in cash at your lesson. Please bring the exact amount if you can.</p>' : '<p>We will send you the payment details when we confirm.</p>') + '</div>';
         nb.hidden = !state.payUrl; nb.textContent = 'Open payment page'; return;
       }
       body.innerHTML = '<h3 class="bk__h">Check your booking</h3><ul class="bk__review"><li><span>Service</span><strong>' + esc(state.service.name) + ' · ' + esc(o.label) + '</strong></li>' +
         '<li><span>When</span><strong>' + esc(fmtDate(state.date)) + ' at ' + esc(fmtTime(state.time)) + '</strong></li><li><span>Where</span><strong>' + esc(where) + '</strong></li>' +
-        '<li><span>Name</span><strong>' + esc(d.name) + ' · ' + esc(d.phone) + '</strong></li><li><span>Total</span><strong>' + money(total()) + ' + HST' + (extra() ? ' <small>(includes ' + money(extra()) + ' home pick up)</small>' : '') + '</strong></li></ul>' +
+        (d.pay && CFG.pay ? '<li><span>Payment</span><strong>' + esc(CFG.pay[d.pay] || '') + '</strong></li>' : '') + '<li><span>Name</span><strong>' + esc(d.name) + ' · ' + esc(d.phone) + '</strong></li><li><span>Total</span><strong>' + money(total()) + ' + HST' + (extra() ? ' <small>(includes ' + money(extra()) + ' home pick up)</small>' : '') + '</strong></li></ul>' +
         '<p class="bk__small">We confirm every booking. Free reschedule up to 24 hours before.</p><p class="bk__hint" data-bk-hint hidden></p>';
-      nb.textContent = 'Request booking and pay';
+      nb.textContent = state.details.pay === 'square' ? 'Request booking and pay' : 'Request booking';
     }
 
     function submit() {
       if (state.sent) { if (state.payUrl) window.open(state.payUrl, '_blank', 'noopener'); return; }
       var d = state.details, nb = dialog.querySelector('[data-bk-next]');
       state.busy = true; nb.disabled = true; nb.textContent = 'Sending…';
-      var payload = { service: state.key, option: state.option, date: iso(state.date), start: state.time, name: d.name, email: d.email, phone: d.phone, licence: d.licence, lang: d.lang, meet: d.meet, centre: d.centre, address: d.address, notes: d.notes, website: d.website };
+      var payload = { service: state.key, option: state.option, date: iso(state.date), start: state.time, name: d.name, email: d.email, phone: d.phone, licence: d.licence, lang: d.lang, meet: d.meet, centre: d.centre, address: d.address, notes: d.notes, website: d.website, pay: d.pay };
       api('book', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(function (j) {
-        state.sent = true; state.payUrl = j.pay_url || ''; state.busy = false; nb.disabled = false;
+        state.sent = true; state.payMethod = j.pay || d.pay; state.etransfer = j.etransfer || ''; state.payUrl = j.pay_url || ''; state.busy = false; nb.disabled = false;
         if (state.payUrl) window.open(state.payUrl, '_blank', 'noopener');
         go(4);
       }).catch(function (e) {
-        state.busy = false; nb.disabled = false; nb.textContent = 'Request booking and pay';
+        state.busy = false; nb.disabled = false; nb.textContent = d.pay === 'square' ? 'Request booking and pay' : 'Request booking';
         hint(e.message || 'We could not send your booking. Please call ' + CFG.phone + '.');
         if (/just taken/i.test(e.message)) { state.time = null; setTimeout(function () { go(2); }, 1800); }
       });

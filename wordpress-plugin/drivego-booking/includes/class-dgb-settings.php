@@ -34,6 +34,7 @@ class DGB_Settings {
 			'recaptcha_site'   => '',
 			'recaptcha_secret' => '',
 			'recaptcha_score'  => 0.5,
+			'etransfer_email'      => '',
 			'google_client_id'     => '',
 			'google_client_secret' => '',
 			'google_calendar'      => 'primary',
@@ -65,6 +66,22 @@ class DGB_Settings {
 	public static function get( $key ) {
 		$s = self::all();
 		return isset( $s[ $key ] ) ? $s[ $key ] : null;
+	}
+
+	public static function etransfer_email() {
+		$e = self::get( 'etransfer_email' );
+		return $e ? $e : self::get( 'notify_email' );
+	}
+
+	/** Payment methods offered at checkout: Square only when it can really produce a payment link. */
+	public static function pay_methods() {
+		$m = array();
+		$square = DGB_Square::enabled();
+		foreach ( (array) self::get( 'services' ) as $svc ) { foreach ( $svc['options'] as $o ) { if ( ! empty( $o['pay'] ) ) { $square = true; } } }
+		if ( $square ) { $m['square'] = 'Card online (Square)'; }
+		$m['etransfer'] = 'Interac e-Transfer';
+		$m['cash']      = 'Cash at the lesson';
+		return $m;
 	}
 
 	/** Services without secrets, for the front end. */
@@ -112,6 +129,7 @@ class DGB_Settings {
 		if ( isset( $in['recaptcha_secret'] ) && '' !== trim( $in['recaptcha_secret'] ) ) { $out['recaptcha_secret'] = sanitize_text_field( $in['recaptcha_secret'] ); }
 		if ( ! empty( $in['recaptcha_secret_clear'] ) ) { $out['recaptcha_secret'] = ''; }
 		if ( isset( $in['recaptcha_score'] ) ) { $out['recaptcha_score'] = max( 0.1, min( 0.9, (float) $in['recaptcha_score'] ) ); }
+		if ( isset( $in['etransfer_email'] ) ) { $out['etransfer_email'] = sanitize_email( $in['etransfer_email'] ); }
 		if ( isset( $in['google_client_id'] ) ) { $out['google_client_id'] = sanitize_text_field( $in['google_client_id'] ); }
 		if ( isset( $in['google_client_secret'] ) && '' !== trim( $in['google_client_secret'] ) ) { $out['google_client_secret'] = sanitize_text_field( $in['google_client_secret'] ); }
 		if ( isset( $in['google_calendar'] ) ) { $out['google_calendar'] = sanitize_text_field( $in['google_calendar'] ) ?: 'primary'; }

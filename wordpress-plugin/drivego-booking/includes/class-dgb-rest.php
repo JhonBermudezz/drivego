@@ -64,11 +64,14 @@ class DGB_Rest {
 			'meet'    => isset( $p['meet'] ) ? sanitize_text_field( $p['meet'] ) : '',
 			'centre'  => isset( $p['centre'] ) ? sanitize_text_field( $p['centre'] ) : '',
 			'address' => isset( $p['address'] ) ? sanitize_text_field( $p['address'] ) : '',
+			'pay'     => isset( $p['pay'] ) ? sanitize_key( $p['pay'] ) : '',
 			'notes'   => isset( $p['notes'] ) ? sanitize_textarea_field( $p['notes'] ) : '',
 		);
 		if ( strlen( $d['name'] ) < 2 || ! is_email( $d['email'] ) || strlen( preg_replace( '/\D/', '', $d['phone'] ) ) < 10 || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $d['date'] ) ) {
 			return new WP_Error( 'dgb_invalid', 'Please check your name, email and phone number.', array( 'status' => 400 ) );
 		}
+		$methods = DGB_Settings::pay_methods();
+		if ( ! isset( $methods[ $d['pay'] ] ) ) { $d['pay'] = isset( $methods['square'] ) ? 'square' : 'etransfer'; }
 		$id = DGB_Bookings::create( $d );
 		if ( is_wp_error( $id ) ) { return $id; }
 		DGB_Google::push( $id );
@@ -78,7 +81,7 @@ class DGB_Rest {
 		$opt      = $services[ $d['service'] ]['options'][ $d['option'] ];
 		$pay_url  = '';
 		$total = (float) get_post_meta( $id, '_dgb_price', true );
-		if ( DGB_Square::enabled() && $total > 0 ) {
+		if ( 'square' === $d['pay'] && DGB_Square::enabled() && $total > 0 ) {
 			$label = $services[ $d['service'] ]['name'] . ' · ' . $opt['label'] . ( (float) get_post_meta( $id, '_dgb_pickup_extra', true ) > 0 ? ' + home pick up' : '' );
 			$res = DGB_Square::create_payment_link( $id, $label, $total, $d['email'], home_url( '/' ) );
 			if ( is_wp_error( $res ) ) {
@@ -88,10 +91,10 @@ class DGB_Rest {
 				update_post_meta( $id, '_dgb_square_order', $res['order_id'] );
 			}
 		}
-		if ( ! $pay_url && ! empty( $opt['pay'] ) ) { $pay_url = $opt['pay']; }
+		if ( 'square' === $d['pay'] && ! $pay_url && ! empty( $opt['pay'] ) ) { $pay_url = $opt['pay']; }
 		if ( $pay_url ) { update_post_meta( $id, '_dgb_pay_url', $pay_url ); }
 		DGB_Bookings::notify_new( $id, $pay_url );
-		return array( 'ok' => true, 'id' => $id, 'pay_url' => $pay_url );
+		return array( 'ok' => true, 'id' => $id, 'pay_url' => $pay_url, 'pay' => $d['pay'], 'etransfer' => DGB_Settings::etransfer_email() );
 	}
 
 	/** Square tells us when an order is paid. */

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: DriveGo Booking
  * Description: Booking calendar for DriveGo London: lessons, refresher and road test packages, with Square payments and an admin dashboard.
- * Version:     1.5.1
+ * Version:     1.6.0
  * Requires PHP: 7.4
  * Author: DriveGo London
  * Text Domain: drivego-booking
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'DGB_VERSION', '1.5.1' );
+define( 'DGB_VERSION', '1.6.0' );
 define( 'DGB_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DGB_URL', plugin_dir_url( __FILE__ ) );
 
@@ -53,6 +53,8 @@ class DGB_Plugin {
 				'today'       => wp_date( 'Y-m-d' ),
 			),
 			'phone'    => DGB_Settings::get( 'phone' ),
+			'pay'      => DGB_Settings::pay_methods(),
+			'etransfer'=> DGB_Settings::etransfer_email(),
 		) );
 	}
 }

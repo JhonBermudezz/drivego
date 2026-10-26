@@ -9,6 +9,7 @@ class DGB_Admin {
 		add_filter( 'manage_' . DGB_Bookings::CPT . '_posts_columns', array( __CLASS__, 'columns' ) );
 		add_action( 'manage_' . DGB_Bookings::CPT . '_posts_custom_column', array( __CLASS__, 'column' ), 10, 2 );
 		add_filter( 'post_row_actions', array( __CLASS__, 'row_actions' ), 10, 2 );
+		add_action( 'admin_post_dgb_paid', array( __CLASS__, 'mark_paid' ) );
 		add_action( 'admin_post_dgb_status', array( __CLASS__, 'change_status' ) );
 		add_action( 'add_meta_boxes', array( __CLASS__, 'metabox' ) );
 		add_filter( 'manage_edit-' . DGB_Bookings::CPT . '_sortable_columns', function ( $c ) { $c['dgb_when'] = 'dgb_when'; return $c; } );
@@ -45,7 +46,7 @@ class DGB_Admin {
 				$st = $g( 'status' ) ?: 'pending';
 				$colour = array( 'pending' => '#b26a00', 'confirmed' => '#1a7f37', 'cancelled' => '#a40e26' );
 				echo '<strong style="color:' . esc_attr( $colour[ $st ] ) . '">' . esc_html( DGB_Bookings::statuses()[ $st ] ) . '</strong>'; break;
-			case 'dgb_payment': echo 'paid' === $g( 'payment' ) ? '<strong style="color:#1a7f37">Paid</strong>' : 'Unpaid'; break;
+			case 'dgb_payment': echo ( 'paid' === $g( 'payment' ) ? '<strong style="color:#1a7f37">Paid</strong>' : 'Unpaid' ) . '<br><small>' . esc_html( DGB_Bookings::pay_label( $g( 'pay_method' ) ) ) . '</small>'; break;
 		}
 	}
 
@@ -66,6 +67,14 @@ class DGB_Admin {
 		exit;
 	}
 
+	public static function mark_paid() {
+		$id = isset( $_GET['id'] ) ? (int) $_GET['id'] : 0;
+		if ( ! current_user_can( 'edit_post', $id ) || ! wp_verify_nonce( isset( $_GET['_wpnonce'] ) ? $_GET['_wpnonce'] : '', 'dgb_paid_' . $id ) ) { wp_die( 'Not allowed.' ); }
+		update_post_meta( $id, '_dgb_payment', 'paid' === get_post_meta( $id, '_dgb_payment', true ) ? 'unpaid' : 'paid' );
+		wp_safe_redirect( wp_get_referer() ?: admin_url( 'post.php?post=' . $id . '&action=edit' ) );
+		exit;
+	}
+
 	public static function metabox() {
 		add_meta_box( 'dgb_details', 'Booking details', array( __CLASS__, 'details' ), DGB_Bookings::CPT, 'normal', 'high' );
 	}
@@ -75,7 +84,7 @@ class DGB_Admin {
 		foreach ( DGB_Bookings::summary_lines( $post->ID ) as $k => $v ) { echo '<tr><th style="width:120px">' . esc_html( $k ) . '</th><td>' . esc_html( $v ) . '</td></tr>'; }
 		$st = get_post_meta( $post->ID, '_dgb_status', true ) ?: 'pending';
 		echo '<tr><th>Status</th><td>' . esc_html( DGB_Bookings::statuses()[ $st ] ) . '</td></tr>';
-		echo '<tr><th>Payment</th><td>' . ( 'paid' === get_post_meta( $post->ID, '_dgb_payment', true ) ? 'Paid' : 'Unpaid' ) . '</td></tr>';
+		echo '<tr><th>Payment</th><td>' . ( 'paid' === get_post_meta( $post->ID, '_dgb_payment', true ) ? 'Paid' : 'Unpaid' ) . ' · ' . esc_html( DGB_Bookings::pay_label( get_post_meta( $post->ID, '_dgb_pay_method', true ) ) ) . '</td></tr>';
 		if ( $err = get_post_meta( $post->ID, '_dgb_square_error', true ) ) { echo '<tr><th>Square error</th><td>' . esc_html( $err ) . '</td></tr>'; }
 		if ( DGB_Google::connected() ) {
 			$gerr = get_post_meta( $post->ID, '_dgb_gcal_error', true );
@@ -83,6 +92,7 @@ class DGB_Admin {
 		}
 		if ( $url = get_post_meta( $post->ID, '_dgb_pay_url', true ) ) { echo '<tr><th>Payment link</th><td><a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">Open</a></td></tr>'; }
 		echo '</tbody></table><p>';
+		echo '<a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=dgb_paid&id=' . $post->ID ), 'dgb_paid_' . $post->ID ) ) . '">' . ( 'paid' === get_post_meta( $post->ID, '_dgb_payment', true ) ? 'Mark as unpaid' : 'Mark as paid' ) . '</a> ';
 		if ( DGB_Google::connected() ) {
 			echo '<a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=dgb_google_push&id=' . $post->ID ), 'dgb_gpush_' . $post->ID ) ) . '">Send to Google Calendar again</a> ';
 		}
@@ -108,6 +118,7 @@ class DGB_Admin {
 			<tr><th>Send booking emails to</th><td><input type="email" class="regular-text" name="<?php echo esc_attr( $n ); ?>[notify_email]" value="<?php echo esc_attr( $s['notify_email'] ); ?>"></td></tr>
 			<tr><th>Business name in emails</th><td><input type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[from_name]" value="<?php echo esc_attr( $s['from_name'] ); ?>"></td></tr>
 			<tr><th>Phone shown to customers</th><td><input type="text" name="<?php echo esc_attr( $n ); ?>[phone]" value="<?php echo esc_attr( $s['phone'] ); ?>"></td></tr>
+			<tr><th>Interac e-Transfer email</th><td><input type="email" class="regular-text" name="<?php echo esc_attr( $n ); ?>[etransfer_email]" value="<?php echo esc_attr( $s['etransfer_email'] ); ?>" placeholder="<?php echo esc_attr( $s['notify_email'] ); ?>"> <span class="description">Where students send e-Transfers. Empty uses the booking email above.</span></td></tr>
 			<tr><th>Bookings at the same time</th><td><input type="number" min="1" max="20" name="<?php echo esc_attr( $n ); ?>[capacity]" value="<?php echo esc_attr( $s['capacity'] ); ?>"> <span class="description">How many lessons can run at once (cars or instructors available).</span></td></tr>
 			<tr><th>Travel time between lessons</th><td><input type="number" min="0" max="240" step="5" name="<?php echo esc_attr( $n ); ?>[buffer_minutes]" value="<?php echo esc_attr( $s['buffer_minutes'] ); ?>"> minutes</td></tr>
 			<tr><th>Start times every</th><td><input type="number" min="5" max="120" step="5" name="<?php echo esc_attr( $n ); ?>[slot_minutes]" value="<?php echo esc_attr( $s['slot_minutes'] ); ?>"> minutes</td></tr>

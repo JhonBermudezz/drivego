@@ -70,6 +70,11 @@ class DGB_Bookings {
 		return DGB_Slots::free_slots( $date, $minutes, self::booked_on( $date ), $s, self::now_minute_if_today( $date ) );
 	}
 
+	public static function pay_label( $m ) {
+		$all = array( 'square' => 'Card online (Square)', 'etransfer' => 'Interac e-Transfer', 'cash' => 'Cash at the lesson' );
+		return isset( $all[ $m ] ) ? $all[ $m ] : '-';
+	}
+
 	public static function fmt_time( $min ) {
 		$h = (int) floor( $min / 60 ); $m = $min % 60;
 		return sprintf( '%d:%02d %s', ( ( $h + 11 ) % 12 ) + 1, $m, $h < 12 ? 'AM' : 'PM' );
@@ -104,7 +109,7 @@ class DGB_Bookings {
 				'_dgb_date' => $d['date'], '_dgb_start' => (int) $d['start'],
 				'_dgb_name' => $d['name'], '_dgb_email' => $d['email'], '_dgb_phone' => $d['phone'],
 				'_dgb_licence' => $d['licence'], '_dgb_lang' => $d['lang'], '_dgb_meet' => $d['meet'], '_dgb_centre' => $d['centre'],
-				'_dgb_address' => $d['address'], '_dgb_notes' => $d['notes'],
+				'_dgb_address' => $d['address'], '_dgb_pay_method' => isset( $d['pay'] ) ? $d['pay'] : 'square', '_dgb_notes' => $d['notes'],
 			);
 			foreach ( $meta as $k => $v ) { update_post_meta( $id, $k, $v ); }
 			return $id;
@@ -122,6 +127,7 @@ class DGB_Bookings {
 			'When'    => wp_date( 'l, F j, Y', strtotime( $g( 'date' ) . ' 12:00:00' ) ) . ' at ' . self::fmt_time( (int) $g( 'start' ) ),
 			'Where'   => $where,
 			'Price'   => '$' . number_format( (float) $g( 'price' ), 2 ) . ' + HST' . ( (float) $g( 'pickup_extra' ) > 0 ? ' (includes $' . number_format( (float) $g( 'pickup_extra' ), 2 ) . ' home pick up)' : '' ),
+			'Payment' => self::pay_label( $g( 'pay_method' ) ),
 			'Name'    => $g( 'name' ),
 			'Phone'   => $g( 'phone' ),
 			'Email'   => $g( 'email' ),
@@ -142,13 +148,21 @@ class DGB_Bookings {
 		return $out;
 	}
 
+	public static function pay_text( $id, $pay_url ) {
+		$m = get_post_meta( $id, '_dgb_pay_method', true );
+		$total = '$' . number_format( (float) get_post_meta( $id, '_dgb_price', true ) * ( 1 + (int) DGB_Settings::get( 'hst_percent' ) / 100 ), 2 );
+		if ( 'etransfer' === $m ) { return "\nHow to pay: send an Interac e-Transfer of $total (HST included) to " . DGB_Settings::etransfer_email() . ' and write your name in the message. No password needed.' . "\n"; }
+		if ( 'cash' === $m ) { return "\nHow to pay: cash at your lesson, $total (HST included). Please bring the exact amount if you can.\n"; }
+		return $pay_url ? "\nPay securely with Square:\n" . $pay_url . "\n" : '';
+	}
+
 	public static function notify_new( $id, $pay_url ) {
 		$phone = DGB_Settings::get( 'phone' );
 		self::send( DGB_Settings::get( 'notify_email' ), 'New booking request: ' . get_the_title( $id ),
 			"A new booking request came in from the website.\n\n" . self::block( $id ) . "\nConfirm or cancel it here:\n" . admin_url( 'post.php?post=' . $id . '&action=edit' ) . "\n" );
 		self::send( get_post_meta( $id, '_dgb_email', true ), 'We received your DriveGo London booking request',
 			'Hi ' . get_post_meta( $id, '_dgb_name', true ) . ",\n\nThanks for booking with DriveGo London. We received your request and will confirm it by phone or WhatsApp within one business day.\n\n" . self::block( $id ) .
-			( $pay_url ? "\nPay securely with Square:\n" . $pay_url . "\n" : '' ) . "\nFree reschedule up to 24 hours before. Questions? Call or WhatsApp " . $phone . ".\n" );
+			self::pay_text( $id, $pay_url ) . "\nFree reschedule up to 24 hours before. Questions? Call or WhatsApp " . $phone . ".\n" );
 	}
 
 	public static function set_status( $id, $status ) {
