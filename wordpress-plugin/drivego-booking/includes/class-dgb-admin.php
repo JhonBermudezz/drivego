@@ -142,14 +142,26 @@ class DGB_Admin {
 		</table>
 
 		<h2>Opening hours</h2>
-		<p class="description">Leave both boxes empty on a day you are closed.</p>
-		<table class="form-table"><?php foreach ( $days as $i => $label ) : $h = isset( $s['hours'][ $i ] ) ? $s['hours'][ $i ] : array( '', '' ); ?>
+		<p class="description">Tick <strong>Closed</strong> on a day you do not work. Nobody can book that day.</p>
+		<table class="form-table dgb-hours"><?php foreach ( $days as $i => $label ) : $h = isset( $s['hours'][ $i ] ) ? $s['hours'][ $i ] : array( '', '' ); $closed = '' === $h[0] || '' === $h[1]; ?>
 			<tr><th><?php echo esc_html( $label ); ?></th><td>
-				<input type="time" name="<?php echo esc_attr( $n ); ?>[hours][<?php echo (int) $i; ?>][0]" value="<?php echo esc_attr( $h[0] ); ?>"> to
-				<input type="time" name="<?php echo esc_attr( $n ); ?>[hours][<?php echo (int) $i; ?>][1]" value="<?php echo esc_attr( $h[1] ); ?>"></td></tr>
+				<input type="time" name="<?php echo esc_attr( $n ); ?>[hours][<?php echo (int) $i; ?>][0]" value="<?php echo esc_attr( $h[0] ); ?>" <?php disabled( $closed ); ?>> to
+				<input type="time" name="<?php echo esc_attr( $n ); ?>[hours][<?php echo (int) $i; ?>][1]" value="<?php echo esc_attr( $h[1] ); ?>" <?php disabled( $closed ); ?>>
+				&nbsp; <label><input type="checkbox" class="dgb-closed" <?php checked( $closed ); ?>> Closed</label></td></tr>
 		<?php endforeach; ?>
 			<tr><th>Closed dates</th><td><textarea name="<?php echo esc_attr( $n ); ?>[closed_dates]" rows="3" class="large-text" placeholder="2026-12-25, 2027-01-01"><?php echo esc_textarea( implode( ', ', $s['closed_dates'] ) ); ?></textarea><p class="description">Holidays or days off, format YYYY-MM-DD, separated by commas.</p></td></tr>
 		</table>
+		<script>
+		document.querySelectorAll('.dgb-hours .dgb-closed').forEach(function (c) {
+			var row = c.closest('td'), times = row.querySelectorAll('input[type=time]');
+			c.addEventListener('change', function () {
+				times.forEach(function (t) {
+					t.disabled = c.checked;
+					if (c.checked) { t.value = ''; } else if (!t.value) { t.value = t.name.slice(-2) === '0]' ? '09:00' : '18:00'; }
+				});
+			});
+		});
+		</script>
 
 		<h2>Services and prices</h2>
 		<?php foreach ( $s['services'] as $key => $svc ) : ?>
