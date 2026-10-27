@@ -94,6 +94,12 @@ class DGB_Settings {
 		return isset( $s[ $key ] ) ? $s[ $key ] : null;
 	}
 
+	/** Where Square sends the student after paying. */
+	public static function thanks_url() {
+		$p = get_page_by_path( 'thank-you' );
+		return $p ? get_permalink( $p ) : home_url( '/' );
+	}
+
 	public static function etransfer_email() {
 		$e = self::get( 'etransfer_email' );
 		return $e ? $e : self::get( 'notify_email' );

@@ -170,6 +170,21 @@ class DGB_Bookings {
 			self::pay_text( $id, $pay_url ) . "\nFree reschedule up to 24 hours before. Questions? Call or WhatsApp " . $phone . ".\n" );
 	}
 
+	public static function find_by_order( $order_id ) {
+		if ( '' === (string) $order_id ) { return 0; }
+		$q = get_posts( array( 'post_type' => self::CPT, 'post_status' => 'any', 'numberposts' => 1, 'fields' => 'ids', 'meta_key' => '_dgb_square_order', 'meta_value' => $order_id ) );
+		return $q ? (int) $q[0] : 0;
+	}
+
+	/** Mark a booking as paid once and tell the owner. */
+	public static function mark_paid( $id ) {
+		if ( 'paid' === get_post_meta( $id, '_dgb_payment', true ) ) { return; }
+		update_post_meta( $id, '_dgb_payment', 'paid' );
+		update_post_meta( $id, '_dgb_paid_at', time() );
+		self::send( DGB_Settings::get( 'notify_email' ), 'Payment received: ' . get_the_title( $id ),
+			"The student paid with Square.\n\n" . self::block( $id ) . "\nConfirm the booking here:\n" . admin_url( 'post.php?post=' . $id . '&action=edit' ) . "\n" );
+	}
+
 	public static function set_status( $id, $status ) {
 		if ( ! isset( self::statuses()[ $status ] ) ) { return; }
 		$prev = get_post_meta( $id, '_dgb_status', true );

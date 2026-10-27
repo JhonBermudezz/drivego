@@ -12,6 +12,7 @@ class DGB_Rest {
 		register_rest_route( self::NS, '/days', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'days' ), 'permission_callback' => '__return_true' ) );
 		register_rest_route( self::NS, '/slots', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'slots' ), 'permission_callback' => '__return_true' ) );
 		register_rest_route( self::NS, '/book', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'book' ), 'permission_callback' => '__return_true' ) );
+		register_rest_route( self::NS, '/thanks', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'thanks' ), 'permission_callback' => '__return_true' ) );
 		register_rest_route( self::NS, '/square-webhook', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'webhook' ), 'permission_callback' => '__return_true' ) );
 	}
 
@@ -85,7 +86,7 @@ class DGB_Rest {
 		$total = (float) get_post_meta( $id, '_dgb_price', true );
 		if ( 'square' === $d['pay'] && DGB_Square::enabled() && $total > 0 ) {
 			$label = $services[ $d['service'] ]['name'] . ' · ' . $opt['label'] . ( (float) get_post_meta( $id, '_dgb_pickup_extra', true ) > 0 ? ' + home pick up' : '' ) . ( (float) get_post_meta( $id, '_dgb_car_extra', true ) > 0 ? ' + DriveGo car' : '' );
-			$res = DGB_Square::create_payment_link( $id, $label, $total, $d['email'], home_url( '/' ) );
+			$res = DGB_Square::create_payment_link( $id, $label, $total, $d['email'], DGB_Settings::thanks_url() );
 			if ( is_wp_error( $res ) ) {
 				update_post_meta( $id, '_dgb_square_error', $res->get_error_message() );
 			} else {
@@ -99,6 +100,21 @@ class DGB_Rest {
 		return array( 'ok' => true, 'id' => $id, 'pay_url' => $pay_url, 'pay' => $d['pay'], 'etransfer' => DGB_Settings::etransfer_email() );
 	}
 
+	/** Thank-you page: Square sends the student back with ?orderId=. We ask Square if it is paid, so this works even without the webhook. */
+	public static function thanks( WP_REST_Request $r ) {
+		$order = sanitize_text_field( (string) $r['orderId'] );
+		$id    = DGB_Bookings::find_by_order( $order );
+		if ( ! $id ) { return new WP_Error( 'dgb_nf', 'Booking not found.', array( 'status' => 404 ) ); }
+		$paid = 'paid' === get_post_meta( $id, '_dgb_payment', true );
+		if ( ! $paid && DGB_Square::enabled() ) {
+			$ok = DGB_Square::order_is_paid( $order );
+			if ( true === $ok ) { DGB_Bookings::mark_paid( $id ); $paid = true; }
+		}
+		$lines = DGB_Bookings::summary_lines( $id );
+		$first = trim( explode( ' ', (string) get_post_meta( $id, '_dgb_name', true ) )[0] );
+		return array( 'paid' => $paid, 'name' => $first, 'service' => $lines['Service'], 'when' => $lines['When'] );
+	}
+
 	/** Square tells us when an order is paid. */
 	public static function webhook( WP_REST_Request $r ) {
 		$body = $r->get_body();
@@ -109,7 +125,7 @@ class DGB_Rest {
 		$payment = isset( $e['data']['object']['payment'] ) ? $e['data']['object']['payment'] : array();
 		if ( ! empty( $payment['order_id'] ) && isset( $payment['status'] ) && 'COMPLETED' === $payment['status'] ) {
 			$q = get_posts( array( 'post_type' => DGB_Bookings::CPT, 'post_status' => 'any', 'numberposts' => 1, 'fields' => 'ids', 'meta_key' => '_dgb_square_order', 'meta_value' => $payment['order_id'] ) );
-			if ( $q ) { update_post_meta( $q[0], '_dgb_payment', 'paid' ); }
+			if ( $q ) { DGB_Bookings::mark_paid( $q[0] ); }
 		}
 		return array( 'ok' => true );
 	}

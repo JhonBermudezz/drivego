@@ -277,6 +277,23 @@
       btn.addEventListener('click', function (e) { if (window.openBooking(btn.getAttribute('data-book'), +(btn.getAttribute('data-book-option') || 0))) e.preventDefault(); });
     });
   }
+  /* Thank-you page: Square sends people back with ?orderId=..., we ask the server if it is paid and say so. */
+  function initThanks() {
+    var title = document.querySelector('.dgb-thanks-title'), text = document.querySelector('.dgb-thanks-text');
+    if (!title || !text) return;
+    var order = new URLSearchParams(window.location.search).get('orderId');
+    if (!order) return;
+    fetch(CFG.rest + 'thanks?orderId=' + encodeURIComponent(order)).then(function (r) { return r.ok ? r.json() : Promise.reject(); }).then(function (j) {
+      var what = j.service + ' on ' + j.when;
+      if (j.paid) {
+        title.textContent = 'Payment received';
+        text.textContent = 'Thank you' + (j.name ? ', ' + j.name : '') + '. We got your payment for ' + what + '. We will confirm your booking by phone or WhatsApp within one business day.';
+      } else {
+        title.textContent = 'Thank you';
+        text.textContent = 'We received your booking for ' + what + '. Your payment is still being processed, we will confirm it shortly by phone or WhatsApp.';
+      }
+    }).catch(function () {});
+  }
   window.DriveGoBooking = { mountAll: mountAll, open: window.openBooking };
-  if (document.readyState !== 'loading') mountAll(); else document.addEventListener('DOMContentLoaded', mountAll);
+  if (document.readyState !== 'loading') { mountAll(); initThanks(); } else document.addEventListener('DOMContentLoaded', function () { mountAll(); initThanks(); });
 })();

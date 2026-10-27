@@ -9,6 +9,7 @@ class DGB_Admin {
 		add_filter( 'manage_' . DGB_Bookings::CPT . '_posts_columns', array( __CLASS__, 'columns' ) );
 		add_action( 'manage_' . DGB_Bookings::CPT . '_posts_custom_column', array( __CLASS__, 'column' ), 10, 2 );
 		add_filter( 'post_row_actions', array( __CLASS__, 'row_actions' ), 10, 2 );
+		add_action( 'admin_post_dgb_square_check', array( __CLASS__, 'square_check' ) );
 		add_action( 'admin_post_dgb_paid', array( __CLASS__, 'mark_paid' ) );
 		add_action( 'admin_post_dgb_status', array( __CLASS__, 'change_status' ) );
 		add_action( 'add_meta_boxes', array( __CLASS__, 'metabox' ) );
@@ -67,6 +68,16 @@ class DGB_Admin {
 		exit;
 	}
 
+	public static function square_check() {
+		$id = isset( $_GET['id'] ) ? (int) $_GET['id'] : 0;
+		if ( ! current_user_can( 'edit_post', $id ) || ! wp_verify_nonce( isset( $_GET['_wpnonce'] ) ? $_GET['_wpnonce'] : '', 'dgb_sqcheck_' . $id ) ) { wp_die( 'Not allowed.' ); }
+		$ok = DGB_Square::order_is_paid( get_post_meta( $id, '_dgb_square_order', true ) );
+		if ( true === $ok ) { DGB_Bookings::mark_paid( $id ); }
+		update_post_meta( $id, '_dgb_square_error', is_wp_error( $ok ) ? $ok->get_error_message() : ( true === $ok ? '' : 'Square says this order is not paid yet.' ) );
+		wp_safe_redirect( admin_url( 'post.php?post=' . $id . '&action=edit' ) );
+		exit;
+	}
+
 	public static function mark_paid() {
 		$id = isset( $_GET['id'] ) ? (int) $_GET['id'] : 0;
 		if ( ! current_user_can( 'edit_post', $id ) || ! wp_verify_nonce( isset( $_GET['_wpnonce'] ) ? $_GET['_wpnonce'] : '', 'dgb_paid_' . $id ) ) { wp_die( 'Not allowed.' ); }
@@ -92,6 +103,9 @@ class DGB_Admin {
 		}
 		if ( $url = get_post_meta( $post->ID, '_dgb_pay_url', true ) ) { echo '<tr><th>Payment link</th><td><a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">Open</a></td></tr>'; }
 		echo '</tbody></table><p>';
+		if ( get_post_meta( $post->ID, '_dgb_square_order', true ) && 'paid' !== get_post_meta( $post->ID, '_dgb_payment', true ) ) {
+			echo '<a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=dgb_square_check&id=' . $post->ID ), 'dgb_sqcheck_' . $post->ID ) ) . '">Check payment with Square</a> ';
+		}
 		echo '<a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=dgb_paid&id=' . $post->ID ), 'dgb_paid_' . $post->ID ) ) . '">' . ( 'paid' === get_post_meta( $post->ID, '_dgb_payment', true ) ? 'Mark as unpaid' : 'Mark as paid' ) . '</a> ';
 		if ( DGB_Google::connected() ) {
 			echo '<a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=dgb_google_push&id=' . $post->ID ), 'dgb_gpush_' . $post->ID ) ) . '">Send to Google Calendar again</a> ';
