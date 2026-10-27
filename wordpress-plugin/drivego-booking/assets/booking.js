@@ -52,7 +52,7 @@
       if (!service) return false;
       if (!dialog) build();
       var first = parse(CFG.window.today); first.setDate(first.getDate() + CFG.window.leadDays);
-      state = { key: key, service: service, option: optionIndex || 0, step: 0, date: null, time: null, month: new Date(first.getFullYear(), first.getMonth(), 1), free: {}, slots: [], details: {}, sent: false, payUrl: '', busy: false };
+      state = { car: 'school', key: key, service: service, option: optionIndex || 0, step: 0, date: null, time: null, month: new Date(first.getFullYear(), first.getMonth(), 1), free: {}, slots: [], details: {}, sent: false, payUrl: '', busy: false };
       dialog.querySelector('#bk-title').textContent = service.name;
       go(0);
       if (modal) { document.body.style.overflow = 'hidden'; dialog.showModal(); }
@@ -79,15 +79,30 @@
       var os = SERVICES[other].options, low = Math.min.apply(null, os.map(function (o) { return o.price; }));
       return '<button type="button" class="bk__option bk__option--more" data-svc="' + other + '"><span class="bk__option-name">' + (other === 'outside' ? 'Road test outside of London' : 'Basic and Complete road tests in London') + '</span><span class="bk__option-price">' + (other === 'outside' ? 'From ' : 'From ') + money(low) + ' <small>+ HST</small></span></button>';
     }
+    /* Refresher: the price is for the student's own car, our car adds a fee. */
+    function carPicker() {
+      if (!hasCar()) return '';
+      var fee = state.service.options.map(function (o) { return o.car; }).filter(function (x) { return x > 0; });
+      var lo = Math.min.apply(null, fee), hi = Math.max.apply(null, fee);
+      return '<div class="bk__car"><p class="bk__label" id="bk-car-label">Which car will you use?</p><div class="bk__car-opts" role="group" aria-labelledby="bk-car-label">' +
+        '<button type="button" class="bk__carbtn" data-car="own" aria-pressed="' + (state.car === 'own') + '">My own car</button>' +
+        '<button type="button" class="bk__carbtn" data-car="school" aria-pressed="' + (state.car === 'school') + '">DriveGo school car (+' + money(lo) + (hi > lo ? ' to +' + money(hi) : '') + ')</button></div>' +
+        '<p class="bk__small">Prices above change with your choice.</p></div>';
+    }
     function pickupOn() { return isTest() ? homeTest() : (state.details.meet || 'Pick me up at home') === 'Pick me up at home'; }
+    function hasCar() { return !isTest() && state.service.options.some(function (o) { return o.car > 0; }); }
+    function carExtra() { var o = opt(); return hasCar() && state.car === 'school' && o.car > 0 ? o.car : 0; }
+    function listPrice(o) { return o.price + (hasCar() && state.car === 'school' && o.car > 0 ? o.car : 0); }
     function extra() { var o = opt(); return o.pickup > 0 && pickupOn() ? o.pickup : 0; }
-    function total() { return opt().price + extra(); }
+    function total() { return opt().price + carExtra() + extra(); }
 
     function summary() {
       var o = opt();
-      var rows = [['Option', o.label], ['Price', money(o.price) + ' + HST']];
+      var rows = [['Option', o.label]];
+      if (hasCar()) rows.push(['Car', state.car === 'school' ? 'DriveGo school car' : 'My own car']);
+      rows.push(['Price', money(o.price + carExtra()) + ' + HST']);
       if (o.pickup > 0 && state.step >= 3) rows.push(['Home pick up', extra() ? '+ ' + money(extra()) : 'Not needed']);
-      if (extra()) rows[1] = ['Total', money(total()) + ' + HST'];
+      if (extra()) rows[rows.length - 1] = ['Total', money(total()) + ' + HST'];
       rows = rows.concat([['Day', state.date ? fmtDate(state.date) : 'Not chosen yet'], ['Time', state.time !== null ? fmtTime(state.time) : 'Not chosen yet']]);
       dialog.querySelector('[data-bk-facts]').innerHTML = rows.map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('');
     }
@@ -114,8 +129,11 @@
 
     function renderOption(body) {
       body.innerHTML = '<h3 class="bk__h">Choose an option</h3><div class="bk__options">' + state.service.options.map(function (o, i) {
-        return '<button type="button" class="bk__option" aria-pressed="' + (i === state.option) + '" data-i="' + i + '"><span class="bk__option-name">' + esc(o.label) + '</span><span class="bk__option-price">' + money(o.price) + ' <small>+ HST</small></span></button>';
-      }).join('') + moreOption() + '</div>' + (!isTest() && state.service.options.some(function (o) { return o.pickup > 0; }) ? '<p class="bk__small">Meeting us at White Oaks Mall is the base price. Home pick up adds ' + pickupText() + '.</p>' : '');
+        return '<button type="button" class="bk__option" aria-pressed="' + (i === state.option) + '" data-i="' + i + '"><span class="bk__option-name">' + esc(o.label) + '</span><span class="bk__option-price">' + money(listPrice(o)) + ' <small>+ HST</small></span></button>';
+      }).join('') + moreOption() + '</div>' + carPicker() + (!isTest() && state.service.options.some(function (o) { return o.pickup > 0; }) ? '<p class="bk__small">Meeting us at White Oaks Mall is the base price. Home pick up adds ' + pickupText() + '.</p>' : '');
+      body.querySelectorAll('.bk__carbtn').forEach(function (b) {
+        b.addEventListener('click', function () { state.car = b.dataset.car; state.time = null; state.date = null; state.free = {}; renderOption(body); summary(); });
+      });
       body.querySelectorAll('.bk__option').forEach(function (b) {
         if (b.dataset.svc) { b.addEventListener('click', function () { open(b.dataset.svc, 0); }); return; }
         b.addEventListener('click', function () {
@@ -222,7 +240,7 @@
       }
       body.innerHTML = '<h3 class="bk__h">Check your booking</h3><ul class="bk__review"><li><span>Service</span><strong>' + esc(state.service.name) + ' · ' + esc(o.label) + '</strong></li>' +
         '<li><span>When</span><strong>' + esc(fmtDate(state.date)) + ' at ' + esc(fmtTime(state.time)) + '</strong></li><li><span>Where</span><strong>' + esc(where) + '</strong></li>' +
-        (d.pay && CFG.pay ? '<li><span>Payment</span><strong>' + esc(CFG.pay[d.pay] || '') + '</strong></li>' : '') + '<li><span>Name</span><strong>' + esc(d.name) + ' · ' + esc(d.phone) + '</strong></li><li><span>Total</span><strong>' + money(total()) + ' + HST' + (extra() ? ' <small>(includes ' + money(extra()) + ' home pick up)</small>' : '') + '</strong></li></ul>' +
+        (hasCar() ? '<li><span>Car</span><strong>' + (state.car === 'school' ? 'DriveGo school car' : 'My own car') + '</strong></li>' : '') + (d.pay && CFG.pay ? '<li><span>Payment</span><strong>' + esc(CFG.pay[d.pay] || '') + '</strong></li>' : '') + '<li><span>Name</span><strong>' + esc(d.name) + ' · ' + esc(d.phone) + '</strong></li><li><span>Total</span><strong>' + money(total()) + ' + HST' + (extra() || carExtra() ? ' <small>(includes ' + [extra() ? money(extra()) + ' home pick up' : '', carExtra() ? money(carExtra()) + ' DriveGo car' : ''].filter(Boolean).join(' and ') + ')</small>' : '') + '</strong></li></ul>' +
         '<p class="bk__small">We confirm every booking. Free reschedule up to 24 hours before.</p><p class="bk__hint" data-bk-hint hidden></p>';
       nb.textContent = state.details.pay === 'square' ? 'Request booking and pay' : 'Request booking';
     }
@@ -231,7 +249,7 @@
       if (state.sent) { if (state.payUrl) window.open(state.payUrl, '_blank', 'noopener'); return; }
       var d = state.details, nb = dialog.querySelector('[data-bk-next]');
       state.busy = true; nb.disabled = true; nb.textContent = 'Sending…';
-      var payload = { service: state.key, option: state.option, date: iso(state.date), start: state.time, name: d.name, email: d.email, phone: d.phone, licence: d.licence, lang: d.lang, meet: d.meet, centre: d.centre, address: d.address, notes: d.notes, website: d.website, pay: d.pay };
+      var payload = { service: state.key, option: state.option, date: iso(state.date), start: state.time, name: d.name, email: d.email, phone: d.phone, licence: d.licence, lang: d.lang, meet: d.meet, centre: d.centre, address: d.address, notes: d.notes, website: d.website, pay: d.pay, car: hasCar() ? state.car : '' };
       api('book', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(function (j) {
         state.sent = true; state.payMethod = j.pay || d.pay; state.etransfer = j.etransfer || ''; state.payUrl = j.pay_url || ''; state.busy = false; nb.disabled = false;
         if (state.payUrl) window.open(state.payUrl, '_blank', 'noopener');

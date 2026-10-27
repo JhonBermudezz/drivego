@@ -55,9 +55,10 @@ class DGB_Bookings {
 	}
 
 	/** Server-side total so the price can never be changed from the browser. */
-	public static function price_for( array $opt, $service, $meet, $home = true ) {
+	public static function price_for( array $opt, $service, $meet, $home = true, $car = '' ) {
 		$extra = self::needs_pickup( $service, $meet, $home ) ? (float) ( isset( $opt['pickup'] ) ? $opt['pickup'] : 0 ) : 0.0;
-		return array( 'base' => (float) $opt['price'], 'extra' => $extra, 'total' => (float) $opt['price'] + $extra );
+		$carx  = 'school' === $car && ! empty( $opt['car'] ) ? (float) $opt['car'] : 0.0;
+		return array( 'base' => (float) $opt['price'], 'extra' => $extra, 'car' => $carx, 'total' => (float) $opt['price'] + $extra + $carx );
 	}
 
 	public static function now_minute_if_today( $date ) {
@@ -100,13 +101,13 @@ class DGB_Bookings {
 				return new WP_Error( 'dgb_taken', 'Sorry, that time was just taken. Please pick another one.', array( 'status' => 409 ) );
 			}
 			if ( 'outside' === $d['service'] ) { $d['centre'] = trim( explode( ' · ', $opt['label'] )[0] ); }
-			$price = self::price_for( $opt, $d['service'], $d['meet'], DGB_Settings::option_home( $opt, $d['option'], $d['service'] ) );
+			$price = self::price_for( $opt, $d['service'], $d['meet'], DGB_Settings::option_home( $opt, $d['option'], $d['service'] ), isset( $d['car'] ) ? $d['car'] : '' );
 			$title = sprintf( '%s · %s · %s %s', $d['name'], $svc['name'] . ' (' . $opt['label'] . ')', $d['date'], self::fmt_time( (int) $d['start'] ) );
 			$id = wp_insert_post( array( 'post_type' => self::CPT, 'post_status' => 'publish', 'post_title' => $title ), true );
 			if ( is_wp_error( $id ) ) { return $id; }
 			$meta = array(
 				'_dgb_status' => 'pending', '_dgb_payment' => 'unpaid', '_dgb_service' => $d['service'], '_dgb_service_name' => $svc['name'],
-				'_dgb_option' => $opt['label'], '_dgb_price' => $price['total'], '_dgb_base_price' => $price['base'], '_dgb_pickup_extra' => $price['extra'], '_dgb_minutes' => (int) $opt['minutes'],
+				'_dgb_option' => $opt['label'], '_dgb_price' => $price['total'], '_dgb_base_price' => $price['base'], '_dgb_pickup_extra' => $price['extra'], '_dgb_car_extra' => $price['car'], '_dgb_car' => ! empty( $opt['car'] ) ? ( 'school' === ( isset( $d['car'] ) ? $d['car'] : '' ) ? 'school' : 'own' ) : '', '_dgb_minutes' => (int) $opt['minutes'],
 				'_dgb_date' => $d['date'], '_dgb_start' => (int) $d['start'],
 				'_dgb_name' => $d['name'], '_dgb_email' => $d['email'], '_dgb_phone' => $d['phone'],
 				'_dgb_licence' => $d['licence'], '_dgb_lang' => $d['lang'], '_dgb_meet' => $d['meet'], '_dgb_centre' => $d['centre'],
@@ -123,11 +124,12 @@ class DGB_Bookings {
 		$g = function ( $k ) use ( $id ) { return get_post_meta( $id, '_dgb_' . $k, true ); };
 		$where = in_array( $g( 'service' ), array( 'roadtest', 'outside' ), true ) ? 'DriveTest ' . ( 'Other' === $g( 'centre' ) ? 'other location (price to be confirmed)' : $g( 'centre' ) ) . ( $g( 'address' ) ? ', pick up at ' . $g( 'address' ) : ', meet at White Oaks Mall' )
 			: ( 'Pick me up at home' === $g( 'meet' ) ? 'Pick up at ' . $g( 'address' ) : 'White Oaks Mall' );
-		return array(
+		$out = array(
 			'Service' => $g( 'service_name' ) . ' · ' . $g( 'option' ),
 			'When'    => wp_date( 'l, F j, Y', strtotime( $g( 'date' ) . ' 12:00:00' ) ) . ' at ' . self::fmt_time( (int) $g( 'start' ) ),
 			'Where'   => $where,
-			'Price'   => '$' . number_format( (float) $g( 'price' ), 2 ) . ' + HST' . ( (float) $g( 'pickup_extra' ) > 0 ? ' (includes $' . number_format( (float) $g( 'pickup_extra' ), 2 ) . ' home pick up)' : '' ),
+			'Price'   => '$' . number_format( (float) $g( 'price' ), 2 ) . ' + HST' . ( (float) $g( 'pickup_extra' ) > 0 || (float) $g( 'car_extra' ) > 0 ? ' (includes ' . implode( ' and ', array_filter( array( (float) $g( 'pickup_extra' ) > 0 ? '$' . number_format( (float) $g( 'pickup_extra' ), 2 ) . ' home pick up' : '', (float) $g( 'car_extra' ) > 0 ? '$' . number_format( (float) $g( 'car_extra' ), 2 ) . ' DriveGo car' : '' ) ) ) . ')' : '' ),
+			'Car'     => $g( 'car' ) ? ( 'school' === $g( 'car' ) ? 'DriveGo school car' : 'Own car' ) : '-',
 			'Payment' => self::pay_label( $g( 'pay_method' ) ),
 			'Name'    => $g( 'name' ),
 			'Phone'   => $g( 'phone' ),
@@ -135,6 +137,8 @@ class DGB_Bookings {
 			'Licence' => $g( 'licence' ) . ' · lessons in ' . $g( 'lang' ),
 			'Notes'   => $g( 'notes' ) ?: '-',
 		);
+		if ( ! $g( 'car' ) ) { unset( $out['Car'] ); }
+		return $out;
 	}
 
 	private static function send( $to, $subject, $body ) {

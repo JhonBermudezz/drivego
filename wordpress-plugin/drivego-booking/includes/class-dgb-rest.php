@@ -64,6 +64,7 @@ class DGB_Rest {
 			'meet'    => isset( $p['meet'] ) ? sanitize_text_field( $p['meet'] ) : '',
 			'centre'  => isset( $p['centre'] ) ? sanitize_text_field( $p['centre'] ) : '',
 			'address' => isset( $p['address'] ) ? sanitize_text_field( $p['address'] ) : '',
+			'car'     => isset( $p['car'] ) && 'school' === $p['car'] ? 'school' : 'own',
 			'pay'     => isset( $p['pay'] ) ? sanitize_key( $p['pay'] ) : '',
 			'notes'   => isset( $p['notes'] ) ? sanitize_textarea_field( $p['notes'] ) : '',
 		);
@@ -83,7 +84,7 @@ class DGB_Rest {
 		$pay_url  = '';
 		$total = (float) get_post_meta( $id, '_dgb_price', true );
 		if ( 'square' === $d['pay'] && DGB_Square::enabled() && $total > 0 ) {
-			$label = $services[ $d['service'] ]['name'] . ' · ' . $opt['label'] . ( (float) get_post_meta( $id, '_dgb_pickup_extra', true ) > 0 ? ' + home pick up' : '' );
+			$label = $services[ $d['service'] ]['name'] . ' · ' . $opt['label'] . ( (float) get_post_meta( $id, '_dgb_pickup_extra', true ) > 0 ? ' + home pick up' : '' ) . ( (float) get_post_meta( $id, '_dgb_car_extra', true ) > 0 ? ' + DriveGo car' : '' );
 			$res = DGB_Square::create_payment_link( $id, $label, $total, $d['email'], home_url( '/' ) );
 			if ( is_wp_error( $res ) ) {
 				update_post_meta( $id, '_dgb_square_error', $res->get_error_message() );

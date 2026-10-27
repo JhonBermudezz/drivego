@@ -10,6 +10,11 @@ class DGB_Settings {
 			array( 'label' => '1.5 hours', 'minutes' => 90, 'price' => 95, 'pickup' => 0, 'pay' => '' ),
 			array( 'label' => '2 hours', 'minutes' => 120, 'price' => 125, 'pickup' => 0, 'pay' => '' ),
 		);
+		$refresher = array(
+			array( 'label' => '1 hour', 'minutes' => 60, 'price' => 55, 'pickup' => 10, 'car' => 10, 'pay' => '' ),
+			array( 'label' => '1.5 hours', 'minutes' => 90, 'price' => 75, 'pickup' => 10, 'car' => 20, 'pay' => '' ),
+			array( 'label' => '2 hours', 'minutes' => 120, 'price' => 105, 'pickup' => 10, 'car' => 20, 'pay' => '' ),
+		);
 		$lessons = array(
 			array( 'label' => '1 hour', 'minutes' => 60, 'price' => 55, 'pickup' => 10, 'pay' => '' ),
 			array( 'label' => '1.5 hours', 'minutes' => 90, 'price' => 75, 'pickup' => 10, 'pay' => '' ),
@@ -47,7 +52,7 @@ class DGB_Settings {
 			'google_invite_customer' => 1,
 			'services'       => array(
 				'lessons'   => array( 'name' => 'Single lesson', 'when' => 'Lesson day and start time', 'options' => $lessons ),
-				'refresher' => array( 'name' => 'G-Full & G2 Refresher', 'when' => 'Lesson day and start time', 'options' => $lessons ),
+				'refresher' => array( 'name' => 'G-Full & G2 Refresher', 'when' => 'Lesson day and start time', 'options' => $refresher ),
 				'roadtest'  => array( 'name' => 'Road test package', 'when' => 'Your DriveTest date and test time', 'options' => array(
 					array( 'label' => 'Basic road test', 'minutes' => 120, 'price' => 135, 'pickup' => 0, 'home' => 0, 'pay' => '' ),
 					array( 'label' => 'Complete road test', 'minutes' => 120, 'price' => 175, 'pickup' => 0, 'home' => 1, 'pay' => '' ),
@@ -113,7 +118,7 @@ class DGB_Settings {
 			$opts = array();
 			foreach ( $svc['options'] as $i => $o ) {
 				if ( '' === trim( $o['label'] ) ) { continue; }
-				$opts[] = array( 'label' => $o['label'], 'minutes' => (int) $o['minutes'], 'price' => (float) $o['price'], 'pickup' => isset( $o['pickup'] ) ? (float) $o['pickup'] : 0, 'home' => self::option_home( $o, $i, $key ) );
+				$opts[] = array( 'label' => $o['label'], 'minutes' => (int) $o['minutes'], 'price' => (float) $o['price'], 'pickup' => isset( $o['pickup'] ) ? (float) $o['pickup'] : 0, 'home' => self::option_home( $o, $i, $key ), 'car' => isset( $o['car'] ) ? (float) $o['car'] : 0 );
 			}
 			$out[ $key ] = array( 'name' => $svc['name'], 'when' => $svc['when'], 'options' => $opts );
 		}
@@ -172,6 +177,7 @@ class DGB_Settings {
 							'price'   => max( 0, (float) ( isset( $o['price'] ) ? $o['price'] : 0 ) ),
 							'pickup'  => max( 0, (float) ( isset( $o['pickup'] ) ? $o['pickup'] : 0 ) ),
 							'home'    => empty( $o['home'] ) ? 0 : 1,
+							'car'     => max( 0, (float) ( isset( $o['car'] ) ? $o['car'] : 0 ) ),
 							'pay'     => esc_url_raw( isset( $o['pay'] ) ? $o['pay'] : '' ),
 						);
 					}

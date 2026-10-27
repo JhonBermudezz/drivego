@@ -54,9 +54,9 @@ dialog.bk::backdrop{ background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px)
 .bk__steps .is-done span{ background: var(--green-soft); color: var(--green); }
 .bk__body{ flex: 1; }
 .bk__h{ margin-bottom: 16px; font-family: var(--font-body); font-size: 1.125rem; line-height: 1.75rem; font-weight: 700; text-transform: none; letter-spacing: 0; }
-.bk__options{ display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.bk__options{ display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr)); gap: 12px; }
 .bk button.bk__option,.bk button.bk__day,.bk button.bk__slot,.bk button.bk__cal-nav{ font: inherit; cursor: pointer; transition: background-color 400ms var(--ease), border-color 400ms var(--ease), color 400ms var(--ease); }
-.bk button.bk__option{ color: var(--ink); display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--white); text-align: left; }
+.bk button.bk__option{ color: var(--ink); display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--white); text-align: left; white-space: normal; min-width: 0; overflow-wrap: anywhere; }
 .bk button.bk__option:hover{ border-color: var(--ink); }
 .bk button.bk__option[aria-pressed="true"]{ border: 2px solid var(--green); background: var(--green-soft); padding: 15px; }
 .bk__option-name{ font-weight: 700; }
@@ -109,3 +109,11 @@ dialog.bk{ width: 100%; height: 100%; max-height: 100%; border-radius: 0; }}
 .bk__note{display:none}
 .bk__main{padding:24px}}
 .bk__option--more{ border-style: dashed; }
+
+.bk__car{ margin-top: 20px; }
+.bk__label{ margin: 0 0 8px; font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; }
+.bk__car-opts{ display: flex; flex-wrap: wrap; gap: 8px; }
+.bk button.bk__carbtn{ font: inherit; cursor: pointer; color: var(--ink); padding: 10px 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--white); white-space: normal; transition: background-color 400ms var(--ease), border-color 400ms var(--ease); }
+.bk button.bk__carbtn:hover{ border-color: var(--ink); }
+.bk button.bk__carbtn[aria-pressed="true"]{ border: 2px solid var(--green); background: var(--green-soft); padding: 9px 15px; font-weight: 700; }
+.bk__car .bk__small{ margin-top: 10px; }
