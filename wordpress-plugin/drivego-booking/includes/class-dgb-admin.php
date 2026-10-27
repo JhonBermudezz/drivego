@@ -129,7 +129,7 @@ class DGB_Admin {
 
 		<h2>General</h2>
 		<table class="form-table">
-			<tr><th>Send booking emails to</th><td><input type="email" class="regular-text" name="<?php echo esc_attr( $n ); ?>[notify_email]" value="<?php echo esc_attr( $s['notify_email'] ); ?>"></td></tr>
+			<tr><th>Send booking emails to</th><td><input type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[notify_email]" value="<?php echo esc_attr( $s['notify_email'] ); ?>"> <span class="description">One or more addresses, separated by commas.</span></td></tr>
 			<tr><th>Business name in emails</th><td><input type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[from_name]" value="<?php echo esc_attr( $s['from_name'] ); ?>"></td></tr>
 			<tr><th>Phone shown to customers</th><td><input type="text" name="<?php echo esc_attr( $n ); ?>[phone]" value="<?php echo esc_attr( $s['phone'] ); ?>"></td></tr>
 			<tr><th>Interac e-Transfer email</th><td><input type="email" class="regular-text" name="<?php echo esc_attr( $n ); ?>[etransfer_email]" value="<?php echo esc_attr( $s['etransfer_email'] ); ?>" placeholder="<?php echo esc_attr( $s['notify_email'] ); ?>"> <span class="description">Where students send e-Transfers. Empty uses the booking email above.</span></td></tr>

@@ -143,7 +143,7 @@ class DGB_Bookings {
 
 	private static function send( $to, $subject, $body ) {
 		$name = DGB_Settings::get( 'from_name' );
-		$headers = array( 'Content-Type: text/plain; charset=UTF-8', 'Reply-To: ' . $name . ' <' . DGB_Settings::get( 'notify_email' ) . '>' );
+		$headers = array( 'Content-Type: text/plain; charset=UTF-8', 'Reply-To: ' . $name . ' <' . DGB_Settings::notify_first() . '>' );
 		wp_mail( $to, $subject, $body, $headers );
 	}
 

@@ -100,9 +100,21 @@ class DGB_Settings {
 		return $p ? get_permalink( $p ) : home_url( '/' );
 	}
 
+	/** Several addresses separated by commas, only the valid ones. Keeps the old value if nothing valid was typed. */
+	public static function clean_emails( $raw, $fallback = '' ) {
+		$list = array_filter( array_map( 'sanitize_email', preg_split( '/[\s,;]+/', (string) $raw, -1, PREG_SPLIT_NO_EMPTY ) ), 'is_email' );
+		return $list ? implode( ', ', array_unique( $list ) ) : $fallback;
+	}
+
+	/** The first notification address: used for Reply-To and as the e-Transfer fallback. */
+	public static function notify_first() {
+		$l = preg_split( '/[\s,;]+/', (string) self::get( 'notify_email' ), -1, PREG_SPLIT_NO_EMPTY );
+		return $l ? $l[0] : '';
+	}
+
 	public static function etransfer_email() {
 		$e = self::get( 'etransfer_email' );
-		return $e ? $e : self::get( 'notify_email' );
+		return $e ? $e : self::notify_first();
 	}
 
 	/** Payment methods offered at checkout: Square only when it can really produce a payment link. */
@@ -134,7 +146,7 @@ class DGB_Settings {
 		$d   = self::defaults();
 		$old = self::all();
 		$out = $old;
-		$out['notify_email']   = sanitize_email( isset( $in['notify_email'] ) ? $in['notify_email'] : $old['notify_email'] );
+		$out['notify_email']   = self::clean_emails( isset( $in['notify_email'] ) ? $in['notify_email'] : $old['notify_email'], $old['notify_email'] );
 		$out['from_name']      = sanitize_text_field( isset( $in['from_name'] ) ? $in['from_name'] : $old['from_name'] );
 		$out['phone']          = sanitize_text_field( isset( $in['phone'] ) ? $in['phone'] : $old['phone'] );
 		foreach ( array( 'slot_minutes' => array( 5, 120 ), 'buffer_minutes' => array( 0, 240 ), 'capacity' => array( 1, 20 ), 'lead_days' => array( 0, 60 ), 'lead_hours' => array( 0, 72 ), 'horizon_days' => array( 1, 365 ), 'hst_percent' => array( 0, 30 ) ) as $k => $r ) {
