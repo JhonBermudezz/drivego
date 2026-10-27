@@ -43,8 +43,8 @@ const BOOKING = {
       name: 'Road test package',
       when: 'Your DriveTest date and test time',
       options: [
-        { label: 'G2 road test', minutes: 120, price: 189, pay: '' },
-        { label: 'Full G road test', minutes: 120, price: 209, pay: '' },
+        { label: 'Basic road test', minutes: 120, price: 135, pay: '' },
+        { label: 'Complete road test', minutes: 120, price: 155, pay: '' },
       ],
     },
   },

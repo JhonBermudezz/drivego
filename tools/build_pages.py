@@ -227,8 +227,8 @@ LESSON_PRICE = '''          <div class="svc__price">
           </div>'''
 
 TEST_PRICE = '''          <div class="svc__tests">
-            <div><p class="svc__tests-name">G2 road test</p><p class="service__price">$189 <span class="plan__tax">+ HST</span></p></div>
-            <div><p class="svc__tests-name">Full G road test</p><p class="service__price">$209 <span class="plan__tax">+ HST</span></p></div>
+            <div><p class="svc__tests-name">Basic road test</p><p class="service__price">$135 <span class="plan__tax">+ HST</span></p></div>
+            <div><p class="svc__tests-name">Complete road test</p><p class="service__price">$155 <span class="plan__tax">+ HST</span></p></div>
           </div>'''
 
 REFRESH_PRICE = '          <p class="service__price">From $65 <span class="plan__tax">+ HST</span></p>'
@@ -299,28 +299,28 @@ page('road-test.html', 'G2 and G road test packages | DriveGo London',
         </header>
         <div class="tests">
           <article class="plan reveal">
-            <h3 class="plan__name">G2 road test</h3>
+            <h3 class="plan__name">Basic road test</h3>
             <p class="plan__desc">Your first road test. City driving, turns, parking and right of way.</p>
-            <p class="plan__price"><span class="plan__amount">$189</span><span class="plan__tax">+ HST</span></p>
+            <p class="plan__price"><span class="plan__amount">$135</span><span class="plan__tax">+ HST</span></p>
             <ul class="plan__list">
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Pick up 90 minutes before your test</li>
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Warm up lesson on the DriveTest route</li>
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Our car for the test</li>
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Drop off after your test</li>
             </ul>
-            <a class="btn btn--dark btn--block" href="#book" data-calendar-option="roadtest:0">Book G2 test package</a>
+            <a class="btn btn--dark btn--block" href="#book" data-calendar-option="roadtest:0">Book basic test package</a>
           </article>
           <article class="plan reveal">
-            <h3 class="plan__name">Full G road test</h3>
+            <h3 class="plan__name">Complete road test</h3>
             <p class="plan__desc">Your final test. Highway driving, merging and advanced manoeuvres.</p>
-            <p class="plan__price"><span class="plan__amount">$209</span><span class="plan__tax">+ HST</span></p>
+            <p class="plan__price"><span class="plan__amount">$155</span><span class="plan__tax">+ HST</span></p>
             <ul class="plan__list">
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Pick up 90 minutes before your test</li>
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Highway warm up on the test route</li>
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Our car for the test</li>
               <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Drop off after your test</li>
             </ul>
-            <a class="btn btn--dark btn--block" href="#book" data-calendar-option="roadtest:1">Book G test package</a>
+            <a class="btn btn--dark btn--block" href="#book" data-calendar-option="roadtest:1">Book complete test package</a>
           </article>
         </div>
         <div class="note reveal" style="margin-top: 24px;"><i class="ph ph-info" aria-hidden="true"></i><p>DriveTest fees are paid by you directly to DriveTest and are not included. Book your test date at drivetest.ca, then send us the date and time.</p></div>
