@@ -138,7 +138,7 @@ page('packages.html', 'Driving packages | DriveGo London',
         <div class="compare reveal">
           <table>
             <thead>
-              <tr><th scope="col">What you get</th><th scope="col">Basic<small>$649 + HST</small></th><th scope="col" class="col-featured">Standard<small>$899 + HST</small></th><th scope="col">Complete<small>$1,149 + HST</small></th></tr>
+              <tr><th scope="col">What you get</th><th scope="col">Basic<small>$649 + HST</small></th><th scope="col" class="col-featured">Standard<small>$869 + HST</small></th><th scope="col">Complete<small>$1,029 + HST</small></th></tr>
             </thead>
             <tbody>
 {row('MTO approved BDE course, online or in class', YES, YES, YES)}
