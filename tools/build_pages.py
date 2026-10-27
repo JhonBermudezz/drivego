@@ -231,7 +231,7 @@ TEST_PRICE = '''          <div class="svc__tests">
             <div><p class="svc__tests-name">Complete road test</p><p class="service__price">$175 <span class="plan__tax">+ HST</span></p></div>
           </div>'''
 
-REFRESH_PRICE = '          <p class="service__price">From $65 <span class="plan__tax">+ HST</span></p>'
+REFRESH_PRICE = '          <p class="service__price">From $55 <span class="plan__tax">+ HST</span></p>'
 
 page('services.html', 'Driving services | DriveGo London',
      'Book and pay online for single driving lessons, G2 and G road test packages and G-Full and G2 refresher lessons in London, Ontario.',
@@ -250,7 +250,7 @@ page('services.html', 'Driving services | DriveGo London',
      + svc('03', 'refresher', 'G-Full &amp; G2 Refresher',
            'For drivers who already drive and need polish before the G2 or full G test, or more confidence on the road.',
            'assets/img/refresher.webp', 'Silver SUV parked on a quiet road, ready for a refresher lesson',
-           ['Assessment drive, then we work on your weak spots', 'Highway merging, parking and test route practice', 'Patient, supportive instructors'],
+           ['Assessment drive, then we work on your weak spots', 'Highway merging, lane changes and test route practice', 'Patient, supportive instructors'],
            REFRESH_PRICE, book_actions('refresher', 'G-Full &amp; G2 Refresher', CONTACT_BTN))
      + '''    <section class="section section--soft" aria-labelledby="how-title">
       <div class="container">

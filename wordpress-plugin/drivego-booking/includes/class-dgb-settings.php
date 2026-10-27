@@ -11,9 +11,9 @@ class DGB_Settings {
 			array( 'label' => '2 hours', 'minutes' => 120, 'price' => 125, 'pickup' => 0, 'pay' => '' ),
 		);
 		$lessons = array(
-			array( 'label' => '1 hour', 'minutes' => 60, 'price' => 55, 'pickup' => 0, 'pay' => '' ),
-			array( 'label' => '1.5 hours', 'minutes' => 90, 'price' => 75, 'pickup' => 0, 'pay' => '' ),
-			array( 'label' => '2 hours', 'minutes' => 120, 'price' => 105, 'pickup' => 0, 'pay' => '' ),
+			array( 'label' => '1 hour', 'minutes' => 60, 'price' => 55, 'pickup' => 10, 'pay' => '' ),
+			array( 'label' => '1.5 hours', 'minutes' => 90, 'price' => 75, 'pickup' => 10, 'pay' => '' ),
+			array( 'label' => '2 hours', 'minutes' => 120, 'price' => 105, 'pickup' => 10, 'pay' => '' ),
 		);
 		return array(
 			'notify_email'   => get_option( 'admin_email' ),
@@ -47,7 +47,7 @@ class DGB_Settings {
 			'google_invite_customer' => 1,
 			'services'       => array(
 				'lessons'   => array( 'name' => 'Single lesson', 'when' => 'Lesson day and start time', 'options' => $lessons ),
-				'refresher' => array( 'name' => 'G-Full & G2 Refresher', 'when' => 'Lesson day and start time', 'options' => $opts ),
+				'refresher' => array( 'name' => 'G-Full & G2 Refresher', 'when' => 'Lesson day and start time', 'options' => $lessons ),
 				'roadtest'  => array( 'name' => 'Road test package', 'when' => 'Your DriveTest date and test time', 'options' => array(
 					array( 'label' => 'Basic road test', 'minutes' => 120, 'price' => 135, 'pickup' => 0, 'home' => 0, 'pay' => '' ),
 					array( 'label' => 'Complete road test', 'minutes' => 120, 'price' => 175, 'pickup' => 0, 'home' => 1, 'pay' => '' ),
