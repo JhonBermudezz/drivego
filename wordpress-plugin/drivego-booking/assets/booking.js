@@ -72,6 +72,13 @@
       Object.keys(all).forEach(function (k) { if (!(isTest() && k === 'cash')) out[k] = all[k]; });
       return out;
     }
+    /* Road tests link to each other: the "outside London" package lists destinations with their own price. */
+    function moreOption() {
+      var other = state.key === 'roadtest' ? 'outside' : state.key === 'outside' ? 'roadtest' : '';
+      if (!other || !SERVICES[other]) return '';
+      var os = SERVICES[other].options, low = Math.min.apply(null, os.map(function (o) { return o.price; }));
+      return '<button type="button" class="bk__option bk__option--more" data-svc="' + other + '"><span class="bk__option-name">' + (other === 'outside' ? 'Road test outside of London' : 'Basic and Complete road tests in London') + '</span><span class="bk__option-price">' + (other === 'outside' ? 'From ' : 'From ') + money(low) + ' <small>+ HST</small></span></button>';
+    }
     function pickupOn() { return isTest() ? homeTest() : (state.details.meet || 'Pick me up at home') === 'Pick me up at home'; }
     function extra() { var o = opt(); return o.pickup > 0 && pickupOn() ? o.pickup : 0; }
     function total() { return opt().price + extra(); }
@@ -108,8 +115,9 @@
     function renderOption(body) {
       body.innerHTML = '<h3 class="bk__h">Choose an option</h3><div class="bk__options">' + state.service.options.map(function (o, i) {
         return '<button type="button" class="bk__option" aria-pressed="' + (i === state.option) + '" data-i="' + i + '"><span class="bk__option-name">' + esc(o.label) + '</span><span class="bk__option-price">' + money(o.price) + ' <small>+ HST</small></span></button>';
-      }).join('') + '</div>' + (!isTest() && state.service.options.some(function (o) { return o.pickup > 0; }) ? '<p class="bk__small">Meeting us at White Oaks Mall is the base price. Home pick up adds ' + pickupText() + '.</p>' : '');
+      }).join('') + moreOption() + '</div>' + (!isTest() && state.service.options.some(function (o) { return o.pickup > 0; }) ? '<p class="bk__small">Meeting us at White Oaks Mall is the base price. Home pick up adds ' + pickupText() + '.</p>' : '');
       body.querySelectorAll('.bk__option').forEach(function (b) {
+        if (b.dataset.svc) { b.addEventListener('click', function () { open(b.dataset.svc, 0); }); return; }
         b.addEventListener('click', function () {
           state.option = +b.dataset.i; state.time = null; state.date = null; state.free = {};
           body.querySelectorAll('.bk__option').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
