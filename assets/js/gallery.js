@@ -5,7 +5,6 @@
 // Videos: add `type: 'video'` with `src` (a file uploaded to assets/videos/)
 // or `youtube` (a YouTube id), plus `image` as the cover.
 const ITEMS = [
-  { image: '20.webp', topic: 'Our school', alt: 'The blue DriveGo London training car with a Student Driver sign in downtown London' },
   { image: '37.webp', topic: 'Our school', alt: 'Steven, founder and former DriveTest examiner, next to the training car' },
   { image: '73.webp', topic: 'Our school', alt: 'Announcement: the first Hispanic driving school in London approved by the MTO' },
   { image: '61.webp', topic: 'Our school', alt: 'BDE certified complete course with 30 hours online and 10 hours in the car' },
