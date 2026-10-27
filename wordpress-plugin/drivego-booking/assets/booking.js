@@ -82,11 +82,9 @@
     /* Refresher: the price is for the student's own car, our car adds a fee. */
     function carPicker() {
       if (!hasCar()) return '';
-      var fee = state.service.options.map(function (o) { return o.car; }).filter(function (x) { return x > 0; });
-      var lo = Math.min.apply(null, fee), hi = Math.max.apply(null, fee);
       return '<div class="bk__car"><p class="bk__label" id="bk-car-label">Which car will you use?</p><div class="bk__car-opts" role="group" aria-labelledby="bk-car-label">' +
         '<button type="button" class="bk__carbtn" data-car="own" aria-pressed="' + (state.car === 'own') + '">My own car</button>' +
-        '<button type="button" class="bk__carbtn" data-car="school" aria-pressed="' + (state.car === 'school') + '">DriveGo school car (+' + money(lo) + (hi > lo ? ' to +' + money(hi) : '') + ')</button></div>' +
+        '<button type="button" class="bk__carbtn" data-car="school" aria-pressed="' + (state.car === 'school') + '">DriveGo school car</button></div>' +
         '<p class="bk__small">Prices above change with your choice.</p></div>';
     }
     function pickupOn() { return isTest() ? homeTest() : (state.details.meet || 'Pick me up at home') === 'Pick me up at home'; }
