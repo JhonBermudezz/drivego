@@ -66,6 +66,12 @@
       return same ? money(os[0].pickup) : os.map(function (o) { return money(o.pickup) + ' (' + esc(o.label) + ')'; }).join(', ');
     }
     function homeTest() { return state.key === 'roadtest' && opt().home !== false; }
+    function payMethods() {
+      var all = CFG.pay || {}, out = {};
+      Object.keys(all).forEach(function (k) { if (!(state.key === 'roadtest' && k === 'cash')) out[k] = all[k]; });
+      return out;
+    }
+    var CENTRE_NOTE = 'Prices may increase depending on the location of your test. We will confirm the final price with you before your booking is confirmed.';
     function pickupOn() { return state.key === 'roadtest' ? homeTest() : (state.details.meet || 'Pick me up at home') === 'Pick me up at home'; }
     function extra() { var o = opt(); return o.pickup > 0 && pickupOn() ? o.pickup : 0; }
     function total() { return opt().price + extra(); }
@@ -170,21 +176,23 @@
         '<div class="field-row">' + field('bk-name', 'Full name', '<input id="bk-name" type="text" autocomplete="name" value="' + v('name') + '">') + field('bk-phone', 'Phone or WhatsApp', '<input id="bk-phone" type="tel" autocomplete="tel" placeholder="(519) 000 0000" value="' + v('phone') + '">') + '</div>' +
         field('bk-email', 'Email', '<input id="bk-email" type="email" autocomplete="email" placeholder="you@email.com" value="' + v('email') + '">') +
         '<div class="field-row">' + field('bk-licence', 'Licence you have now', '<select id="bk-licence">' + sel('licence', ['G1', 'G2', 'Full G']) + '</select>') + field('bk-lang', 'Lesson language', '<select id="bk-lang">' + sel('lang', ['English', 'Spanish', 'Arabic', 'Portuguese']) + '</select>') + '</div>' +
-        (isTest ? field('bk-centre', 'DriveTest centre', '<select id="bk-centre">' + sel('centre', ['London', 'St. Thomas', 'Other']) + '</select>') : field('bk-meet', 'Where should we start?', '<select id="bk-meet">' + sel('meet', ['Pick me up at home', 'Meet at White Oaks Mall']) + '</select>')) +
-        (Object.keys(CFG.pay || {}).length > 1 ? field('bk-pay', 'How would you like to pay?', '<select id="bk-pay">' + Object.keys(CFG.pay).map(function (k) { return '<option value="' + k + '"' + (d.pay === k ? ' selected' : '') + '>' + esc(CFG.pay[k]) + '</option>'; }).join('') + '</select>') : '') +
+        (isTest ? field('bk-centre', 'DriveTest centre', '<select id="bk-centre">' + sel('centre', ['London', 'Other']) + '</select><p class="bk__notice" id="bk-centre-note" role="status" hidden>' + CENTRE_NOTE + '</p>') : field('bk-meet', 'Where should we start?', '<select id="bk-meet">' + sel('meet', ['Pick me up at home', 'Meet at White Oaks Mall']) + '</select>')) +
+        (Object.keys(payMethods()).length > 1 ? field('bk-pay', 'How would you like to pay?', '<select id="bk-pay">' + Object.keys(payMethods()).map(function (k) { return '<option value="' + k + '"' + (d.pay === k ? ' selected' : '') + '>' + esc(payMethods()[k]) + '</option>'; }).join('') + '</select>') : '') +
         field('bk-address', 'Pick up address', '<input id="bk-address" type="text" autocomplete="street-address" placeholder="Street, London, ON" value="' + v('address') + '">') +
         field('bk-notes', 'Anything we should know?', '<textarea id="bk-notes" rows="2" placeholder="For example, what you want to practise.">' + v('notes') + '</textarea>', true) + '</div>';
       var meet = body.querySelector('#bk-meet'), addr = body.querySelector('#bk-address').closest('.field');
       var sync = function () { addr.hidden = meet ? meet.value !== 'Pick me up at home' : !homeTest(); };
       if (meet) { meet.addEventListener('change', function () { state.details.meet = meet.value; sync(); summary(); }); }
       sync();
+      var centre = body.querySelector('#bk-centre'), note = body.querySelector('#bk-centre-note');
+      if (centre && note) { var cs = function () { state.details.centre = centre.value; note.hidden = centre.value !== 'Other'; }; centre.addEventListener('change', cs); cs(); }
     }
 
     function validDetails() {
       var g = function (id) { return dialog.querySelector('#' + id); }, d = state.details;
       d.name = g('bk-name').value.trim(); d.phone = g('bk-phone').value.trim(); d.email = g('bk-email').value.trim();
       d.licence = g('bk-licence').value; d.lang = g('bk-lang').value; d.centre = g('bk-centre') ? g('bk-centre').value : ''; d.meet = g('bk-meet') ? g('bk-meet').value : '';
-      d.pay = g('bk-pay') ? g('bk-pay').value : Object.keys(CFG.pay || {})[0] || ''; d.address = g('bk-address').value.trim(); if (state.key === 'roadtest' && !homeTest()) d.address = ''; d.notes = g('bk-notes').value.trim(); d.website = g('bk-website').value;
+      d.pay = g('bk-pay') ? g('bk-pay').value : Object.keys(payMethods())[0] || ''; d.address = g('bk-address').value.trim(); if (state.key === 'roadtest' && !homeTest()) d.address = ''; d.notes = g('bk-notes').value.trim(); d.website = g('bk-website').value;
       var needAddr = state.key === 'roadtest' ? homeTest() : d.meet === 'Pick me up at home';
       var errors = {
         'bk-name': d.name.length >= 2 ? '' : 'Please enter your full name.',
@@ -209,7 +217,7 @@
       body.innerHTML = '<h3 class="bk__h">Check your booking</h3><ul class="bk__review"><li><span>Service</span><strong>' + esc(state.service.name) + ' · ' + esc(o.label) + '</strong></li>' +
         '<li><span>When</span><strong>' + esc(fmtDate(state.date)) + ' at ' + esc(fmtTime(state.time)) + '</strong></li><li><span>Where</span><strong>' + esc(where) + '</strong></li>' +
         (d.pay && CFG.pay ? '<li><span>Payment</span><strong>' + esc(CFG.pay[d.pay] || '') + '</strong></li>' : '') + '<li><span>Name</span><strong>' + esc(d.name) + ' · ' + esc(d.phone) + '</strong></li><li><span>Total</span><strong>' + money(total()) + ' + HST' + (extra() ? ' <small>(includes ' + money(extra()) + ' home pick up)</small>' : '') + '</strong></li></ul>' +
-        '<p class="bk__small">We confirm every booking. Free reschedule up to 24 hours before.</p><p class="bk__hint" data-bk-hint hidden></p>';
+        (state.key === 'roadtest' && d.centre === 'Other' ? '<p class="bk__notice">' + CENTRE_NOTE + '</p>' : '') + '<p class="bk__small">We confirm every booking. Free reschedule up to 24 hours before.</p><p class="bk__hint" data-bk-hint hidden></p>';
       nb.textContent = state.details.pay === 'square' ? 'Request booking and pay' : 'Request booking';
     }
 

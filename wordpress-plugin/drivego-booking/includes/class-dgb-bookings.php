@@ -120,7 +120,7 @@ class DGB_Bookings {
 
 	public static function summary_lines( $id ) {
 		$g = function ( $k ) use ( $id ) { return get_post_meta( $id, '_dgb_' . $k, true ); };
-		$where = 'roadtest' === $g( 'service' ) ? 'DriveTest ' . $g( 'centre' ) . ( $g( 'address' ) ? ', pick up at ' . $g( 'address' ) : ', meet at White Oaks Mall' )
+		$where = 'roadtest' === $g( 'service' ) ? 'DriveTest ' . ( 'Other' === $g( 'centre' ) ? 'other location (price to be confirmed)' : $g( 'centre' ) ) . ( $g( 'address' ) ? ', pick up at ' . $g( 'address' ) : ', meet at White Oaks Mall' )
 			: ( 'Pick me up at home' === $g( 'meet' ) ? 'Pick up at ' . $g( 'address' ) : 'White Oaks Mall' );
 		return array(
 			'Service' => $g( 'service_name' ) . ' · ' . $g( 'option' ),

@@ -71,6 +71,7 @@ class DGB_Rest {
 			return new WP_Error( 'dgb_invalid', 'Please check your name, email and phone number.', array( 'status' => 400 ) );
 		}
 		$methods = DGB_Settings::pay_methods();
+		if ( 'roadtest' === $d['service'] ) { unset( $methods['cash'] ); }
 		if ( ! isset( $methods[ $d['pay'] ] ) ) { $d['pay'] = isset( $methods['square'] ) ? 'square' : 'etransfer'; }
 		$id = DGB_Bookings::create( $d );
 		if ( is_wp_error( $id ) ) { return $id; }

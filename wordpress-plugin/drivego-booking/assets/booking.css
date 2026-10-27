@@ -86,6 +86,8 @@ dialog.bk::backdrop{ background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px)
 .bk__review span{ color: var(--muted); }
 .bk__review strong{ text-align: right; }
 .bk__small{ color: var(--muted); font-size: 0.875rem; line-height: 1.25rem; }
+.bk__notice{ margin: 8px 0 0; padding: 10px 12px; border: 1px solid #e4c870; border-left-width: 4px; border-radius: 8px; background: #fff8e1; color: #5c4400; font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; }
+.bk__notice[hidden]{ display: none; }
 .bk__hint{ margin-top: 12px; color: var(--error); font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; }
 .bk__done{ padding: 24px 0; text-align: center; }
 .bk__done p{ max-width: 440px; margin: 8px auto 0; color: var(--muted); }
