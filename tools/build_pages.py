@@ -231,7 +231,7 @@ TEST_PRICE = '''          <div class="svc__tests">
             <div><p class="svc__tests-name">Complete road test</p><p class="service__price">$175 <span class="plan__tax">+ HST</span></p></div>
           </div>'''
 
-REFRESH_PRICE = '          <p class="service__price">From $55 <span class="plan__tax">+ HST</span></p>'
+REFRESH_PRICE = '          <p class="service__price">From $75 <span class="plan__tax">+ HST</span></p>'
 
 page('services.html', 'Driving services | DriveGo London',
      'Book and pay online for single driving lessons, G2 and G road test packages and G-Full and G2 refresher lessons in London, Ontario.',

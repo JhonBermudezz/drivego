@@ -11,7 +11,6 @@ class DGB_Settings {
 			array( 'label' => '2 hours', 'minutes' => 120, 'price' => 125, 'pickup' => 0, 'pay' => '' ),
 		);
 		$refresher = array(
-			array( 'label' => '1 hour', 'minutes' => 60, 'price' => 55, 'pickup' => 10, 'car' => 10, 'pay' => '' ),
 			array( 'label' => '1.5 hours', 'minutes' => 90, 'price' => 75, 'pickup' => 10, 'car' => 20, 'pay' => '' ),
 			array( 'label' => '2 hours', 'minutes' => 120, 'price' => 105, 'pickup' => 10, 'car' => 20, 'pay' => '' ),
 		);
