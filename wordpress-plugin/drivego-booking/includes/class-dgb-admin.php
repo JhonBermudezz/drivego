@@ -142,13 +142,14 @@ class DGB_Admin {
 			<h3><?php echo esc_html( $svc['name'] ); ?> <code>[drivego_booking service="<?php echo esc_html( $key ); ?>"]</code></h3>
 			<p><label>Name <input type="text" name="<?php echo esc_attr( $n ); ?>[services][<?php echo esc_attr( $key ); ?>][name]" value="<?php echo esc_attr( $svc['name'] ); ?>"></label>
 			<label>&nbsp; Day question <input type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[services][<?php echo esc_attr( $key ); ?>][when]" value="<?php echo esc_attr( $svc['when'] ); ?>"></label></p>
-			<table class="widefat" style="max-width:900px"><thead><tr><th>Option name</th><th>Minutes</th><th>Price (CAD, before HST)</th><th>Extra for home pick up</th><th>Fixed Square link (optional)</th></tr></thead><tbody>
+			<table class="widefat" style="max-width:900px"><thead><tr><th>Option name</th><th>Minutes</th><th>Price (CAD, before HST)</th><th>Extra for home pick up</th><?php if ( 'roadtest' === $key ) : ?><th>Home pick up and drop off included</th><?php endif; ?><th>Fixed Square link (optional)</th></tr></thead><tbody>
 			<?php $opts = array_pad( $svc['options'], 5, array( 'label' => '', 'minutes' => 60, 'price' => 0, 'pickup' => 0, 'pay' => '' ) );
 			foreach ( $opts as $i => $o ) : $b = esc_attr( $n ) . '[services][' . esc_attr( $key ) . '][options][' . (int) $i . ']'; ?>
 				<tr><td><input type="text" name="<?php echo $b; ?>[label]" value="<?php echo esc_attr( $o['label'] ); ?>"></td>
 				<td><input type="number" min="15" step="15" style="width:80px" name="<?php echo $b; ?>[minutes]" value="<?php echo esc_attr( $o['minutes'] ); ?>"></td>
 				<td><input type="number" min="0" step="0.01" style="width:100px" name="<?php echo $b; ?>[price]" value="<?php echo esc_attr( $o['price'] ); ?>"></td>
 				<td><input type="number" min="0" step="0.01" style="width:100px" name="<?php echo $b; ?>[pickup]" value="<?php echo esc_attr( isset( $o['pickup'] ) ? $o['pickup'] : 0 ); ?>"></td>
+				<?php if ( 'roadtest' === $key ) : ?><td><label><input type="checkbox" name="<?php echo $b; ?>[home]" value="1" <?php checked( DGB_Settings::option_home( $o, $i ) ); ?>> yes</label></td><?php endif; ?>
 				<td><input type="url" class="regular-text" name="<?php echo $b; ?>[pay]" value="<?php echo esc_attr( $o['pay'] ); ?>" placeholder="https://square.link/u/..."></td></tr>
 			<?php endforeach; ?></tbody></table>
 		<?php endforeach; ?>

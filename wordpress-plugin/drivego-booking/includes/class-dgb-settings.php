@@ -49,8 +49,8 @@ class DGB_Settings {
 				'lessons'   => array( 'name' => 'Single lesson', 'when' => 'Lesson day and start time', 'options' => $lessons ),
 				'refresher' => array( 'name' => 'G-Full & G2 Refresher', 'when' => 'Lesson day and start time', 'options' => $opts ),
 				'roadtest'  => array( 'name' => 'Road test package', 'when' => 'Your DriveTest date and test time', 'options' => array(
-					array( 'label' => 'Basic road test', 'minutes' => 120, 'price' => 135, 'pickup' => 0, 'pay' => '' ),
-					array( 'label' => 'Complete road test', 'minutes' => 120, 'price' => 155, 'pickup' => 0, 'pay' => '' ),
+					array( 'label' => 'Basic road test', 'minutes' => 120, 'price' => 135, 'pickup' => 0, 'home' => 0, 'pay' => '' ),
+					array( 'label' => 'Complete road test', 'minutes' => 120, 'price' => 175, 'pickup' => 0, 'home' => 1, 'pay' => '' ),
 				) ),
 			),
 		);
@@ -66,6 +66,11 @@ class DGB_Settings {
 		$s     = is_array( $saved ) ? array_replace( $d, $saved ) : $d;
 		$s['hours'] = is_array( $s['hours'] ) ? $s['hours'] : $d['hours'];
 		return $s;
+	}
+
+	/** Does this road test option include home pick up and drop off? Older saved settings have no flag: the first option meets at the mall, the others pick up. */
+	public static function option_home( array $o, $index ) {
+		return isset( $o['home'] ) ? (bool) $o['home'] : ( (int) $index > 0 );
 	}
 
 	public static function get( $key ) {
@@ -94,9 +99,9 @@ class DGB_Settings {
 		$out = array();
 		foreach ( self::get( 'services' ) as $key => $svc ) {
 			$opts = array();
-			foreach ( $svc['options'] as $o ) {
+			foreach ( $svc['options'] as $i => $o ) {
 				if ( '' === trim( $o['label'] ) ) { continue; }
-				$opts[] = array( 'label' => $o['label'], 'minutes' => (int) $o['minutes'], 'price' => (float) $o['price'], 'pickup' => isset( $o['pickup'] ) ? (float) $o['pickup'] : 0 );
+				$opts[] = array( 'label' => $o['label'], 'minutes' => (int) $o['minutes'], 'price' => (float) $o['price'], 'pickup' => isset( $o['pickup'] ) ? (float) $o['pickup'] : 0, 'home' => self::option_home( $o, $i ) );
 			}
 			$out[ $key ] = array( 'name' => $svc['name'], 'when' => $svc['when'], 'options' => $opts );
 		}
@@ -154,6 +159,7 @@ class DGB_Settings {
 							'minutes' => max( 15, min( 600, (int) ( isset( $o['minutes'] ) ? $o['minutes'] : 60 ) ) ),
 							'price'   => max( 0, (float) ( isset( $o['price'] ) ? $o['price'] : 0 ) ),
 							'pickup'  => max( 0, (float) ( isset( $o['pickup'] ) ? $o['pickup'] : 0 ) ),
+							'home'    => empty( $o['home'] ) ? 0 : 1,
 							'pay'     => esc_url_raw( isset( $o['pay'] ) ? $o['pay'] : '' ),
 						);
 					}

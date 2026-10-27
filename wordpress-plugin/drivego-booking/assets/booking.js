@@ -65,7 +65,8 @@
       var same = os.every(function (o) { return o.pickup === os[0].pickup; });
       return same ? money(os[0].pickup) : os.map(function (o) { return money(o.pickup) + ' (' + esc(o.label) + ')'; }).join(', ');
     }
-    function pickupOn() { return state.key === 'roadtest' || (state.details.meet || 'Pick me up at home') === 'Pick me up at home'; }
+    function homeTest() { return state.key === 'roadtest' && opt().home !== false; }
+    function pickupOn() { return state.key === 'roadtest' ? homeTest() : (state.details.meet || 'Pick me up at home') === 'Pick me up at home'; }
     function extra() { var o = opt(); return o.pickup > 0 && pickupOn() ? o.pickup : 0; }
     function total() { return opt().price + extra(); }
 
@@ -174,16 +175,17 @@
         field('bk-address', 'Pick up address', '<input id="bk-address" type="text" autocomplete="street-address" placeholder="Street, London, ON" value="' + v('address') + '">') +
         field('bk-notes', 'Anything we should know?', '<textarea id="bk-notes" rows="2" placeholder="For example, what you want to practise.">' + v('notes') + '</textarea>', true) + '</div>';
       var meet = body.querySelector('#bk-meet'), addr = body.querySelector('#bk-address').closest('.field');
-      var sync = function () { addr.hidden = meet && meet.value !== 'Pick me up at home'; };
-      if (meet) { meet.addEventListener('change', function () { state.details.meet = meet.value; sync(); summary(); }); sync(); }
+      var sync = function () { addr.hidden = meet ? meet.value !== 'Pick me up at home' : !homeTest(); };
+      if (meet) { meet.addEventListener('change', function () { state.details.meet = meet.value; sync(); summary(); }); }
+      sync();
     }
 
     function validDetails() {
       var g = function (id) { return dialog.querySelector('#' + id); }, d = state.details;
       d.name = g('bk-name').value.trim(); d.phone = g('bk-phone').value.trim(); d.email = g('bk-email').value.trim();
       d.licence = g('bk-licence').value; d.lang = g('bk-lang').value; d.centre = g('bk-centre') ? g('bk-centre').value : ''; d.meet = g('bk-meet') ? g('bk-meet').value : '';
-      d.pay = g('bk-pay') ? g('bk-pay').value : Object.keys(CFG.pay || {})[0] || ''; d.address = g('bk-address').value.trim(); d.notes = g('bk-notes').value.trim(); d.website = g('bk-website').value;
-      var needAddr = state.key === 'roadtest' || d.meet === 'Pick me up at home';
+      d.pay = g('bk-pay') ? g('bk-pay').value : Object.keys(CFG.pay || {})[0] || ''; d.address = g('bk-address').value.trim(); if (state.key === 'roadtest' && !homeTest()) d.address = ''; d.notes = g('bk-notes').value.trim(); d.website = g('bk-website').value;
+      var needAddr = state.key === 'roadtest' ? homeTest() : d.meet === 'Pick me up at home';
       var errors = {
         'bk-name': d.name.length >= 2 ? '' : 'Please enter your full name.',
         'bk-phone': d.phone.replace(/\D/g, '').length >= 10 ? '' : 'Enter a phone number with at least 10 digits.',
@@ -198,7 +200,7 @@
 
     function renderConfirm(body, nb) {
       var o = opt(), d = state.details;
-      var where = state.key === 'roadtest' ? 'DriveTest ' + d.centre + (d.address ? ', pick up at ' + d.address : '') : (d.meet === 'Meet at White Oaks Mall' ? 'White Oaks Mall' : 'Pick up at ' + d.address);
+      var where = state.key === 'roadtest' ? 'DriveTest ' + d.centre + (homeTest() && d.address ? ', pick up at ' + d.address : ', meet at White Oaks Mall') : (d.meet === 'Meet at White Oaks Mall' ? 'White Oaks Mall' : 'Pick up at ' + d.address);
       if (state.sent) {
         body.innerHTML = '<div class="bk__done"><span class="bk__done-icon">' + ICON.check + '</span><h3 class="bk__h">Request sent</h3><p>We will confirm your ' + esc(state.service.name.toLowerCase()) + ' on ' + esc(fmtDate(state.date)) + ' at ' + esc(fmtTime(state.time)) + ' by phone or WhatsApp within one business day. A copy was sent to your email.</p>' +
           (state.payUrl ? '<p>Your payment page opened in a new tab. If it did not, use the button below.</p>' : state.payMethod === 'etransfer' ? '<p>To pay, send an Interac e-Transfer to <strong>' + esc(state.etransfer || '') + '</strong> and write your name in the message. We also emailed you these steps.</p>' : state.payMethod === 'cash' ? '<p>You will pay in cash at your lesson. Please bring the exact amount if you can.</p>' : '<p>We will send you the payment details when we confirm.</p>') + '</div>';

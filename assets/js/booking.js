@@ -44,7 +44,7 @@ const BOOKING = {
       when: 'Your DriveTest date and test time',
       options: [
         { label: 'Basic road test', minutes: 120, price: 135, pay: '' },
-        { label: 'Complete road test', minutes: 120, price: 155, pay: '' },
+        { label: 'Complete road test', minutes: 120, price: 175, pay: '' },
       ],
     },
   },
