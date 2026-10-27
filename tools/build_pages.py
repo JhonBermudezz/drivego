@@ -219,11 +219,11 @@ CONTACT_BTN = '            <a class="btn btn--outline btn--lg" href="contact.htm
 
 LESSON_PRICE = '''          <div class="svc__price">
             <div class="duration" role="radiogroup" aria-label="Lesson length">
-              <button type="button" role="radio" aria-checked="true" data-price="$65">1 h</button>
-              <button type="button" role="radio" aria-checked="false" data-price="$95">1.5 h</button>
-              <button type="button" role="radio" aria-checked="false" data-price="$125">2 h</button>
+              <button type="button" role="radio" aria-checked="true" data-price="$55">1 h</button>
+              <button type="button" role="radio" aria-checked="false" data-price="$75">1.5 h</button>
+              <button type="button" role="radio" aria-checked="false" data-price="$105">2 h</button>
             </div>
-            <p class="service__price"><span data-duration-price>$65</span> <span class="plan__tax">+ HST</span></p>
+            <p class="service__price"><span data-duration-price>$55</span> <span class="plan__tax">+ HST</span></p>
           </div>'''
 
 TEST_PRICE = '''          <div class="svc__tests">

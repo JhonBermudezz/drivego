@@ -25,9 +25,9 @@ const BOOKING = {
       name: 'Single lesson',
       when: 'Lesson day and start time',
       options: [
-        { label: '1 hour', minutes: 60, price: 65, pay: '' },
-        { label: '1.5 hours', minutes: 90, price: 95, pay: '' },
-        { label: '2 hours', minutes: 120, price: 125, pay: '' },
+        { label: '1 hour', minutes: 60, price: 55, pay: '' },
+        { label: '1.5 hours', minutes: 90, price: 75, pay: '' },
+        { label: '2 hours', minutes: 120, price: 105, pay: '' },
       ],
     },
     refresher: {
