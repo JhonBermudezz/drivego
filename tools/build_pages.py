@@ -321,6 +321,35 @@ page('road-test.html', 'G2 and G road test packages | DriveGo London',
             </ul>
             <a class="btn btn--dark btn--block" href="#book" data-calendar-option="roadtest:1">Book complete test package</a>
           </article>
+          <article class="plan plan--wide reveal">
+            <div class="plan__intro">
+              <h3 class="plan__name">Road test outside of London</h3>
+              <p class="plan__desc">Taking your test at another DriveTest centre? We drive you there and back, warm up on the exam route and use our car for the test.</p>
+              <p class="plan__price"><span class="plan__from">From</span><span class="plan__amount">$260</span><span class="plan__tax">+ HST</span></p>
+              <ul class="plan__list">
+                <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Round trip transport to the DriveTest centre</li>
+                <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>2 hours of practice in the exam area</li>
+                <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Preparation on the exam route</li>
+                <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Our training vehicle for the test</li>
+                <li class="is-on"><i class="ph-fill ph-check-circle" aria-hidden="true"></i>Instructor guidance during your preparation</li>
+              </ul>
+              <a class="btn btn--dark btn--block" href="#book" data-calendar-option="outside:0">Book a test outside London</a>
+            </div>
+            <div class="dest">
+              <h4 class="dest__title">Nearby DriveTest centres</h4>
+              <div class="dest__head"><p>Destination</p><p>Service time</p><p>Price</p></div>
+              <div class="dest__row"><p class="dest__name">Strathroy</p><p class="dest__time">2.5 h</p><p class="dest__price">$260</p></div>
+              <div class="dest__row"><p class="dest__name">Woodstock</p><p class="dest__time">3 h</p><p class="dest__price">$290</p></div>
+              <div class="dest__row"><p class="dest__name">Tillsonburg</p><p class="dest__time">3.5 h</p><p class="dest__price">$330</p></div>
+              <div class="dest__row"><p class="dest__name">Stratford</p><p class="dest__time">4 h</p><p class="dest__price">$360</p></div>
+              <div class="dest__row"><p class="dest__name">Clinton</p><p class="dest__time">4 h 20 min</p><p class="dest__price">$390</p></div>
+              <h4 class="dest__title">Extended travel</h4>
+              <div class="dest__row"><p class="dest__name">Chatham</p><p class="dest__time">5 h 30 min</p><p class="dest__price">$450</p></div>
+              <div class="dest__row"><p class="dest__name">Sarnia</p><p class="dest__time">6 h</p><p class="dest__price">$500</p></div>
+              <div class="dest__row"><p class="dest__name">Windsor</p><p class="dest__time">8 h</p><p class="dest__price">$600</p></div>
+              <p class="dest__note">Prices are before HST. Pick your destination on the calendar and the price updates.</p>
+            </div>
+          </article>
         </div>
         <div class="note reveal" style="margin-top: 24px;"><i class="ph ph-info" aria-hidden="true"></i><p>DriveTest fees are paid by you directly to DriveTest and are not included. Book your test date at drivetest.ca, then send us the date and time.</p></div>
       </div>

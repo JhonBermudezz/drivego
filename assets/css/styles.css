@@ -844,3 +844,19 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
 
 /* Comparison table fits a phone */
 @media (max-width:640px){ .compare{overflow:visible} .compare table{min-width:0} .compare th,.compare td{padding:12px 6px;font-size:0.8125rem;line-height:1.2rem} .compare th:first-child,.compare td:first-child{padding-left:14px} .compare thead th{font-size:0.8125rem;line-height:1.1rem} .compare thead th small{font-size:0.6875rem;line-height:1rem} }
+
+/* Road test outside of London: wide card with the destination price list */
+.plan--wide { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1.1fr; gap: 40px; align-items: start; }
+.plan--wide .plan__intro { display: flex; flex-direction: column; gap: 12px; }
+.plan__from { font-size: .875rem; font-weight: 600; color: var(--muted, #5b5d55); margin-right: 8px; }
+.dest__title { font-size: .8125rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; margin: 0 0 8px; }
+.dest__title:not(:first-child) { margin-top: 24px; }
+.dest__head, .dest__row { display: grid; grid-template-columns: 1.4fr 1fr .7fr; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--line, #e3e5dc); }
+.dest__head { padding-top: 0; font-size: .75rem; font-weight: 600; color: var(--muted, #5b5d55); }
+.dest__head p, .dest__row p { margin: 0; }
+.dest__name { font-weight: 600; }
+.dest__time { color: var(--muted, #5b5d55); }
+.dest__price { font-weight: 700; text-align: right; }
+.dest__head p:last-child { text-align: right; }
+.dest__note { margin: 12px 0 0; font-size: .875rem; color: var(--muted, #5b5d55); }
+@media (max-width: 860px) { .plan--wide { grid-template-columns: 1fr; gap: 24px; } }

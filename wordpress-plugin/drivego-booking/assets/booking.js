@@ -65,14 +65,14 @@
       var same = os.every(function (o) { return o.pickup === os[0].pickup; });
       return same ? money(os[0].pickup) : os.map(function (o) { return money(o.pickup) + ' (' + esc(o.label) + ')'; }).join(', ');
     }
-    function homeTest() { return state.key === 'roadtest' && opt().home !== false; }
+    function isTest() { return state.key === 'roadtest' || state.key === 'outside'; }
+    function homeTest() { return state.key === 'outside' || (state.key === 'roadtest' && opt().home !== false); }
     function payMethods() {
       var all = CFG.pay || {}, out = {};
-      Object.keys(all).forEach(function (k) { if (!(state.key === 'roadtest' && k === 'cash')) out[k] = all[k]; });
+      Object.keys(all).forEach(function (k) { if (!(isTest() && k === 'cash')) out[k] = all[k]; });
       return out;
     }
-    var CENTRE_NOTE = 'Prices may increase depending on the location of your test. We will confirm the final price with you before your booking is confirmed.';
-    function pickupOn() { return state.key === 'roadtest' ? homeTest() : (state.details.meet || 'Pick me up at home') === 'Pick me up at home'; }
+    function pickupOn() { return isTest() ? homeTest() : (state.details.meet || 'Pick me up at home') === 'Pick me up at home'; }
     function extra() { var o = opt(); return o.pickup > 0 && pickupOn() ? o.pickup : 0; }
     function total() { return opt().price + extra(); }
 
@@ -108,7 +108,7 @@
     function renderOption(body) {
       body.innerHTML = '<h3 class="bk__h">Choose an option</h3><div class="bk__options">' + state.service.options.map(function (o, i) {
         return '<button type="button" class="bk__option" aria-pressed="' + (i === state.option) + '" data-i="' + i + '"><span class="bk__option-name">' + esc(o.label) + '</span><span class="bk__option-price">' + money(o.price) + ' <small>+ HST</small></span></button>';
-      }).join('') + '</div>' + (state.key !== 'roadtest' && state.service.options.some(function (o) { return o.pickup > 0; }) ? '<p class="bk__small">Meeting us at White Oaks Mall is the base price. Home pick up adds ' + pickupText() + '.</p>' : '');
+      }).join('') + '</div>' + (!isTest() && state.service.options.some(function (o) { return o.pickup > 0; }) ? '<p class="bk__small">Meeting us at White Oaks Mall is the base price. Home pick up adds ' + pickupText() + '.</p>' : '');
       body.querySelectorAll('.bk__option').forEach(function (b) {
         b.addEventListener('click', function () {
           state.option = +b.dataset.i; state.time = null; state.date = null; state.free = {};
@@ -176,7 +176,7 @@
         '<div class="field-row">' + field('bk-name', 'Full name', '<input id="bk-name" type="text" autocomplete="name" value="' + v('name') + '">') + field('bk-phone', 'Phone or WhatsApp', '<input id="bk-phone" type="tel" autocomplete="tel" placeholder="(519) 000 0000" value="' + v('phone') + '">') + '</div>' +
         field('bk-email', 'Email', '<input id="bk-email" type="email" autocomplete="email" placeholder="you@email.com" value="' + v('email') + '">') +
         '<div class="field-row">' + field('bk-licence', 'Licence you have now', '<select id="bk-licence">' + sel('licence', ['G1', 'G2', 'Full G']) + '</select>') + field('bk-lang', 'Lesson language', '<select id="bk-lang">' + sel('lang', ['English', 'Spanish', 'Arabic', 'Portuguese']) + '</select>') + '</div>' +
-        (isTest ? field('bk-centre', 'DriveTest centre', '<select id="bk-centre">' + sel('centre', ['London', 'Other']) + '</select><p class="bk__notice" id="bk-centre-note" role="status" hidden>' + CENTRE_NOTE + '</p>') : field('bk-meet', 'Where should we start?', '<select id="bk-meet">' + sel('meet', ['Pick me up at home', 'Meet at White Oaks Mall']) + '</select>')) +
+        (isTest ? field('bk-centre', 'DriveTest centre', '<select id="bk-centre">' + sel('centre', ['London']) + '</select><p class="bk__small">Taking your test outside London? Choose the <strong>Road test outside of London</strong> package instead.</p>') : field('bk-meet', 'Where should we start?', '<select id="bk-meet">' + sel('meet', ['Pick me up at home', 'Meet at White Oaks Mall']) + '</select>')) +
         (Object.keys(payMethods()).length > 1 ? field('bk-pay', 'How would you like to pay?', '<select id="bk-pay">' + Object.keys(payMethods()).map(function (k) { return '<option value="' + k + '"' + (d.pay === k ? ' selected' : '') + '>' + esc(payMethods()[k]) + '</option>'; }).join('') + '</select>') : '') +
         field('bk-address', 'Pick up address', '<input id="bk-address" type="text" autocomplete="street-address" placeholder="Street, London, ON" value="' + v('address') + '">') +
         field('bk-notes', 'Anything we should know?', '<textarea id="bk-notes" rows="2" placeholder="For example, what you want to practise.">' + v('notes') + '</textarea>', true) + '</div>';
@@ -184,16 +184,14 @@
       var sync = function () { addr.hidden = meet ? meet.value !== 'Pick me up at home' : !homeTest(); };
       if (meet) { meet.addEventListener('change', function () { state.details.meet = meet.value; sync(); summary(); }); }
       sync();
-      var centre = body.querySelector('#bk-centre'), note = body.querySelector('#bk-centre-note');
-      if (centre && note) { var cs = function () { state.details.centre = centre.value; note.hidden = centre.value !== 'Other'; }; centre.addEventListener('change', cs); cs(); }
     }
 
     function validDetails() {
       var g = function (id) { return dialog.querySelector('#' + id); }, d = state.details;
       d.name = g('bk-name').value.trim(); d.phone = g('bk-phone').value.trim(); d.email = g('bk-email').value.trim();
       d.licence = g('bk-licence').value; d.lang = g('bk-lang').value; d.centre = g('bk-centre') ? g('bk-centre').value : ''; d.meet = g('bk-meet') ? g('bk-meet').value : '';
-      d.pay = g('bk-pay') ? g('bk-pay').value : Object.keys(payMethods())[0] || ''; d.address = g('bk-address').value.trim(); if (state.key === 'roadtest' && !homeTest()) d.address = ''; d.notes = g('bk-notes').value.trim(); d.website = g('bk-website').value;
-      var needAddr = state.key === 'roadtest' ? homeTest() : d.meet === 'Pick me up at home';
+      d.pay = g('bk-pay') ? g('bk-pay').value : Object.keys(payMethods())[0] || ''; d.address = g('bk-address').value.trim(); if (isTest() && !homeTest()) d.address = ''; if (state.key === 'outside') d.centre = opt().label.split(' · ')[0]; d.notes = g('bk-notes').value.trim(); d.website = g('bk-website').value;
+      var needAddr = isTest() ? homeTest() : d.meet === 'Pick me up at home';
       var errors = {
         'bk-name': d.name.length >= 2 ? '' : 'Please enter your full name.',
         'bk-phone': d.phone.replace(/\D/g, '').length >= 10 ? '' : 'Enter a phone number with at least 10 digits.',
@@ -208,7 +206,7 @@
 
     function renderConfirm(body, nb) {
       var o = opt(), d = state.details;
-      var where = state.key === 'roadtest' ? 'DriveTest ' + d.centre + (homeTest() && d.address ? ', pick up at ' + d.address : ', meet at White Oaks Mall') : (d.meet === 'Meet at White Oaks Mall' ? 'White Oaks Mall' : 'Pick up at ' + d.address);
+      var where = isTest() ? 'DriveTest ' + d.centre + (homeTest() && d.address ? ', pick up at ' + d.address : ', meet at White Oaks Mall') : (d.meet === 'Meet at White Oaks Mall' ? 'White Oaks Mall' : 'Pick up at ' + d.address);
       if (state.sent) {
         body.innerHTML = '<div class="bk__done"><span class="bk__done-icon">' + ICON.check + '</span><h3 class="bk__h">Request sent</h3><p>We will confirm your ' + esc(state.service.name.toLowerCase()) + ' on ' + esc(fmtDate(state.date)) + ' at ' + esc(fmtTime(state.time)) + ' by phone or WhatsApp within one business day. A copy was sent to your email.</p>' +
           (state.payUrl ? '<p>Your payment page opened in a new tab. If it did not, use the button below.</p>' : state.payMethod === 'etransfer' ? '<p>To pay, send an Interac e-Transfer to <strong>' + esc(state.etransfer || '') + '</strong> and write your name in the message. We also emailed you these steps.</p>' : state.payMethod === 'cash' ? '<p>You will pay in cash at your lesson. Please bring the exact amount if you can.</p>' : '<p>We will send you the payment details when we confirm.</p>') + '</div>';
@@ -217,7 +215,7 @@
       body.innerHTML = '<h3 class="bk__h">Check your booking</h3><ul class="bk__review"><li><span>Service</span><strong>' + esc(state.service.name) + ' · ' + esc(o.label) + '</strong></li>' +
         '<li><span>When</span><strong>' + esc(fmtDate(state.date)) + ' at ' + esc(fmtTime(state.time)) + '</strong></li><li><span>Where</span><strong>' + esc(where) + '</strong></li>' +
         (d.pay && CFG.pay ? '<li><span>Payment</span><strong>' + esc(CFG.pay[d.pay] || '') + '</strong></li>' : '') + '<li><span>Name</span><strong>' + esc(d.name) + ' · ' + esc(d.phone) + '</strong></li><li><span>Total</span><strong>' + money(total()) + ' + HST' + (extra() ? ' <small>(includes ' + money(extra()) + ' home pick up)</small>' : '') + '</strong></li></ul>' +
-        (state.key === 'roadtest' && d.centre === 'Other' ? '<p class="bk__notice">' + CENTRE_NOTE + '</p>' : '') + '<p class="bk__small">We confirm every booking. Free reschedule up to 24 hours before.</p><p class="bk__hint" data-bk-hint hidden></p>';
+        '<p class="bk__small">We confirm every booking. Free reschedule up to 24 hours before.</p><p class="bk__hint" data-bk-hint hidden></p>';
       nb.textContent = state.details.pay === 'square' ? 'Request booking and pay' : 'Request booking';
     }
 

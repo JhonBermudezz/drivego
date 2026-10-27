@@ -52,6 +52,16 @@ class DGB_Settings {
 					array( 'label' => 'Basic road test', 'minutes' => 120, 'price' => 135, 'pickup' => 0, 'home' => 0, 'pay' => '' ),
 					array( 'label' => 'Complete road test', 'minutes' => 120, 'price' => 175, 'pickup' => 0, 'home' => 1, 'pay' => '' ),
 				) ),
+				'outside'   => array( 'name' => 'Road test outside of London', 'when' => 'Your DriveTest date and test time', 'options' => array(
+					array( 'label' => 'Strathroy · 2.5 h', 'minutes' => 150, 'price' => 260, 'pickup' => 0, 'pay' => '' ),
+					array( 'label' => 'Woodstock · 3 h', 'minutes' => 180, 'price' => 290, 'pickup' => 0, 'pay' => '' ),
+					array( 'label' => 'Tillsonburg · 3.5 h', 'minutes' => 210, 'price' => 330, 'pickup' => 0, 'pay' => '' ),
+					array( 'label' => 'Stratford · 4 h', 'minutes' => 240, 'price' => 360, 'pickup' => 0, 'pay' => '' ),
+					array( 'label' => 'Clinton · 4 h 20 min', 'minutes' => 260, 'price' => 390, 'pickup' => 0, 'pay' => '' ),
+					array( 'label' => 'Chatham · 5 h 30 min', 'minutes' => 330, 'price' => 450, 'pickup' => 0, 'pay' => '' ),
+					array( 'label' => 'Sarnia · 6 h', 'minutes' => 360, 'price' => 500, 'pickup' => 0, 'pay' => '' ),
+					array( 'label' => 'Windsor · 8 h', 'minutes' => 480, 'price' => 600, 'pickup' => 0, 'pay' => '' ),
+				) ),
 			),
 		);
 	}
@@ -65,11 +75,13 @@ class DGB_Settings {
 		$d     = self::defaults();
 		$s     = is_array( $saved ) ? array_replace( $d, $saved ) : $d;
 		$s['hours'] = is_array( $s['hours'] ) ? $s['hours'] : $d['hours'];
+		foreach ( $d['services'] as $k => $svc ) { if ( ! isset( $s['services'][ $k ] ) ) { $s['services'][ $k ] = $svc; } } // services added in newer versions
 		return $s;
 	}
 
 	/** Does this road test option include home pick up and drop off? Older saved settings have no flag: the first option meets at the mall, the others pick up. */
-	public static function option_home( array $o, $index ) {
+	public static function option_home( array $o, $index, $service = 'roadtest' ) {
+		if ( 'outside' === $service ) { return true; } // transport to and from the test centre is part of this package
 		return isset( $o['home'] ) ? (bool) $o['home'] : ( (int) $index > 0 );
 	}
 
@@ -101,7 +113,7 @@ class DGB_Settings {
 			$opts = array();
 			foreach ( $svc['options'] as $i => $o ) {
 				if ( '' === trim( $o['label'] ) ) { continue; }
-				$opts[] = array( 'label' => $o['label'], 'minutes' => (int) $o['minutes'], 'price' => (float) $o['price'], 'pickup' => isset( $o['pickup'] ) ? (float) $o['pickup'] : 0, 'home' => self::option_home( $o, $i ) );
+				$opts[] = array( 'label' => $o['label'], 'minutes' => (int) $o['minutes'], 'price' => (float) $o['price'], 'pickup' => isset( $o['pickup'] ) ? (float) $o['pickup'] : 0, 'home' => self::option_home( $o, $i, $key ) );
 			}
 			$out[ $key ] = array( 'name' => $svc['name'], 'when' => $svc['when'], 'options' => $opts );
 		}

@@ -51,7 +51,7 @@ class DGB_Bookings {
 
 	/** Does this booking include a home pick up? Road tests always do; lessons only when the student asks for it. */
 	public static function needs_pickup( $service, $meet, $home = true ) {
-		return 'roadtest' === $service ? (bool) $home : 'Pick me up at home' === $meet;
+		return in_array( $service, array( 'roadtest', 'outside' ), true ) ? (bool) $home : 'Pick me up at home' === $meet;
 	}
 
 	/** Server-side total so the price can never be changed from the browser. */
@@ -99,7 +99,8 @@ class DGB_Bookings {
 			if ( ! in_array( (int) $d['start'], self::free_slots( $d['date'], (int) $opt['minutes'] ), true ) ) {
 				return new WP_Error( 'dgb_taken', 'Sorry, that time was just taken. Please pick another one.', array( 'status' => 409 ) );
 			}
-			$price = self::price_for( $opt, $d['service'], $d['meet'], DGB_Settings::option_home( $opt, $d['option'] ) );
+			if ( 'outside' === $d['service'] ) { $d['centre'] = trim( explode( ' · ', $opt['label'] )[0] ); }
+			$price = self::price_for( $opt, $d['service'], $d['meet'], DGB_Settings::option_home( $opt, $d['option'], $d['service'] ) );
 			$title = sprintf( '%s · %s · %s %s', $d['name'], $svc['name'] . ' (' . $opt['label'] . ')', $d['date'], self::fmt_time( (int) $d['start'] ) );
 			$id = wp_insert_post( array( 'post_type' => self::CPT, 'post_status' => 'publish', 'post_title' => $title ), true );
 			if ( is_wp_error( $id ) ) { return $id; }
@@ -120,7 +121,7 @@ class DGB_Bookings {
 
 	public static function summary_lines( $id ) {
 		$g = function ( $k ) use ( $id ) { return get_post_meta( $id, '_dgb_' . $k, true ); };
-		$where = 'roadtest' === $g( 'service' ) ? 'DriveTest ' . ( 'Other' === $g( 'centre' ) ? 'other location (price to be confirmed)' : $g( 'centre' ) ) . ( $g( 'address' ) ? ', pick up at ' . $g( 'address' ) : ', meet at White Oaks Mall' )
+		$where = in_array( $g( 'service' ), array( 'roadtest', 'outside' ), true ) ? 'DriveTest ' . ( 'Other' === $g( 'centre' ) ? 'other location (price to be confirmed)' : $g( 'centre' ) ) . ( $g( 'address' ) ? ', pick up at ' . $g( 'address' ) : ', meet at White Oaks Mall' )
 			: ( 'Pick me up at home' === $g( 'meet' ) ? 'Pick up at ' . $g( 'address' ) : 'White Oaks Mall' );
 		return array(
 			'Service' => $g( 'service_name' ) . ' · ' . $g( 'option' ),
