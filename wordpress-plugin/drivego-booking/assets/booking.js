@@ -74,7 +74,7 @@
     }
     /* Road tests link to each other: the "outside London" package lists destinations with their own price. */
     function moreOption() {
-      var other = state.key === 'roadtest' ? 'outside' : state.key === 'outside' ? 'roadtest' : '';
+      var other = state.key === 'roadtest' ? 'outside' : '';
       if (!other || !SERVICES[other]) return '';
       var os = SERVICES[other].options, low = Math.min.apply(null, os.map(function (o) { return o.price; }));
       return '<button type="button" class="bk__option bk__option--more" data-svc="' + other + '"><span class="bk__option-name">' + (other === 'outside' ? 'Road test outside of London' : 'Basic and Complete road tests in London') + '</span><span class="bk__option-price">' + (other === 'outside' ? 'From ' : 'From ') + money(low) + ' <small>+ HST</small></span></button>';
@@ -126,9 +126,10 @@
     }
 
     function renderOption(body) {
-      body.innerHTML = '<h3 class="bk__h">Choose an option</h3><div class="bk__options">' + state.service.options.map(function (o, i) {
+      body.innerHTML = (state.key === 'outside' && SERVICES.roadtest ? '<button type="button" class="bk__back" data-svc="roadtest"><span aria-hidden="true">←</span> Basic and Complete road tests</button>' : '') + '<h3 class="bk__h">Choose an option</h3><div class="bk__options">' + state.service.options.map(function (o, i) {
         return '<button type="button" class="bk__option" aria-pressed="' + (i === state.option) + '" data-i="' + i + '"><span class="bk__option-name">' + esc(o.label) + '</span><span class="bk__option-price">' + money(listPrice(o)) + ' <small>+ HST</small></span></button>';
       }).join('') + moreOption() + '</div>' + carPicker() + (!isTest() && state.service.options.some(function (o) { return o.pickup > 0; }) ? '<p class="bk__small">Meeting us at White Oaks Mall is the base price. Home pick up adds ' + pickupText() + '.</p>' : '');
+      body.querySelectorAll('.bk__back').forEach(function (b) { b.addEventListener('click', function () { open(b.dataset.svc, 0); }); });
       body.querySelectorAll('.bk__carbtn').forEach(function (b) {
         b.addEventListener('click', function () { state.car = b.dataset.car; state.time = null; state.date = null; state.free = {}; renderOption(body); summary(); });
       });

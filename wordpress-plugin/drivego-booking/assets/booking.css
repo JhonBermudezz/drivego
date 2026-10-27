@@ -117,3 +117,6 @@ dialog.bk{ width: 100%; height: 100%; max-height: 100%; border-radius: 0; }}
 .bk button.bk__carbtn:hover{ border-color: var(--ink); }
 .bk button.bk__carbtn[aria-pressed="true"]{ border: 2px solid var(--green); background: var(--green-soft); padding: 9px 15px; font-weight: 700; }
 .bk__car .bk__small{ margin-top: 10px; }
+
+.bk button.bk__back{ font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0 0 12px; padding: 4px 0; border: 0; background: transparent; color: var(--ink); font-weight: 600; font-size: 0.875rem; text-decoration: underline; text-underline-offset: 3px; }
+.bk button.bk__back:hover{ color: var(--green); }
