@@ -266,7 +266,7 @@ const BOOKING = {
           ${field('bk-email', 'Email', `<input id="bk-email" type="email" autocomplete="email" placeholder="you@email.com" value="${v('email')}">`)}
           <div class="field-row">
             ${field('bk-licence', 'Licence you have now', `<select id="bk-licence">${sel('licence', ['G1', 'G2', 'Full G'])}</select>`)}
-            ${field('bk-lang', 'Lesson language', `<select id="bk-lang">${sel('lang', ['English', 'Spanish'])}</select>`)}
+            ${field('bk-lang', 'Lesson language', `<select id="bk-lang">${sel('lang', ['English', 'Spanish', 'Arabic', 'Portuguese'])}</select>`)}
           </div>
           ${isTest ? field('bk-centre', 'DriveTest centre', `<select id="bk-centre">${sel('centre', ['London', 'St. Thomas', 'Other'])}</select>`) : field('bk-meet', 'Where should we start?', `<select id="bk-meet">${sel('meet', ['Pick me up at home', 'Meet at White Oaks Mall'])}</select>`)}
           ${field('bk-address', 'Pick up address', `<input id="bk-address" type="text" autocomplete="street-address" placeholder="Street, London, ON" value="${v('address')}">`)}
