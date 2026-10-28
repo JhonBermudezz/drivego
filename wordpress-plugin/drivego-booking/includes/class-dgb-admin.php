@@ -81,7 +81,9 @@ class DGB_Admin {
 	public static function mark_paid() {
 		$id = isset( $_GET['id'] ) ? (int) $_GET['id'] : 0;
 		if ( ! current_user_can( 'edit_post', $id ) || ! wp_verify_nonce( isset( $_GET['_wpnonce'] ) ? $_GET['_wpnonce'] : '', 'dgb_paid_' . $id ) ) { wp_die( 'Not allowed.' ); }
-		update_post_meta( $id, '_dgb_payment', 'paid' === get_post_meta( $id, '_dgb_payment', true ) ? 'unpaid' : 'paid' );
+		$now = 'paid' === get_post_meta( $id, '_dgb_payment', true ) ? 'unpaid' : 'paid';
+		update_post_meta( $id, '_dgb_payment', $now );
+		if ( 'paid' === $now ) { DGB_Wave::on_paid( $id ); }
 		wp_safe_redirect( wp_get_referer() ?: admin_url( 'post.php?post=' . $id . '&action=edit' ) );
 		exit;
 	}
@@ -96,6 +98,11 @@ class DGB_Admin {
 		$st = get_post_meta( $post->ID, '_dgb_status', true ) ?: 'pending';
 		echo '<tr><th>Status</th><td>' . esc_html( DGB_Bookings::statuses()[ $st ] ) . '</td></tr>';
 		echo '<tr><th>Payment</th><td>' . ( 'paid' === get_post_meta( $post->ID, '_dgb_payment', true ) ? 'Paid' : 'Unpaid' ) . ' · ' . esc_html( DGB_Bookings::pay_label( get_post_meta( $post->ID, '_dgb_pay_method', true ) ) ) . '</td></tr>';
+		if ( DGB_Wave::configured() && DGB_Settings::get( 'wave_auto' ) ) {
+			$werr = get_post_meta( $post->ID, '_dgb_wave_error', true );
+			$wnum = get_post_meta( $post->ID, '_dgb_wave_number', true );
+			echo '<tr><th>Wave</th><td>' . ( $werr ? 'Error: ' . esc_html( $werr ) : ( get_post_meta( $post->ID, '_dgb_wave_paid', true ) ? 'Invoice ' . esc_html( $wnum ) . ' created and paid' : 'Not sent yet (it is created when the booking is paid)' ) ) . '</td></tr>';
+		}
 		if ( $err = get_post_meta( $post->ID, '_dgb_square_error', true ) ) { echo '<tr><th>Square error</th><td>' . esc_html( $err ) . '</td></tr>'; }
 		if ( DGB_Google::connected() ) {
 			$gerr = get_post_meta( $post->ID, '_dgb_gcal_error', true );
@@ -103,6 +110,9 @@ class DGB_Admin {
 		}
 		if ( $url = get_post_meta( $post->ID, '_dgb_pay_url', true ) ) { echo '<tr><th>Payment link</th><td><a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">Open</a></td></tr>'; }
 		echo '</tbody></table><p>';
+		if ( DGB_Wave::configured() && DGB_Settings::get( 'wave_auto' ) && 'paid' === get_post_meta( $post->ID, '_dgb_payment', true ) && ! get_post_meta( $post->ID, '_dgb_wave_paid', true ) ) {
+			echo '<a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=dgb_wave_send&id=' . $post->ID ), 'dgb_wavesend_' . $post->ID ) ) . '">Send to Wave</a> ';
+		}
 		if ( get_post_meta( $post->ID, '_dgb_square_order', true ) && 'paid' !== get_post_meta( $post->ID, '_dgb_payment', true ) ) {
 			echo '<a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=dgb_square_check&id=' . $post->ID ), 'dgb_sqcheck_' . $post->ID ) ) . '">Check payment with Square</a> ';
 		}
@@ -212,6 +222,28 @@ class DGB_Admin {
 			<tr><th>Invite the student</th><td><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[google_invite_customer]" value="1" <?php checked( $s['google_invite_customer'] ); ?>> When you confirm a booking, send the student a calendar invitation</label></td></tr>
 		</table>
 		<p class="description">Both directions: new bookings appear in Google Calendar, and anything you or the instructor add there (as busy) blocks those hours on the website. Events moved or deleted in Google update the booking within 10 minutes. Mark an event as "Free" in Google if it should not block the website.</p>
+
+		<h2 id="wave">Wave (accounting)</h2>
+		<?php $wn = get_transient( 'dgb_wave_notice' ); if ( $wn ) { delete_transient( 'dgb_wave_notice' ); echo '<div class="notice notice-' . ( $wn['ok'] ? 'success' : 'error' ) . ' inline"><p>' . esc_html( $wn['msg'] ) . '</p></div>'; }
+		$wc = DGB_Wave::cache();
+		$wsel = function ( $key, $list, $none ) use ( $n, $s ) {
+			echo '<select name="' . esc_attr( $n ) . '[' . esc_attr( $key ) . ']"><option value="">' . esc_html( $none ) . '</option>';
+			foreach ( $list as $id => $label ) { echo '<option value="' . esc_attr( $id ) . '"' . selected( $s[ $key ], $id, false ) . '>' . esc_html( $label ) . '</option>'; }
+			if ( $s[ $key ] && ! isset( $list[ $s[ $key ] ] ) ) { echo '<option value="' . esc_attr( $s[ $key ] ) . '" selected>(saved choice)</option>'; }
+			echo '</select>';
+		}; ?>
+		<table class="form-table">
+			<tr><th>Access token</th><td><input type="password" class="regular-text" autocomplete="new-password" name="<?php echo esc_attr( $n ); ?>[wave_token]" placeholder="<?php echo $s['wave_token'] ? 'Saved. Type a new one to replace it.' : 'Paste the Wave full access token'; ?>">
+				<?php if ( $s['wave_token'] ) : ?><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_token_clear]" value="1"> remove saved token</label><?php endif; ?>
+				<p class="description">Wave → Manage Applications (developer portal) → your application → create a full access token. It stays on the server and is never shown on the website.</p></td></tr>
+			<tr><th>Connect</th><td><a class="button" href="<?php echo esc_url( admin_url( 'admin-post.php?action=dgb_wave_load&_wpnonce=' . wp_create_nonce( 'dgb_wave' ) ) ); ?>">Load my Wave data</a> <span class="description">Save the token first, then press this to fill the lists below.</span></td></tr>
+			<tr><th>Business</th><td><?php $wsel( 'wave_business', isset( $wc['businesses'] ) ? $wc['businesses'] : array(), 'Load my Wave data first' ); ?></td></tr>
+			<tr><th>Product on invoices</th><td><?php $wsel( 'wave_product', isset( $wc['products'] ) ? $wc['products'] : array(), 'Choose a product' ); ?> <span class="description">Create a product in Wave such as "Driving lessons", Wave needs one for every invoice line.</span></td></tr>
+			<tr><th>Bank account for payments</th><td><?php $wsel( 'wave_account', isset( $wc['accounts'] ) ? $wc['accounts'] : array(), 'Choose an account' ); ?> <span class="description">Where the money is recorded (for example Square or your bank).</span></td></tr>
+			<tr><th>Sales tax</th><td><?php $wsel( 'wave_tax', isset( $wc['taxes'] ) ? $wc['taxes'] : array(), 'No tax on invoices' ); ?> <span class="description">Choose HST. Its rate should match the HST % above.</span></td></tr>
+			<tr><th>When to send</th><td><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_auto]" value="1" <?php checked( $s['wave_auto'] ); ?>> Create the invoice in Wave when a booking or package is paid</label><br>
+				<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_send]" value="1" <?php checked( $s['wave_send'] ); ?>> Also email the invoice to the student from Wave</label></td></tr>
+		</table>
 
 		<h2>Spam protection (contact forms)</h2>
 		<table class="form-table">

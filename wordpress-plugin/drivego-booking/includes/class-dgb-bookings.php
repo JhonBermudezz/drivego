@@ -221,6 +221,7 @@ class DGB_Bookings {
 		update_post_meta( $id, '_dgb_paid_at', time() );
 		self::send( DGB_Settings::get( 'notify_email' ), 'Payment received: ' . get_the_title( $id ),
 			"The student paid with Square.\n\n" . self::block( $id ) . "\nConfirm the booking here:\n" . admin_url( 'post.php?post=' . $id . '&action=edit' ) . "\n" );
+		DGB_Wave::on_paid( $id );
 	}
 
 	public static function set_status( $id, $status ) {

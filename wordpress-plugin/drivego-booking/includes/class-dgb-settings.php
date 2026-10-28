@@ -45,6 +45,13 @@ class DGB_Settings {
 			'recaptcha_score'  => 0.5,
 			'etransfer_email'      => '',
 			'packages'             => DGB_Packages::defaults(),
+			'wave_token'           => '',
+			'wave_business'        => '',
+			'wave_product'         => '',
+			'wave_account'         => '',
+			'wave_tax'             => '',
+			'wave_auto'            => 0,
+			'wave_send'            => 0,
 			'google_client_id'     => '',
 			'google_client_secret' => '',
 			'google_calendar'      => 'primary',
@@ -88,6 +95,11 @@ class DGB_Settings {
 	public static function option_home( array $o, $index, $service = 'roadtest' ) {
 		if ( 'outside' === $service ) { return true; } // transport to and from the test centre is part of this package
 		return isset( $o['home'] ) ? (bool) $o['home'] : ( (int) $index > 0 );
+	}
+
+	/** Change a few settings from code (for example the Wave business picked on first load). */
+	public static function update( array $changes ) {
+		update_option( self::OPTION, array_replace( self::all(), $changes ) );
 	}
 
 	public static function get( $key ) {
@@ -180,6 +192,10 @@ class DGB_Settings {
 		if ( isset( $in['google_calendar'] ) ) { $out['google_calendar'] = sanitize_text_field( $in['google_calendar'] ) ?: 'primary'; }
 		if ( isset( $in['google_instructors'] ) ) { $out['google_instructors'] = sanitize_text_field( $in['google_instructors'] ); }
 		if ( isset( $in['google_calendar'] ) ) { $out['google_invite_customer'] = empty( $in['google_invite_customer'] ) ? 0 : 1; }
+		if ( isset( $in['wave_token'] ) && '' !== trim( $in['wave_token'] ) ) { $out['wave_token'] = sanitize_text_field( $in['wave_token'] ); }
+		if ( ! empty( $in['wave_token_clear'] ) ) { $out['wave_token'] = ''; }
+		foreach ( array( 'wave_business', 'wave_product', 'wave_account', 'wave_tax' ) as $k ) { if ( isset( $in[ $k ] ) ) { $out[ $k ] = sanitize_text_field( $in[ $k ] ); } }
+		if ( isset( $in['wave_business'] ) ) { $out['wave_auto'] = empty( $in['wave_auto'] ) ? 0 : 1; $out['wave_send'] = empty( $in['wave_send'] ) ? 0 : 1; }
 		if ( isset( $in['packages'] ) && is_array( $in['packages'] ) ) { $out['packages'] = DGB_Packages::sanitize( $in['packages'], isset( $old['packages'] ) ? $old['packages'] : array() ); }
 		if ( isset( $in['services'] ) && is_array( $in['services'] ) ) {
 			foreach ( array_keys( $d['services'] ) as $key ) {
