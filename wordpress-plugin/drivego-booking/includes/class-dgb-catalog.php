@@ -80,7 +80,7 @@ class DGB_Catalog {
 		$made = 0;
 		$inc  = self::income_account();
 		if ( '' === $inc && self::missing() ) {
-			return array( 0, 'Wave needs an income account for the products. Press "Load my Wave data" again, choose the Income account (usually "Sales"), save, and try again.' );
+			return array( 0, 'Wave lists no income account for this business, and every product needs one. In Wave open Accounting > Chart of accounts, make sure an Income account exists (for example "Sales"), then press "Load my Wave data" here and try again.' );
 		}
 		foreach ( self::missing() as $it ) {
 			$input = array( 'businessId' => DGB_Settings::get( 'wave_business' ), 'name' => $it['name'], 'description' => $it['desc'], 'unitPrice' => number_format( $it['price'], 2, '.', '' ) );

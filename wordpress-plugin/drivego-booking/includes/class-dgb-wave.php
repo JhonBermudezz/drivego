@@ -66,36 +66,51 @@ class DGB_Wave {
 		return is_array( $c ) ? $c : array();
 	}
 
-	public static function load() {
-		if ( ! current_user_can( 'manage_options' ) || ! wp_verify_nonce( isset( $_GET['_wpnonce'] ) ? $_GET['_wpnonce'] : '', 'dgb_wave' ) ) { wp_die( 'Not allowed.' ); }
-		$back = function ( $msg, $ok ) {
-			set_transient( 'dgb_wave_notice', array( 'ok' => $ok, 'msg' => $msg ), 120 );
-			wp_safe_redirect( admin_url( 'edit.php?post_type=' . DGB_Bookings::CPT . '&page=drivego-booking#wave' ) );
-			exit;
-		};
-		if ( '' === DGB_Settings::get( 'wave_token' ) ) { $back( 'Paste the Wave token and save the settings first.', false ); }
+	/** Ask Wave for the choices the settings need and keep them. @return array|WP_Error the cache */
+	public static function fetch_cache() {
+		if ( '' === DGB_Settings::get( 'wave_token' ) ) { return new WP_Error( 'dgb_wave', 'Paste the Wave token and save the settings first.' ); }
 		$d = self::gql( 'query { businesses(page: 1, pageSize: 50) { edges { node { id name } } } }' );
-		if ( is_wp_error( $d ) ) { $back( 'Could not reach Wave: ' . $d->get_error_message(), false ); }
+		if ( is_wp_error( $d ) ) { return new WP_Error( 'dgb_wave', 'Could not reach Wave: ' . $d->get_error_message() ); }
 		$cache = array( 'businesses' => array(), 'products' => array(), 'accounts' => array(), 'income' => array(), 'taxes' => array() );
 		foreach ( isset( $d['businesses']['edges'] ) ? $d['businesses']['edges'] : array() as $e ) { $cache['businesses'][ $e['node']['id'] ] = $e['node']['name']; }
-		if ( ! $cache['businesses'] ) { $back( 'The token works but Wave shows no businesses for it.', false ); }
+		if ( ! $cache['businesses'] ) { return new WP_Error( 'dgb_wave', 'The token works but Wave shows no businesses for it.' ); }
 		$biz = DGB_Settings::get( 'wave_business' );
 		if ( ! isset( $cache['businesses'][ $biz ] ) ) { $biz = (string) key( $cache['businesses'] ); DGB_Settings::update( array( 'wave_business' => $biz ) ); }
-		$q = 'query($id: ID!) { business(id: $id) {
+		$b = self::gql( 'query($id: ID!) { business(id: $id) {
 			products(page: 1, pageSize: 100) { edges { node { id name isArchived } } }
-			accounts(page: 1, pageSize: 200, subtypes: [CASH_AND_BANK]) { edges { node { id name } } }
-			income: accounts(page: 1, pageSize: 200, types: [INCOME]) { edges { node { id name } } }
 			salesTaxes(page: 1, pageSize: 50) { edges { node { id name abbreviation isArchived } } }
-		} }';
-		$b = self::gql( $q, array( 'id' => $biz ) );
-		if ( is_wp_error( $b ) ) { $back( 'Connected, but Wave could not list the products and accounts: ' . $b->get_error_message(), false ); }
+		} }', array( 'id' => $biz ) );
+		if ( is_wp_error( $b ) ) { return new WP_Error( 'dgb_wave', 'Connected, but Wave could not list the products and taxes: ' . $b->get_error_message() ); }
 		$bz = isset( $b['business'] ) ? $b['business'] : array();
 		foreach ( isset( $bz['products']['edges'] ) ? $bz['products']['edges'] : array() as $e ) { if ( empty( $e['node']['isArchived'] ) ) { $cache['products'][ $e['node']['id'] ] = $e['node']['name']; } }
-		foreach ( isset( $bz['accounts']['edges'] ) ? $bz['accounts']['edges'] : array() as $e ) { $cache['accounts'][ $e['node']['id'] ] = $e['node']['name']; }
-		foreach ( isset( $bz['income']['edges'] ) ? $bz['income']['edges'] : array() as $e ) { $cache['income'][ $e['node']['id'] ] = $e['node']['name']; }
 		foreach ( isset( $bz['salesTaxes']['edges'] ) ? $bz['salesTaxes']['edges'] : array() as $e ) { if ( empty( $e['node']['isArchived'] ) ) { $cache['taxes'][ $e['node']['id'] ] = $e['node']['name'] . ( ! empty( $e['node']['abbreviation'] ) ? ' (' . $e['node']['abbreviation'] . ')' : '' ); } }
+		// Accounts: ask for all of them and sort them here, so it does not depend on Wave's filter names.
+		for ( $page = 1; $page <= 5; $page++ ) {
+			$a = self::gql( 'query($id: ID!, $p: Int!) { business(id: $id) { accounts(page: $p, pageSize: 100) { edges { node { id name isArchived type { value } subtype { value } } } } } }', array( 'id' => $biz, 'p' => $page ) );
+			if ( is_wp_error( $a ) ) { return new WP_Error( 'dgb_wave', 'Connected, but Wave could not list the accounts: ' . $a->get_error_message() ); }
+			$edges = isset( $a['business']['accounts']['edges'] ) ? $a['business']['accounts']['edges'] : array();
+			foreach ( $edges as $e ) {
+				$n = $e['node'];
+				if ( ! empty( $n['isArchived'] ) ) { continue; }
+				$type = isset( $n['type']['value'] ) ? strtoupper( $n['type']['value'] ) : '';
+				$sub  = isset( $n['subtype']['value'] ) ? strtoupper( $n['subtype']['value'] ) : '';
+				if ( 'INCOME' === $type ) { $cache['income'][ $n['id'] ] = $n['name']; }
+				if ( 'CASH_AND_BANK' === $sub ) { $cache['accounts'][ $n['id'] ] = $n['name']; }
+			}
+			if ( count( $edges ) < 100 ) { break; }
+		}
 		update_option( self::CACHE, $cache, false );
-		$back( sprintf( 'Connected to Wave: %d business(es), %d products, %d bank accounts, %d taxes. Choose the product, account and tax below, then save.', count( $cache['businesses'] ), count( $cache['products'] ), count( $cache['accounts'] ), count( $cache['taxes'] ) ), true );
+		return $cache;
+	}
+
+	public static function load() {
+		if ( ! current_user_can( 'manage_options' ) || ! wp_verify_nonce( isset( $_GET['_wpnonce'] ) ? $_GET['_wpnonce'] : '', 'dgb_wave' ) ) { wp_die( 'Not allowed.' ); }
+		$cache = self::fetch_cache();
+		$ok    = ! is_wp_error( $cache );
+		$msg   = $ok ? sprintf( 'Connected to Wave: %d business(es), %d products, %d bank accounts, %d income accounts, %d taxes. Choose the bank account and tax below, then save.', count( $cache['businesses'] ), count( $cache['products'] ), count( $cache['accounts'] ), count( $cache['income'] ), count( $cache['taxes'] ) ) : $cache->get_error_message();
+		set_transient( 'dgb_wave_notice', array( 'ok' => $ok, 'msg' => $msg ), 120 );
+		wp_safe_redirect( admin_url( 'edit.php?post_type=' . DGB_Bookings::CPT . '&page=drivego-booking#wave' ) );
+		exit;
 	}
 
 	/* ---------- invoices ---------- */
@@ -248,6 +263,7 @@ class DGB_Wave {
 	public static function create_products() {
 		if ( ! current_user_can( 'manage_options' ) || ! wp_verify_nonce( isset( $_GET['_wpnonce'] ) ? $_GET['_wpnonce'] : '', 'dgb_wave' ) ) { wp_die( 'Not allowed.' ); }
 		if ( function_exists( 'set_time_limit' ) ) { @set_time_limit( 180 ); } // phpcs:ignore
+		if ( self::configured() && '' === DGB_Catalog::income_account() ) { self::fetch_cache(); } // a fresh look at Wave's accounts
 		list( $made, $err ) = self::configured() ? DGB_Catalog::sync() : array( 0, 'Connect Wave first (token, business and bank account).' );
 		set_transient( 'dgb_wave_notice', array( 'ok' => '' === $err, 'msg' => '' === $err ? sprintf( 'Done: %d product(s) created in Wave. Every item of the catalog now has its own product.', $made ) : sprintf( '%d product(s) created, then it stopped: %s', $made, $err ) ), 120 );
 		wp_safe_redirect( admin_url( 'edit.php?post_type=' . DGB_Bookings::CPT . '&page=drivego-booking#wave' ) );
