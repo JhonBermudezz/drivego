@@ -241,7 +241,7 @@
         '<li><span>When</span><strong>' + esc(fmtDate(state.date)) + ' at ' + esc(fmtTime(state.time)) + '</strong></li><li><span>Where</span><strong>' + esc(where) + '</strong></li>' +
         (hasCar() ? '<li><span>Car</span><strong>' + (state.car === 'school' ? 'DriveGo school car' : 'My own car') + '</strong></li>' : '') + (d.pay && CFG.pay ? '<li><span>Payment</span><strong>' + esc(CFG.pay[d.pay] || '') + '</strong></li>' : '') + '<li><span>Name</span><strong>' + esc(d.name) + ' · ' + esc(d.phone) + '</strong></li><li><span>Total</span><strong>' + money(total()) + ' + HST' + (extra() || carExtra() ? ' <small>(includes ' + [extra() ? money(extra()) + ' home pick up' : '', carExtra() ? money(carExtra()) + ' DriveGo car' : ''].filter(Boolean).join(' and ') + ')</small>' : '') + '</strong></li></ul>' +
         '<p class="bk__small">We confirm every booking. Free reschedule up to 24 hours before.</p><p class="bk__hint" data-bk-hint hidden></p>';
-      nb.textContent = state.details.pay === 'square' ? 'Request booking and pay' : 'Request booking';
+      nb.textContent = (state.details.pay === 'square' || state.details.pay === 'wave') ? 'Request booking and pay' : 'Request booking';
     }
 
     function submit() {
@@ -254,7 +254,7 @@
         if (state.payUrl) window.open(state.payUrl, '_blank', 'noopener');
         go(4);
       }).catch(function (e) {
-        state.busy = false; nb.disabled = false; nb.textContent = d.pay === 'square' ? 'Request booking and pay' : 'Request booking';
+        state.busy = false; nb.disabled = false; nb.textContent = (d.pay === 'square' || d.pay === 'wave') ? 'Request booking and pay' : 'Request booking';
         hint(e.message || 'We could not send your booking. Please call ' + CFG.phone + '.');
         if (/just taken/i.test(e.message)) { state.time = null; setTimeout(function () { go(2); }, 1800); }
       });
@@ -309,7 +309,7 @@
       pkField('bkp-pay', 'How would you like to pay?', '<select id="bkp-pay">' + Object.keys(pay).map(function (k) { return '<option value="' + k + '">' + esc(k === 'cash' ? 'Cash' : pay[k]) + '</option>'; }).join('') + '</select>') +
       pkField('bkp-notes', 'Anything we should know?', '<textarea id="bkp-notes" rows="2"></textarea>', true) + '</div><p class="bk__hint" data-pk-hint hidden></p>';
     var sel = body.querySelector('#bkp-pay'), go = pkDialog.querySelector('[data-pk-go]'), cancel = pkDialog.querySelector('[data-pk-cancel]');
-    var label = function () { go.textContent = sel.value === 'square' ? 'Continue to payment' : 'Request package'; };
+    var label = function () { go.textContent = (sel.value === 'square' || sel.value === 'wave') ? 'Continue to payment' : 'Request package'; };
     sel.addEventListener('change', label); label(); go.hidden = false; go.disabled = false; cancel.hidden = false;
     document.body.style.overflow = 'hidden'; pkDialog.showModal();
     return true;
@@ -340,7 +340,7 @@
       pkDialog.querySelector('[data-pk-cancel]').textContent = 'Close';
       if (pkState.payUrl) { go.textContent = 'Open payment page'; } else { go.hidden = true; }
     }).catch(function (e) {
-      pkState.busy = false; go.disabled = false; go.textContent = d.pay === 'square' ? 'Continue to payment' : 'Request package';
+      pkState.busy = false; go.disabled = false; go.textContent = (d.pay === 'square' || d.pay === 'wave') ? 'Continue to payment' : 'Request package';
       hint.textContent = e.message || 'We could not send your request. Please call ' + CFG.phone + '.'; hint.hidden = false;
     });
   }

@@ -13,6 +13,10 @@ class DGB_Wave {
 	public static function init() {
 		add_action( 'admin_post_dgb_wave_load', array( __CLASS__, 'load' ) );
 		add_action( 'admin_post_dgb_wave_send', array( __CLASS__, 'send_now' ) );
+		add_action( 'dgb_wave_poll', array( __CLASS__, 'poll' ) );
+		add_action( 'init', function () {
+			if ( DGB_Settings::get( 'wave_pay' ) && self::configured() && ! wp_next_scheduled( 'dgb_wave_poll' ) ) { wp_schedule_event( time() + 120, 'dgb_ten_minutes', 'dgb_wave_poll' ); }
+		} );
 	}
 
 	public static function configured() {
@@ -105,22 +109,10 @@ class DGB_Wave {
 	/** @return string|WP_Error Wave invoice id */
 	public static function invoice( $id ) {
 		$biz  = DGB_Settings::get( 'wave_business' );
-		$name = get_post_meta( $id, '_dgb_name', true );
 		$mail = get_post_meta( $id, '_dgb_email', true );
 
-		// 1. customer (one per email)
-		$map = get_option( 'dgb_wave_customers', array() );
-		$map = is_array( $map ) ? $map : array();
-		$cid = isset( $map[ strtolower( $mail ) ] ) ? $map[ strtolower( $mail ) ] : '';
-		if ( ! $cid ) {
-			$d = self::gql( 'mutation($input: CustomerCreateInput!) { customerCreate(input: $input) { didSucceed inputErrors { path message code } customer { id } } }',
-				array( 'input' => array( 'businessId' => $biz, 'name' => $name, 'email' => $mail, 'phone' => get_post_meta( $id, '_dgb_phone', true ) ) ) );
-			$p = self::check( is_wp_error( $d ) ? $d : $d['customerCreate'], 'Customer' );
-			if ( is_wp_error( $p ) ) { return $p; }
-			$cid = $p['customer']['id'];
-			$map[ strtolower( $mail ) ] = $cid;
-			update_option( 'dgb_wave_customers', $map, false );
-		}
+		$cid = self::customer( $id );
+		if ( is_wp_error( $cid ) ) { return $cid; }
 
 		// 2. invoice, one line with the service and the tax chosen in settings
 		$lines = DGB_Bookings::summary_lines( $id );
@@ -159,10 +151,91 @@ class DGB_Wave {
 		return $inv;
 	}
 
+	/**
+	 * "Pay with Wave": create the customer and an approved, unpaid invoice and hand back its payment page.
+	 * @return string URL, or '' when Wave failed (the error is saved on the booking).
+	 */
+	public static function pay_link( $id ) {
+		if ( ! self::configured() ) { return ''; }
+		$r = self::open_invoice( $id );
+		if ( is_wp_error( $r ) ) { update_post_meta( $id, '_dgb_wave_error', $r->get_error_message() ); return ''; }
+		delete_post_meta( $id, '_dgb_wave_error' );
+		return $r['url'];
+	}
+
+	/** Customer + invoice + approve. @return array|WP_Error ['id'=>..., 'url'=>...] */
+	private static function open_invoice( $id ) {
+		$biz  = DGB_Settings::get( 'wave_business' );
+		$mail = get_post_meta( $id, '_dgb_email', true );
+		$cid  = self::customer( $id );
+		if ( is_wp_error( $cid ) ) { return $cid; }
+		$lines = DGB_Bookings::summary_lines( $id );
+		$desc  = isset( $lines['Service'] ) ? $lines['Service'] : $lines['Package'];
+		if ( ! empty( $lines['When'] ) ) { $desc .= ' · ' . $lines['When']; }
+		$item = array( 'productId' => DGB_Settings::get( 'wave_product' ), 'description' => $desc, 'quantity' => '1', 'unitPrice' => self::money( (float) get_post_meta( $id, '_dgb_price', true ) ) );
+		if ( DGB_Settings::get( 'wave_tax' ) ) { $item['taxes'] = array( array( 'salesTaxId' => DGB_Settings::get( 'wave_tax' ) ) ); }
+		$d = self::gql( 'mutation($input: InvoiceCreateInput!) { invoiceCreate(input: $input) { didSucceed inputErrors { path message code } invoice { id invoiceNumber } } }',
+			array( 'input' => array( 'businessId' => $biz, 'customerId' => $cid, 'status' => 'DRAFT', 'invoiceDate' => wp_date( 'Y-m-d' ), 'dueDate' => wp_date( 'Y-m-d', strtotime( '+7 days' ) ), 'currency' => 'CAD', 'title' => 'Invoice', 'memo' => 'DriveGo booking #' . $id, 'items' => array( $item ) ) ) );
+		$p = self::check( is_wp_error( $d ) ? $d : $d['invoiceCreate'], 'Invoice' );
+		if ( is_wp_error( $p ) ) { return $p; }
+		$inv = $p['invoice']['id'];
+		update_post_meta( $id, '_dgb_wave_invoice', $inv );
+		update_post_meta( $id, '_dgb_wave_number', isset( $p['invoice']['invoiceNumber'] ) ? $p['invoice']['invoiceNumber'] : '' );
+		$d = self::gql( 'mutation($input: InvoiceApproveInput!) { invoiceApprove(input: $input) { didSucceed inputErrors { path message code } invoice { id status viewUrl } } }', array( 'input' => array( 'invoiceId' => $inv ) ) );
+		$p = self::check( is_wp_error( $d ) ? $d : $d['invoiceApprove'], 'Approve' );
+		if ( is_wp_error( $p ) ) { return $p; }
+		$url = isset( $p['invoice']['viewUrl'] ) ? $p['invoice']['viewUrl'] : '';
+		if ( '' === $url ) { return new WP_Error( 'dgb_wave', 'Wave created the invoice but gave no payment link.' ); }
+		return array( 'id' => $inv, 'url' => $url );
+	}
+
+	/** The Wave customer of this booking: one per email. @return string|WP_Error */
+	private static function customer( $id ) {
+		$mail = get_post_meta( $id, '_dgb_email', true );
+		$map  = get_option( 'dgb_wave_customers', array() );
+		$map  = is_array( $map ) ? $map : array();
+		if ( isset( $map[ strtolower( $mail ) ] ) ) { return $map[ strtolower( $mail ) ]; }
+		$d = self::gql( 'mutation($input: CustomerCreateInput!) { customerCreate(input: $input) { didSucceed inputErrors { path message code } customer { id } } }',
+			array( 'input' => array( 'businessId' => DGB_Settings::get( 'wave_business' ), 'name' => get_post_meta( $id, '_dgb_name', true ), 'email' => $mail, 'phone' => get_post_meta( $id, '_dgb_phone', true ) ) ) );
+		$p = self::check( is_wp_error( $d ) ? $d : $d['customerCreate'], 'Customer' );
+		if ( is_wp_error( $p ) ) { return $p; }
+		$map[ strtolower( $mail ) ] = $p['customer']['id'];
+		update_option( 'dgb_wave_customers', $map, false );
+		return $p['customer']['id'];
+	}
+
+	/** Wave does not call us when an invoice is paid, so look every few minutes. */
+	public static function poll() {
+		if ( ! self::configured() ) { return; }
+		$ids = get_posts( array(
+			'post_type' => DGB_Bookings::CPT, 'post_status' => 'any', 'numberposts' => 40, 'fields' => 'ids',
+			'meta_query' => array(
+				array( 'key' => '_dgb_pay_method', 'value' => 'wave' ),
+				array( 'key' => '_dgb_payment', 'value' => 'unpaid' ),
+				array( 'key' => '_dgb_status', 'value' => array( 'pending', 'confirmed' ), 'compare' => 'IN' ),
+				array( 'key' => '_dgb_wave_invoice', 'compare' => 'EXISTS' ),
+			),
+		) );
+		foreach ( $ids as $id ) { self::check_paid( $id ); }
+	}
+
+	/** Is the Wave invoice of this booking paid? Marks the booking when it is. */
+	public static function check_paid( $id ) {
+		$inv = get_post_meta( $id, '_dgb_wave_invoice', true );
+		if ( ! $inv ) { return false; }
+		$d = self::gql( 'query($b: ID!, $i: ID!) { business(id: $b) { invoice(id: $i) { id status amountDue { value } } } }', array( 'b' => DGB_Settings::get( 'wave_business' ), 'i' => $inv ) );
+		if ( is_wp_error( $d ) ) { update_post_meta( $id, '_dgb_wave_error', $d->get_error_message() ); return false; }
+		$i    = isset( $d['business']['invoice'] ) ? $d['business']['invoice'] : array();
+		$paid = ( isset( $i['status'] ) && 'PAID' === strtoupper( $i['status'] ) ) || ( isset( $i['amountDue']['value'] ) && 0.0 === (float) $i['amountDue']['value'] && ! empty( $i['status'] ) && 'DRAFT' !== strtoupper( $i['status'] ) );
+		if ( $paid ) { update_post_meta( $id, '_dgb_wave_paid', 1 ); delete_post_meta( $id, '_dgb_wave_error' ); DGB_Bookings::mark_paid( $id ); }
+		return $paid;
+	}
+
 	/** Button on a booking: try again after fixing the settings. */
 	public static function send_now() {
 		$id = isset( $_GET['id'] ) ? (int) $_GET['id'] : 0;
 		if ( ! current_user_can( 'edit_post', $id ) || ! wp_verify_nonce( isset( $_GET['_wpnonce'] ) ? $_GET['_wpnonce'] : '', 'dgb_wavesend_' . $id ) ) { wp_die( 'Not allowed.' ); }
+		if ( ! empty( $_GET['check'] ) ) { self::check_paid( $id ); wp_safe_redirect( admin_url( 'post.php?post=' . $id . '&action=edit' ) ); exit; }
 		if ( self::configured() && ! get_post_meta( $id, '_dgb_wave_paid', true ) ) {
 			if ( get_post_meta( $id, '_dgb_wave_invoice', true ) ) { update_post_meta( $id, '_dgb_wave_error', 'The invoice exists in Wave but the payment step did not finish. Open it in Wave and record the payment there.' ); }
 			else {

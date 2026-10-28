@@ -110,6 +110,9 @@ class DGB_Admin {
 		}
 		if ( $url = get_post_meta( $post->ID, '_dgb_pay_url', true ) ) { echo '<tr><th>Payment link</th><td><a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">Open</a></td></tr>'; }
 		echo '</tbody></table><p>';
+		if ( DGB_Wave::configured() && 'wave' === get_post_meta( $post->ID, '_dgb_pay_method', true ) && 'paid' !== get_post_meta( $post->ID, '_dgb_payment', true ) && get_post_meta( $post->ID, '_dgb_wave_invoice', true ) ) {
+			echo '<a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=dgb_wave_send&check=1&id=' . $post->ID ), 'dgb_wavesend_' . $post->ID ) ) . '">Check payment in Wave</a> ';
+		}
 		if ( DGB_Wave::configured() && DGB_Settings::get( 'wave_auto' ) && 'paid' === get_post_meta( $post->ID, '_dgb_payment', true ) && ! get_post_meta( $post->ID, '_dgb_wave_paid', true ) ) {
 			echo '<a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=dgb_wave_send&id=' . $post->ID ), 'dgb_wavesend_' . $post->ID ) ) . '">Send to Wave</a> ';
 		}
@@ -242,6 +245,7 @@ class DGB_Admin {
 			<tr><th>Bank account for payments</th><td><?php $wsel( 'wave_account', isset( $wc['accounts'] ) ? $wc['accounts'] : array(), 'Choose an account' ); ?> <span class="description">Where the money is recorded (for example Square or your bank).</span></td></tr>
 			<tr><th>Sales tax</th><td><?php $wsel( 'wave_tax', isset( $wc['taxes'] ) ? $wc['taxes'] : array(), 'No tax on invoices' ); ?> <span class="description">Choose HST. Its rate should match the HST % above.</span></td></tr>
 			<tr><th>When to send</th><td><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_auto]" value="1" <?php checked( $s['wave_auto'] ); ?>> Create the invoice in Wave when a booking or package is paid</label><br>
+				<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_pay]" value="1" <?php checked( $s['wave_pay'] ); ?>> Offer <strong>Pay with Wave</strong> at checkout (the student pays the Wave invoice online; Wave Payments must be on in your Wave account)</label><br>
 				<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_send]" value="1" <?php checked( $s['wave_send'] ); ?>> Also email the invoice to the student from Wave</label></td></tr>
 		</table>
 

@@ -52,6 +52,7 @@ class DGB_Settings {
 			'wave_tax'             => '',
 			'wave_auto'            => 0,
 			'wave_send'            => 0,
+			'wave_pay'             => 0,
 			'google_client_id'     => '',
 			'google_client_secret' => '',
 			'google_calendar'      => 'primary',
@@ -136,6 +137,7 @@ class DGB_Settings {
 		$square = DGB_Square::enabled();
 		foreach ( (array) self::get( 'services' ) as $svc ) { foreach ( $svc['options'] as $o ) { if ( ! empty( $o['pay'] ) ) { $square = true; } } }
 		if ( $square ) { $m['square'] = 'Card online (Square)'; }
+		if ( self::get( 'wave_pay' ) && DGB_Wave::configured() ) { $m['wave'] = 'Card or bank (Wave invoice)'; }
 		$m['etransfer'] = 'Interac e-Transfer';
 		$m['cash']      = 'Cash at the lesson';
 		return $m;
@@ -195,7 +197,7 @@ class DGB_Settings {
 		if ( isset( $in['wave_token'] ) && '' !== trim( $in['wave_token'] ) ) { $out['wave_token'] = sanitize_text_field( $in['wave_token'] ); }
 		if ( ! empty( $in['wave_token_clear'] ) ) { $out['wave_token'] = ''; }
 		foreach ( array( 'wave_business', 'wave_product', 'wave_account', 'wave_tax' ) as $k ) { if ( isset( $in[ $k ] ) ) { $out[ $k ] = sanitize_text_field( $in[ $k ] ); } }
-		if ( isset( $in['wave_business'] ) ) { $out['wave_auto'] = empty( $in['wave_auto'] ) ? 0 : 1; $out['wave_send'] = empty( $in['wave_send'] ) ? 0 : 1; }
+		if ( isset( $in['wave_business'] ) ) { $out['wave_auto'] = empty( $in['wave_auto'] ) ? 0 : 1; $out['wave_send'] = empty( $in['wave_send'] ) ? 0 : 1; $out['wave_pay'] = empty( $in['wave_pay'] ) ? 0 : 1; }
 		if ( isset( $in['packages'] ) && is_array( $in['packages'] ) ) { $out['packages'] = DGB_Packages::sanitize( $in['packages'], isset( $old['packages'] ) ? $old['packages'] : array() ); }
 		if ( isset( $in['services'] ) && is_array( $in['services'] ) ) {
 			foreach ( array_keys( $d['services'] ) as $key ) {

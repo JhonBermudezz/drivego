@@ -95,6 +95,7 @@ class DGB_Rest {
 				update_post_meta( $id, '_dgb_square_order', $res['order_id'] );
 			}
 		}
+		if ( 'wave' === $d['pay'] ) { $pay_url = DGB_Wave::pay_link( $id ); }
 		if ( 'square' === $d['pay'] && ! $pay_url && ! empty( $opt['pay'] ) ) { $pay_url = $opt['pay']; }
 		if ( $pay_url ) { update_post_meta( $id, '_dgb_pay_url', $pay_url ); }
 		DGB_Bookings::notify_new( $id, $pay_url );
@@ -134,6 +135,7 @@ class DGB_Rest {
 			if ( is_wp_error( $res ) ) { update_post_meta( $id, '_dgb_square_error', $res->get_error_message() ); }
 			else { $pay_url = $res['url']; update_post_meta( $id, '_dgb_square_order', $res['order_id'] ); }
 		}
+		if ( 'wave' === $d['pay'] ) { $pay_url = DGB_Wave::pay_link( $id ); }
 		if ( $pay_url ) { update_post_meta( $id, '_dgb_pay_url', $pay_url ); }
 		DGB_Bookings::notify_package( $id, $pay_url );
 		return array( 'ok' => true, 'id' => $id, 'pay_url' => $pay_url, 'pay' => $d['pay'], 'etransfer' => DGB_Settings::etransfer_email() );
