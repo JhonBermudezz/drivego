@@ -56,6 +56,16 @@ class DGB_Catalog {
 		return ( $key && isset( $map[ $key ]['id'] ) ) ? $map[ $key ]['id'] : '';
 	}
 
+	/** The income account for new products: the one chosen in settings, else "Sales" or the first one Wave listed. */
+	public static function income_account() {
+		$id = (string) DGB_Settings::get( 'wave_income' );
+		if ( '' !== $id ) { return $id; }
+		$list = DGB_Wave::cache();
+		$list = isset( $list['income'] ) && is_array( $list['income'] ) ? $list['income'] : array();
+		foreach ( $list as $k => $name ) { if ( 0 === strcasecmp( trim( $name ), 'Sales' ) ) { return (string) $k; } }
+		return $list ? (string) key( $list ) : '';
+	}
+
 	public static function missing() {
 		$map = self::map();
 		return array_values( array_filter( self::items(), function ( $it ) use ( $map ) { return ! isset( $map[ $it['key'] ] ); } ) );
@@ -68,9 +78,13 @@ class DGB_Catalog {
 	public static function sync() {
 		$map  = self::map();
 		$made = 0;
+		$inc  = self::income_account();
+		if ( '' === $inc && self::missing() ) {
+			return array( 0, 'Wave needs an income account for the products. Press "Load my Wave data" again, choose the Income account (usually "Sales"), save, and try again.' );
+		}
 		foreach ( self::missing() as $it ) {
 			$input = array( 'businessId' => DGB_Settings::get( 'wave_business' ), 'name' => $it['name'], 'description' => $it['desc'], 'unitPrice' => number_format( $it['price'], 2, '.', '' ) );
-			if ( DGB_Settings::get( 'wave_income' ) ) { $input['incomeAccountId'] = DGB_Settings::get( 'wave_income' ); }
+			$input['incomeAccountId'] = $inc;
 			if ( DGB_Settings::get( 'wave_tax' ) ) { $input['defaultSalesTaxIds'] = array( DGB_Settings::get( 'wave_tax' ) ); }
 			$d = DGB_Wave::gql( 'mutation($input: ProductCreateInput!) { productCreate(input: $input) { didSucceed inputErrors { path message code } product { id name } } }', array( 'input' => $input ) );
 			if ( is_wp_error( $d ) ) { update_option( 'dgb_wave_products', $map, false ); return array( $made, $it['name'] . ': ' . $d->get_error_message() ); }
