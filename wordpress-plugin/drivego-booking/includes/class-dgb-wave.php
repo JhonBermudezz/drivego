@@ -13,6 +13,7 @@ class DGB_Wave {
 	public static function init() {
 		add_action( 'admin_post_dgb_wave_load', array( __CLASS__, 'load' ) );
 		add_action( 'admin_post_dgb_wave_send', array( __CLASS__, 'send_now' ) );
+		add_action( 'admin_post_dgb_wave_products', array( __CLASS__, 'create_products' ) );
 		add_action( 'dgb_wave_poll', array( __CLASS__, 'poll' ) );
 		add_action( 'init', function () {
 			if ( DGB_Settings::get( 'wave_pay' ) && self::configured() && ! wp_next_scheduled( 'dgb_wave_poll' ) ) { wp_schedule_event( time() + 120, 'dgb_ten_minutes', 'dgb_wave_poll' ); }
@@ -20,7 +21,7 @@ class DGB_Wave {
 	}
 
 	public static function configured() {
-		return '' !== DGB_Settings::get( 'wave_token' ) && '' !== DGB_Settings::get( 'wave_business' ) && '' !== DGB_Settings::get( 'wave_product' ) && '' !== DGB_Settings::get( 'wave_account' );
+		return '' !== DGB_Settings::get( 'wave_token' ) && '' !== DGB_Settings::get( 'wave_business' ) && '' !== DGB_Settings::get( 'wave_account' );
 	}
 
 	/** Run one GraphQL document. @return array|WP_Error the "data" object */
@@ -40,6 +41,12 @@ class DGB_Wave {
 			return new WP_Error( 'dgb_wave', $m );
 		}
 		return isset( $json['data'] ) && is_array( $json['data'] ) ? $json['data'] : array();
+	}
+
+	/** The Wave product of this purchase: its own one from the catalog, or the general one chosen in settings. */
+	public static function product( $id ) {
+		$p = DGB_Catalog::product_for( $id );
+		return '' !== $p ? $p : (string) DGB_Settings::get( 'wave_product' );
 	}
 
 	/** Mutations answer with didSucceed and inputErrors. */
@@ -69,7 +76,7 @@ class DGB_Wave {
 		if ( '' === DGB_Settings::get( 'wave_token' ) ) { $back( 'Paste the Wave token and save the settings first.', false ); }
 		$d = self::gql( 'query { businesses(page: 1, pageSize: 50) { edges { node { id name } } } }' );
 		if ( is_wp_error( $d ) ) { $back( 'Could not reach Wave: ' . $d->get_error_message(), false ); }
-		$cache = array( 'businesses' => array(), 'products' => array(), 'accounts' => array(), 'taxes' => array() );
+		$cache = array( 'businesses' => array(), 'products' => array(), 'accounts' => array(), 'income' => array(), 'taxes' => array() );
 		foreach ( isset( $d['businesses']['edges'] ) ? $d['businesses']['edges'] : array() as $e ) { $cache['businesses'][ $e['node']['id'] ] = $e['node']['name']; }
 		if ( ! $cache['businesses'] ) { $back( 'The token works but Wave shows no businesses for it.', false ); }
 		$biz = DGB_Settings::get( 'wave_business' );
@@ -77,6 +84,7 @@ class DGB_Wave {
 		$q = 'query($id: ID!) { business(id: $id) {
 			products(page: 1, pageSize: 100) { edges { node { id name isArchived } } }
 			accounts(page: 1, pageSize: 200, subtypes: [CASH_AND_BANK]) { edges { node { id name } } }
+			income: accounts(page: 1, pageSize: 200, types: [INCOME]) { edges { node { id name } } }
 			salesTaxes(page: 1, pageSize: 50) { edges { node { id name abbreviation isArchived } } }
 		} }';
 		$b = self::gql( $q, array( 'id' => $biz ) );
@@ -84,6 +92,7 @@ class DGB_Wave {
 		$bz = isset( $b['business'] ) ? $b['business'] : array();
 		foreach ( isset( $bz['products']['edges'] ) ? $bz['products']['edges'] : array() as $e ) { if ( empty( $e['node']['isArchived'] ) ) { $cache['products'][ $e['node']['id'] ] = $e['node']['name']; } }
 		foreach ( isset( $bz['accounts']['edges'] ) ? $bz['accounts']['edges'] : array() as $e ) { $cache['accounts'][ $e['node']['id'] ] = $e['node']['name']; }
+		foreach ( isset( $bz['income']['edges'] ) ? $bz['income']['edges'] : array() as $e ) { $cache['income'][ $e['node']['id'] ] = $e['node']['name']; }
 		foreach ( isset( $bz['salesTaxes']['edges'] ) ? $bz['salesTaxes']['edges'] : array() as $e ) { if ( empty( $e['node']['isArchived'] ) ) { $cache['taxes'][ $e['node']['id'] ] = $e['node']['name'] . ( ! empty( $e['node']['abbreviation'] ) ? ' (' . $e['node']['abbreviation'] . ')' : '' ); } }
 		update_option( self::CACHE, $cache, false );
 		$back( sprintf( 'Connected to Wave: %d business(es), %d products, %d bank accounts, %d taxes. Choose the product, account and tax below, then save.', count( $cache['businesses'] ), count( $cache['products'] ), count( $cache['accounts'] ), count( $cache['taxes'] ) ), true );
@@ -119,7 +128,9 @@ class DGB_Wave {
 		$desc  = isset( $lines['Service'] ) ? $lines['Service'] : $lines['Package'];
 		if ( ! empty( $lines['When'] ) ) { $desc .= ' · ' . $lines['When']; }
 		$net   = (float) get_post_meta( $id, '_dgb_price', true );
-		$item  = array( 'productId' => DGB_Settings::get( 'wave_product' ), 'description' => $desc, 'quantity' => '1', 'unitPrice' => self::money( $net ) );
+		$pid = self::product( $id );
+		if ( '' === $pid ) { return new WP_Error( 'dgb_wave', 'No Wave product for this item yet. Press "Create the products in Wave" in the settings.' ); }
+		$item  = array( 'productId' => $pid, 'description' => $desc, 'quantity' => '1', 'unitPrice' => self::money( $net ) );
 		if ( DGB_Settings::get( 'wave_tax' ) ) { $item['taxes'] = array( array( 'salesTaxId' => DGB_Settings::get( 'wave_tax' ) ) ); }
 		$d = self::gql( 'mutation($input: InvoiceCreateInput!) { invoiceCreate(input: $input) { didSucceed inputErrors { path message code } invoice { id invoiceNumber } } }',
 			array( 'input' => array( 'businessId' => $biz, 'customerId' => $cid, 'status' => 'DRAFT', 'invoiceDate' => wp_date( 'Y-m-d' ), 'currency' => 'CAD', 'title' => 'Invoice', 'memo' => 'DriveGo booking #' . $id, 'items' => array( $item ) ) ) );
@@ -172,7 +183,9 @@ class DGB_Wave {
 		$lines = DGB_Bookings::summary_lines( $id );
 		$desc  = isset( $lines['Service'] ) ? $lines['Service'] : $lines['Package'];
 		if ( ! empty( $lines['When'] ) ) { $desc .= ' · ' . $lines['When']; }
-		$item = array( 'productId' => DGB_Settings::get( 'wave_product' ), 'description' => $desc, 'quantity' => '1', 'unitPrice' => self::money( (float) get_post_meta( $id, '_dgb_price', true ) ) );
+		$pid = self::product( $id );
+		if ( '' === $pid ) { return new WP_Error( 'dgb_wave', 'No Wave product for this item yet. Press "Create the products in Wave" in the settings.' ); }
+		$item = array( 'productId' => $pid, 'description' => $desc, 'quantity' => '1', 'unitPrice' => self::money( (float) get_post_meta( $id, '_dgb_price', true ) ) );
 		if ( DGB_Settings::get( 'wave_tax' ) ) { $item['taxes'] = array( array( 'salesTaxId' => DGB_Settings::get( 'wave_tax' ) ) ); }
 		$d = self::gql( 'mutation($input: InvoiceCreateInput!) { invoiceCreate(input: $input) { didSucceed inputErrors { path message code } invoice { id invoiceNumber } } }',
 			array( 'input' => array( 'businessId' => $biz, 'customerId' => $cid, 'status' => 'DRAFT', 'invoiceDate' => wp_date( 'Y-m-d' ), 'dueDate' => wp_date( 'Y-m-d', strtotime( '+7 days' ) ), 'currency' => 'CAD', 'title' => 'Invoice', 'memo' => 'DriveGo booking #' . $id, 'items' => array( $item ) ) ) );
@@ -229,6 +242,16 @@ class DGB_Wave {
 		$paid = ( isset( $i['status'] ) && 'PAID' === strtoupper( $i['status'] ) ) || ( isset( $i['amountDue']['value'] ) && 0.0 === (float) $i['amountDue']['value'] && ! empty( $i['status'] ) && 'DRAFT' !== strtoupper( $i['status'] ) );
 		if ( $paid ) { update_post_meta( $id, '_dgb_wave_paid', 1 ); delete_post_meta( $id, '_dgb_wave_error' ); DGB_Bookings::mark_paid( $id ); }
 		return $paid;
+	}
+
+	/** Create in Wave every catalog product that is missing. */
+	public static function create_products() {
+		if ( ! current_user_can( 'manage_options' ) || ! wp_verify_nonce( isset( $_GET['_wpnonce'] ) ? $_GET['_wpnonce'] : '', 'dgb_wave' ) ) { wp_die( 'Not allowed.' ); }
+		if ( function_exists( 'set_time_limit' ) ) { @set_time_limit( 180 ); } // phpcs:ignore
+		list( $made, $err ) = self::configured() ? DGB_Catalog::sync() : array( 0, 'Connect Wave first (token, business and bank account).' );
+		set_transient( 'dgb_wave_notice', array( 'ok' => '' === $err, 'msg' => '' === $err ? sprintf( 'Done: %d product(s) created in Wave. Every item of the catalog now has its own product.', $made ) : sprintf( '%d product(s) created, then it stopped: %s', $made, $err ) ), 120 );
+		wp_safe_redirect( admin_url( 'edit.php?post_type=' . DGB_Bookings::CPT . '&page=drivego-booking#wave' ) );
+		exit;
 	}
 
 	/** Button on a booking: try again after fixing the settings. */

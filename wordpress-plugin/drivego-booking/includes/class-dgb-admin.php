@@ -241,13 +241,25 @@ class DGB_Admin {
 				<p class="description">Wave → Manage Applications (developer portal) → your application → create a full access token. It stays on the server and is never shown on the website.</p></td></tr>
 			<tr><th>Connect</th><td><a class="button" href="<?php echo esc_url( admin_url( 'admin-post.php?action=dgb_wave_load&_wpnonce=' . wp_create_nonce( 'dgb_wave' ) ) ); ?>">Load my Wave data</a> <span class="description">Save the token first, then press this to fill the lists below.</span></td></tr>
 			<tr><th>Business</th><td><?php $wsel( 'wave_business', isset( $wc['businesses'] ) ? $wc['businesses'] : array(), 'Load my Wave data first' ); ?></td></tr>
-			<tr><th>Product on invoices</th><td><?php $wsel( 'wave_product', isset( $wc['products'] ) ? $wc['products'] : array(), 'Choose a product' ); ?> <span class="description">Create a product in Wave such as "Driving lessons", Wave needs one for every invoice line.</span></td></tr>
+			<tr><th>General product (fallback)</th><td><?php $wsel( 'wave_product', isset( $wc['products'] ) ? $wc['products'] : array(), 'Choose a product' ); ?> <span class="description">Only used for an item that has no product of its own yet. The standard products are created below.</span></td></tr>
 			<tr><th>Bank account for payments</th><td><?php $wsel( 'wave_account', isset( $wc['accounts'] ) ? $wc['accounts'] : array(), 'Choose an account' ); ?> <span class="description">Where the money is recorded (for example Square or your bank).</span></td></tr>
+			<tr><th>Income account</th><td><?php $wsel( 'wave_income', isset( $wc['income'] ) ? $wc['income'] : array(), 'Wave default' ); ?> <span class="description">Where the sales of the products are counted (usually "Sales").</span></td></tr>
 			<tr><th>Sales tax</th><td><?php $wsel( 'wave_tax', isset( $wc['taxes'] ) ? $wc['taxes'] : array(), 'No tax on invoices' ); ?> <span class="description">Choose HST. Its rate should match the HST % above.</span></td></tr>
 			<tr><th>When to send</th><td><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_auto]" value="1" <?php checked( $s['wave_auto'] ); ?>> Create the invoice in Wave when a booking or package is paid</label><br>
 				<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_pay]" value="1" <?php checked( $s['wave_pay'] ); ?>> Offer <strong>Pay with Wave</strong> at checkout (the student pays the Wave invoice online; Wave Payments must be on in your Wave account)</label><br>
 				<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_send]" value="1" <?php checked( $s['wave_send'] ); ?>> Also email the invoice to the student from Wave</label></td></tr>
 		</table>
+
+		<h3>Standard products</h3>
+		<?php $cat = DGB_Catalog::items(); $cmap = DGB_Catalog::map(); $miss = count( DGB_Catalog::missing() ); ?>
+		<p class="description">Every service, length and variant (home pick up, school car) and every package is a product with its own price, built from the settings above. Wave invoices use the product of what was bought. After changing services or packages, press the button again: only the new ones are created.</p>
+		<p><a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin-post.php?action=dgb_wave_products&_wpnonce=' . wp_create_nonce( 'dgb_wave' ) ) ); ?>">Create the products in Wave</a>
+		<span class="description"><?php echo (int) $miss; ?> of <?php echo count( $cat ); ?> still to create. Save the settings first.</span></p>
+		<table class="widefat striped" style="max-width:900px"><thead><tr><th>Product</th><th>Price (before HST)</th><th>In Wave</th></tr></thead><tbody>
+		<?php foreach ( $cat as $it ) : ?>
+			<tr><td><?php echo esc_html( $it['name'] ); ?></td><td>$<?php echo esc_html( number_format( $it['price'], 2 ) ); ?></td><td><?php echo isset( $cmap[ $it['key'] ] ) ? '<span style="color:#1a7f37">Created</span>' : 'Not yet'; ?></td></tr>
+		<?php endforeach; ?>
+		</tbody></table>
 
 		<h2>Spam protection (contact forms)</h2>
 		<table class="form-table">

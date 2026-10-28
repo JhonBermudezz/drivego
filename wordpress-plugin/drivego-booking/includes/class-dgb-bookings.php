@@ -108,7 +108,7 @@ class DGB_Bookings {
 			if ( is_wp_error( $id ) ) { return $id; }
 			$meta = array(
 				'_dgb_status' => 'pending', '_dgb_payment' => 'unpaid', '_dgb_service' => $d['service'], '_dgb_service_name' => $svc['name'],
-				'_dgb_option' => $opt['label'], '_dgb_price' => $price['total'], '_dgb_base_price' => $price['base'], '_dgb_pickup_extra' => $price['extra'], '_dgb_car_extra' => $price['car'], '_dgb_car' => ! empty( $opt['car'] ) ? ( 'school' === ( isset( $d['car'] ) ? $d['car'] : '' ) ? 'school' : 'own' ) : '', '_dgb_minutes' => (int) $opt['minutes'],
+				'_dgb_option' => $opt['label'], '_dgb_price' => $price['total'], '_dgb_base_price' => $price['base'], '_dgb_pickup_extra' => $price['extra'], '_dgb_catalog_key' => DGB_Catalog::key( $d['service'], $d['option'], $price['extra'] > 0, ! empty( $opt['car'] ) ? ( 'school' === ( isset( $d['car'] ) ? $d['car'] : '' ) ? 'school' : 'own' ) : '' ), '_dgb_car_extra' => $price['car'], '_dgb_car' => ! empty( $opt['car'] ) ? ( 'school' === ( isset( $d['car'] ) ? $d['car'] : '' ) ? 'school' : 'own' ) : '', '_dgb_minutes' => (int) $opt['minutes'],
 				'_dgb_date' => $d['date'], '_dgb_start' => (int) $d['start'],
 				'_dgb_name' => $d['name'], '_dgb_email' => $d['email'], '_dgb_phone' => $d['phone'],
 				'_dgb_licence' => $d['licence'], '_dgb_lang' => $d['lang'], '_dgb_meet' => $d['meet'], '_dgb_centre' => $d['centre'],
@@ -182,7 +182,7 @@ class DGB_Bookings {
 		$id = wp_insert_post( array( 'post_type' => self::CPT, 'post_status' => 'publish', 'post_title' => $d['name'] . ' · ' . $pk['name'] . ' · package' ), true );
 		if ( is_wp_error( $id ) ) { return $id; }
 		$meta = array(
-			'_dgb_kind' => 'package', '_dgb_status' => 'pending', '_dgb_payment' => 'unpaid', '_dgb_service' => 'package', '_dgb_package' => $pk['key'], '_dgb_service_name' => $pk['name'],
+			'_dgb_kind' => 'package', '_dgb_catalog_key' => DGB_Catalog::package_key( $pk['key'] ), '_dgb_status' => 'pending', '_dgb_payment' => 'unpaid', '_dgb_service' => 'package', '_dgb_package' => $pk['key'], '_dgb_service_name' => $pk['name'],
 			'_dgb_option' => '', '_dgb_price' => (float) $pk['price'], '_dgb_base_price' => (float) $pk['price'], '_dgb_pickup_extra' => 0, '_dgb_car_extra' => 0, '_dgb_minutes' => 0,
 			'_dgb_date' => wp_date( 'Y-m-d' ), '_dgb_start' => 0, '_dgb_name' => $d['name'], '_dgb_email' => $d['email'], '_dgb_phone' => $d['phone'],
 			'_dgb_licence' => $d['licence'], '_dgb_lang' => $d['lang'], '_dgb_meet' => '', '_dgb_centre' => '', '_dgb_address' => '', '_dgb_notes' => $d['notes'], '_dgb_pay_method' => $d['pay'],
