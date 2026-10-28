@@ -40,7 +40,7 @@ class DGB_Admin {
 	public static function column( $col, $id ) {
 		$g = function ( $k ) use ( $id ) { return get_post_meta( $id, '_dgb_' . $k, true ); };
 		switch ( $col ) {
-			case 'dgb_when': echo esc_html( wp_date( 'D, M j, Y', strtotime( $g( 'date' ) . ' 12:00:00' ) ) . ' · ' . DGB_Bookings::fmt_time( (int) $g( 'start' ) ) ); break;
+			case 'dgb_when': if ( 'package' === $g( 'kind' ) ) { echo 'Package (no date)<br><small>bought ' . esc_html( wp_date( 'M j, Y', strtotime( $g( 'date' ) . ' 12:00:00' ) ) ) . '</small>'; break; } echo esc_html( wp_date( 'D, M j, Y', strtotime( $g( 'date' ) . ' 12:00:00' ) ) . ' · ' . DGB_Bookings::fmt_time( (int) $g( 'start' ) ) ); break;
 			case 'dgb_who':  echo esc_html( $g( 'name' ) ) . '<br><a href="tel:' . esc_attr( $g( 'phone' ) ) . '">' . esc_html( $g( 'phone' ) ) . '</a><br><a href="mailto:' . esc_attr( $g( 'email' ) ) . '">' . esc_html( $g( 'email' ) ) . '</a>'; break;
 			case 'dgb_price': echo esc_html( '$' . number_format( (float) $g( 'price' ), 2 ) . ' + HST' ); break;
 			case 'dgb_status':
@@ -181,6 +181,8 @@ class DGB_Admin {
 			<?php endforeach; ?></tbody></table>
 		<?php endforeach; ?>
 		<p class="description">Empty option rows are ignored. "Extra for home pick up" is added to the price when the student asks to be picked up at home (always for road tests); leave 0 if pick up is included. For Refresher, the price is for the student's own car and "Extra when using DriveGo's car" is added when they choose the school car (leave 0 to hide that question). A fixed Square link is only used when the Square connection below is off.</p>
+
+		<?php DGB_Packages::admin_fields( $n, $s['packages'] ); ?>
 
 		<h2>Square payments</h2>
 		<table class="form-table">

@@ -2,20 +2,21 @@
 /**
  * Plugin Name: DriveGo Booking
  * Description: Booking calendar for DriveGo London: lessons, refresher and road test packages, with Square payments and an admin dashboard.
- * Version:     2.0.2
+ * Version:     2.1.0
  * Requires PHP: 7.4
  * Author: DriveGo London
  * Text Domain: drivego-booking
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'DGB_VERSION', '2.0.2' );
+define( 'DGB_VERSION', '2.1.0' );
 define( 'DGB_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DGB_URL', plugin_dir_url( __FILE__ ) );
 
 require_once DGB_DIR . 'includes/class-dgb-slots.php';
 require_once DGB_DIR . 'includes/class-dgb-settings.php';
 require_once DGB_DIR . 'includes/class-dgb-square.php';
+require_once DGB_DIR . 'includes/class-dgb-packages.php';
 require_once DGB_DIR . 'includes/class-dgb-google.php';
 require_once DGB_DIR . 'includes/class-dgb-bookings.php';
 require_once DGB_DIR . 'includes/class-dgb-rest.php';
@@ -26,6 +27,7 @@ require_once DGB_DIR . 'includes/class-dgb-spam.php';
 add_action( 'plugins_loaded', function () {
 	DGB_Bookings::init();
 	DGB_Google::init();
+	DGB_Packages::init();
 	DGB_Rest::init();
 	DGB_Admin::init();
 	DGB_Mail::init();
@@ -54,6 +56,8 @@ class DGB_Plugin {
 			),
 			'phone'    => DGB_Settings::get( 'phone' ),
 			'pay'      => DGB_Settings::pay_methods(),
+			'packages' => DGB_Packages::public_items(),
+			'hst'      => (int) DGB_Settings::get( 'hst_percent' ),
 			'etransfer'=> DGB_Settings::etransfer_email(),
 		) );
 	}

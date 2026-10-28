@@ -277,6 +277,78 @@
       btn.addEventListener('click', function (e) { if (window.openBooking(btn.getAttribute('data-book'), +(btn.getAttribute('data-book-option') || 0))) e.preventDefault(); });
     });
   }
+  /* Buy a package: details and a payment method, no calendar. Opens from any [data-buy-package] button. */
+  var pkDialog = null, pkState = null;
+  function pkField(id, label, input, optional) {
+    return '<div class="field"><label for="' + id + '">' + label + (optional ? ' <span class="field__opt">(optional)</span>' : '') + '</label>' + input + '<p class="field__error" id="' + id + '-err"></p></div>';
+  }
+  function openPackage(key) {
+    var pk = (CFG.packages || []).filter(function (x) { return x.key === key; })[0];
+    if (!pk) return false;
+    if (!pkDialog) {
+      pkDialog = document.createElement('dialog'); pkDialog.className = 'bk'; pkDialog.setAttribute('aria-labelledby', 'bkp-title');
+      pkDialog.innerHTML = '<div class="bk__panel"><aside class="bk__summary"><h2 class="bk__title" id="bkp-title"></h2><dl class="bk__facts" data-pk-facts></dl><p class="bk__note">' + ICON.lock + 'Secure checkout</p></aside><div class="bk__main">' +
+        '<button type="button" class="bk__close" data-pk-close aria-label="Close">' + ICON.close + '</button><div class="bk__body" data-pk-body></div>' +
+        '<div class="bk__nav"><button type="button" class="dgb-btn dgb-btn--outline" data-pk-cancel>Cancel</button><button type="button" class="dgb-btn dgb-btn--dark" data-pk-go>Continue</button></div></div></div>';
+      document.body.appendChild(pkDialog);
+      var shut = function () { pkDialog.close(); };
+      pkDialog.querySelector('[data-pk-close]').addEventListener('click', shut);
+      pkDialog.querySelector('[data-pk-cancel]').addEventListener('click', shut);
+      pkDialog.addEventListener('click', function (e) { if (e.target === pkDialog) shut(); });
+      pkDialog.addEventListener('close', function () { document.body.style.overflow = ''; });
+      pkDialog.querySelector('[data-pk-go]').addEventListener('click', pkSubmit);
+    }
+    pkState = { pk: pk, sent: false, busy: false, payUrl: '' };
+    var body = pkDialog.querySelector('[data-pk-body]'), pay = CFG.pay || {};
+    pkDialog.querySelector('#bkp-title').textContent = pk.name;
+    pkDialog.querySelector('[data-pk-facts]').innerHTML = [['Price', money(pk.price) + ' + HST'], ['Hours behind the wheel', pk.hours + ' h']].map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('');
+    body.innerHTML = '<h3 class="bk__h">Your details</h3><div class="bk__form"><input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" id="bkp-website">' +
+      '<div class="field-row">' + pkField('bkp-name', 'Full name', '<input id="bkp-name" type="text" autocomplete="name">') + pkField('bkp-phone', 'Phone or WhatsApp', '<input id="bkp-phone" type="tel" autocomplete="tel" placeholder="(519) 000 0000">') + '</div>' +
+      pkField('bkp-email', 'Email', '<input id="bkp-email" type="email" autocomplete="email" placeholder="you@email.com">') +
+      '<div class="field-row">' + pkField('bkp-licence', 'Licence you have now', '<select id="bkp-licence"><option>G1</option><option>G2</option><option>Full G</option></select>') + pkField('bkp-lang', 'Class language', '<select id="bkp-lang"><option>English</option><option>Spanish</option><option>Arabic</option><option>Portuguese</option></select>') + '</div>' +
+      pkField('bkp-pay', 'How would you like to pay?', '<select id="bkp-pay">' + Object.keys(pay).map(function (k) { return '<option value="' + k + '">' + esc(k === 'cash' ? 'Cash' : pay[k]) + '</option>'; }).join('') + '</select>') +
+      pkField('bkp-notes', 'Anything we should know?', '<textarea id="bkp-notes" rows="2"></textarea>', true) + '</div><p class="bk__hint" data-pk-hint hidden></p>';
+    var sel = body.querySelector('#bkp-pay'), go = pkDialog.querySelector('[data-pk-go]'), cancel = pkDialog.querySelector('[data-pk-cancel]');
+    var label = function () { go.textContent = sel.value === 'square' ? 'Continue to payment' : 'Request package'; };
+    sel.addEventListener('change', label); label(); go.hidden = false; go.disabled = false; cancel.hidden = false;
+    document.body.style.overflow = 'hidden'; pkDialog.showModal();
+    return true;
+  }
+  function pkSubmit() {
+    if (pkState.sent) { if (pkState.payUrl) window.open(pkState.payUrl, '_blank', 'noopener'); return; }
+    if (pkState.busy) return;
+    var g = function (id) { return pkDialog.querySelector('#' + id); };
+    var d = { name: g('bkp-name').value.trim(), phone: g('bkp-phone').value.trim(), email: g('bkp-email').value.trim(), licence: g('bkp-licence').value, lang: g('bkp-lang').value, pay: g('bkp-pay').value, notes: g('bkp-notes').value.trim(), website: g('bkp-website').value };
+    var errors = {
+      'bkp-name': d.name.length >= 2 ? '' : 'Please enter your full name.',
+      'bkp-phone': d.phone.replace(/\D/g, '').length >= 10 ? '' : 'Enter a phone number with at least 10 digits.',
+      'bkp-email': /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email) ? '' : 'Enter a valid email so we can send your receipt.'
+    };
+    var first = null;
+    Object.keys(errors).forEach(function (id) { var i = g(id), e = g(id + '-err'); i.setAttribute('aria-invalid', errors[id] ? 'true' : 'false'); e.textContent = errors[id]; if (errors[id] && !first) first = i; });
+    if (first) { first.focus(); return; }
+    var go = pkDialog.querySelector('[data-pk-go]'), hint = pkDialog.querySelector('[data-pk-hint]');
+    pkState.busy = true; go.disabled = true; go.textContent = 'Sending…';
+    d.package = pkState.pk.key;
+    api('order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then(function (j) {
+      pkState.sent = true; pkState.payUrl = j.pay_url || ''; pkState.busy = false; go.disabled = false;
+      if (pkState.payUrl) window.open(pkState.payUrl, '_blank', 'noopener');
+      var how = pkState.payUrl ? '<p>Your payment page opened in a new tab. If it did not, use the button below.</p>' :
+        j.pay === 'etransfer' ? '<p>To pay, send an Interac e-Transfer of ' + esc(money(pkState.pk.price * (1 + (CFG.hst || 13) / 100))) + ' (HST included) to <strong>' + esc(j.etransfer || '') + '</strong> and write your name in the message. We also emailed you these steps.</p>' :
+        '<p>You can pay in cash when we meet. We will contact you to arrange it.</p>';
+      pkDialog.querySelector('[data-pk-body]').innerHTML = '<div class="bk__done"><span class="bk__done-icon">' + ICON.check + '</span><h3 class="bk__h">Request sent</h3><p>Thank you for choosing the ' + esc(pkState.pk.name) + ' package. We will contact you by phone or WhatsApp within one business day to plan your course and first lessons. A copy was sent to your email.</p>' + how + '</div>';
+      pkDialog.querySelector('[data-pk-cancel]').textContent = 'Close';
+      if (pkState.payUrl) { go.textContent = 'Open payment page'; } else { go.hidden = true; }
+    }).catch(function (e) {
+      pkState.busy = false; go.disabled = false; go.textContent = d.pay === 'square' ? 'Continue to payment' : 'Request package';
+      hint.textContent = e.message || 'We could not send your request. Please call ' + CFG.phone + '.'; hint.hidden = false;
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest ? e.target.closest('[data-buy-package]') : null;
+    if (a && openPackage(a.getAttribute('data-buy-package'))) e.preventDefault();
+  });
+
   /* Thank-you page: Square sends people back with ?orderId=..., we ask the server if it is paid and say so. */
   function initThanks() {
     var title = document.querySelector('.dgb-thanks-title'), text = document.querySelector('.dgb-thanks-text');

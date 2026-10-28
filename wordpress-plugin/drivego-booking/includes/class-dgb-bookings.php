@@ -38,6 +38,7 @@ class DGB_Bookings {
 		) );
 		$out = array();
 		foreach ( $q->posts as $id ) {
+			if ( 'package' === get_post_meta( $id, '_dgb_kind', true ) ) { continue; } // packages have no time slot
 			$start = (int) get_post_meta( $id, '_dgb_start', true );
 			$out[] = array( 'start' => $start, 'end' => $start + (int) get_post_meta( $id, '_dgb_minutes', true ) );
 		}
@@ -122,6 +123,18 @@ class DGB_Bookings {
 
 	public static function summary_lines( $id ) {
 		$g = function ( $k ) use ( $id ) { return get_post_meta( $id, '_dgb_' . $k, true ); };
+		if ( 'package' === $g( 'kind' ) ) {
+			return array(
+				'Package' => $g( 'service_name' ),
+				'Price'   => '$' . number_format( (float) $g( 'price' ), 2 ) . ' + HST',
+				'Payment' => self::pay_label( $g( 'pay_method' ) ),
+				'Name'    => $g( 'name' ),
+				'Phone'   => $g( 'phone' ),
+				'Email'   => $g( 'email' ),
+				'Licence' => $g( 'licence' ) . ' · classes in ' . $g( 'lang' ),
+				'Notes'   => $g( 'notes' ) ?: '-',
+			);
+		}
 		$where = in_array( $g( 'service' ), array( 'roadtest', 'outside' ), true ) ? 'DriveTest ' . ( 'Other' === $g( 'centre' ) ? 'other location (price to be confirmed)' : $g( 'centre' ) ) . ( $g( 'address' ) ? ', pick up at ' . $g( 'address' ) : ', meet at White Oaks Mall' )
 			: ( 'Pick me up at home' === $g( 'meet' ) ? 'Pick up at ' . $g( 'address' ) : 'White Oaks Mall' );
 		$out = array(
@@ -159,6 +172,31 @@ class DGB_Bookings {
 		if ( 'etransfer' === $m ) { return "\nHow to pay: send an Interac e-Transfer of $total (HST included) to " . DGB_Settings::etransfer_email() . ' and write your name in the message. No password needed.' . "\n"; }
 		if ( 'cash' === $m ) { return "\nHow to pay: cash at your lesson, $total (HST included). Please bring the exact amount if you can.\n"; }
 		return $pay_url ? "\nPay securely with Square:\n" . $pay_url . "\n" : '';
+	}
+
+	/** A package bought online: no date, the school contacts the student to plan the course. */
+	public static function create_package( array $d ) {
+		$pk = DGB_Packages::find( $d['package'] );
+		if ( ! $pk ) { return new WP_Error( 'dgb_package', 'Unknown package.', array( 'status' => 400 ) ); }
+		$id = wp_insert_post( array( 'post_type' => self::CPT, 'post_status' => 'publish', 'post_title' => $d['name'] . ' · ' . $pk['name'] . ' · package' ), true );
+		if ( is_wp_error( $id ) ) { return $id; }
+		$meta = array(
+			'_dgb_kind' => 'package', '_dgb_status' => 'pending', '_dgb_payment' => 'unpaid', '_dgb_service' => 'package', '_dgb_package' => $pk['key'], '_dgb_service_name' => $pk['name'],
+			'_dgb_option' => '', '_dgb_price' => (float) $pk['price'], '_dgb_base_price' => (float) $pk['price'], '_dgb_pickup_extra' => 0, '_dgb_car_extra' => 0, '_dgb_minutes' => 0,
+			'_dgb_date' => wp_date( 'Y-m-d' ), '_dgb_start' => 0, '_dgb_name' => $d['name'], '_dgb_email' => $d['email'], '_dgb_phone' => $d['phone'],
+			'_dgb_licence' => $d['licence'], '_dgb_lang' => $d['lang'], '_dgb_meet' => '', '_dgb_centre' => '', '_dgb_address' => '', '_dgb_notes' => $d['notes'], '_dgb_pay_method' => $d['pay'],
+		);
+		foreach ( $meta as $k => $v ) { update_post_meta( $id, $k, $v ); }
+		return $id;
+	}
+
+	public static function notify_package( $id, $pay_url ) {
+		$phone = DGB_Settings::get( 'phone' );
+		self::send( DGB_Settings::get( 'notify_email' ), 'New package purchase: ' . get_the_title( $id ),
+			"A package was bought on the website.\n\n" . self::block( $id ) . "\nOpen it here:\n" . admin_url( 'post.php?post=' . $id . '&action=edit' ) . "\n" );
+		self::send( get_post_meta( $id, '_dgb_email', true ), 'We received your DriveGo London package',
+			'Hi ' . get_post_meta( $id, '_dgb_name', true ) . ",\n\nThanks for choosing DriveGo London. We received your package and will contact you by phone or WhatsApp within one business day to plan your course and your first lessons.\n\n" . self::block( $id ) .
+			self::pay_text( $id, $pay_url ) . "\nQuestions? Call or WhatsApp " . $phone . ".\n" );
 	}
 
 	public static function notify_new( $id, $pay_url ) {

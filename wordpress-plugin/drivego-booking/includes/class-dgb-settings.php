@@ -44,6 +44,7 @@ class DGB_Settings {
 			'recaptcha_secret' => '',
 			'recaptcha_score'  => 0.5,
 			'etransfer_email'      => '',
+			'packages'             => DGB_Packages::defaults(),
 			'google_client_id'     => '',
 			'google_client_secret' => '',
 			'google_calendar'      => 'primary',
@@ -179,6 +180,7 @@ class DGB_Settings {
 		if ( isset( $in['google_calendar'] ) ) { $out['google_calendar'] = sanitize_text_field( $in['google_calendar'] ) ?: 'primary'; }
 		if ( isset( $in['google_instructors'] ) ) { $out['google_instructors'] = sanitize_text_field( $in['google_instructors'] ); }
 		if ( isset( $in['google_calendar'] ) ) { $out['google_invite_customer'] = empty( $in['google_invite_customer'] ) ? 0 : 1; }
+		if ( isset( $in['packages'] ) && is_array( $in['packages'] ) ) { $out['packages'] = DGB_Packages::sanitize( $in['packages'], isset( $old['packages'] ) ? $old['packages'] : array() ); }
 		if ( isset( $in['services'] ) && is_array( $in['services'] ) ) {
 			foreach ( array_keys( $d['services'] ) as $key ) {
 				if ( ! isset( $in['services'][ $key ] ) ) { continue; }

@@ -254,7 +254,7 @@ class DGB_Google {
 
 	/** Create, update or delete the Google event so it matches the booking. Never throws: errors are saved on the booking. */
 	public static function push( $id ) {
-		if ( ! self::connected() ) { return; }
+		if ( ! self::connected() || 'package' === get_post_meta( $id, '_dgb_kind', true ) ) { return; }
 		$cal  = 'calendars/' . rawurlencode( self::calendar_id() ) . '/events';
 		$ev   = get_post_meta( $id, '_dgb_gcal_event', true );
 		$st   = get_post_meta( $id, '_dgb_status', true ) ?: 'pending';

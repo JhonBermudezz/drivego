@@ -12,6 +12,7 @@ class DGB_Rest {
 		register_rest_route( self::NS, '/days', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'days' ), 'permission_callback' => '__return_true' ) );
 		register_rest_route( self::NS, '/slots', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'slots' ), 'permission_callback' => '__return_true' ) );
 		register_rest_route( self::NS, '/book', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'book' ), 'permission_callback' => '__return_true' ) );
+		register_rest_route( self::NS, '/order', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'order' ), 'permission_callback' => '__return_true' ) );
 		register_rest_route( self::NS, '/thanks', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'thanks' ), 'permission_callback' => '__return_true' ) );
 		register_rest_route( self::NS, '/square-webhook', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'webhook' ), 'permission_callback' => '__return_true' ) );
 	}
@@ -100,6 +101,44 @@ class DGB_Rest {
 		return array( 'ok' => true, 'id' => $id, 'pay_url' => $pay_url, 'pay' => $d['pay'], 'etransfer' => DGB_Settings::etransfer_email() );
 	}
 
+	/** Buy a package online: no calendar, just details and a payment method. */
+	public static function order( WP_REST_Request $r ) {
+		$p = $r->get_json_params();
+		if ( ! empty( $p['website'] ) ) { return array( 'ok' => true ); } // honeypot
+		$ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : 'x';
+		$key = 'dgb_rate_' . md5( $ip );
+		$cnt = (int) get_transient( $key );
+		if ( $cnt >= 5 ) { return new WP_Error( 'dgb_rate', 'Too many requests. Please call us instead.', array( 'status' => 429 ) ); }
+		set_transient( $key, $cnt + 1, HOUR_IN_SECONDS );
+		$d = array(
+			'package' => isset( $p['package'] ) ? sanitize_key( $p['package'] ) : '',
+			'name'    => isset( $p['name'] ) ? sanitize_text_field( $p['name'] ) : '',
+			'email'   => isset( $p['email'] ) ? sanitize_email( $p['email'] ) : '',
+			'phone'   => isset( $p['phone'] ) ? sanitize_text_field( $p['phone'] ) : '',
+			'licence' => isset( $p['licence'] ) ? sanitize_text_field( $p['licence'] ) : '',
+			'lang'    => isset( $p['lang'] ) ? sanitize_text_field( $p['lang'] ) : '',
+			'notes'   => isset( $p['notes'] ) ? sanitize_textarea_field( $p['notes'] ) : '',
+			'pay'     => isset( $p['pay'] ) ? sanitize_key( $p['pay'] ) : '',
+		);
+		if ( strlen( $d['name'] ) < 2 || ! is_email( $d['email'] ) || strlen( preg_replace( '/\D/', '', $d['phone'] ) ) < 10 ) {
+			return new WP_Error( 'dgb_invalid', 'Please check your name, email and phone number.', array( 'status' => 400 ) );
+		}
+		$methods = DGB_Settings::pay_methods();
+		if ( ! isset( $methods[ $d['pay'] ] ) ) { $d['pay'] = isset( $methods['square'] ) ? 'square' : 'etransfer'; }
+		$id = DGB_Bookings::create_package( $d );
+		if ( is_wp_error( $id ) ) { return $id; }
+		$pay_url = '';
+		$total   = (float) get_post_meta( $id, '_dgb_price', true );
+		if ( 'square' === $d['pay'] && DGB_Square::enabled() && $total > 0 ) {
+			$res = DGB_Square::create_payment_link( $id, get_post_meta( $id, '_dgb_service_name', true ), $total, $d['email'], DGB_Settings::thanks_url() );
+			if ( is_wp_error( $res ) ) { update_post_meta( $id, '_dgb_square_error', $res->get_error_message() ); }
+			else { $pay_url = $res['url']; update_post_meta( $id, '_dgb_square_order', $res['order_id'] ); }
+		}
+		if ( $pay_url ) { update_post_meta( $id, '_dgb_pay_url', $pay_url ); }
+		DGB_Bookings::notify_package( $id, $pay_url );
+		return array( 'ok' => true, 'id' => $id, 'pay_url' => $pay_url, 'pay' => $d['pay'], 'etransfer' => DGB_Settings::etransfer_email() );
+	}
+
 	/** Thank-you page: Square sends the student back with ?orderId=. We ask Square if it is paid, so this works even without the webhook. */
 	public static function thanks( WP_REST_Request $r ) {
 		$order = sanitize_text_field( (string) $r['orderId'] );
@@ -112,7 +151,7 @@ class DGB_Rest {
 		}
 		$lines = DGB_Bookings::summary_lines( $id );
 		$first = trim( explode( ' ', (string) get_post_meta( $id, '_dgb_name', true ) )[0] );
-		return array( 'paid' => $paid, 'name' => $first, 'service' => $lines['Service'], 'when' => $lines['When'] );
+		return array( 'paid' => $paid, 'name' => $first, 'service' => isset( $lines['Service'] ) ? $lines['Service'] : $lines['Package'], 'when' => isset( $lines['When'] ) ? $lines['When'] : '' );
 	}
 
 	/** Square tells us when an order is paid. */
