@@ -244,7 +244,7 @@ page('services.html', 'Driving services | DriveGo London',
      + svc('02', 'road-test-service', 'Road test package',
            'A warm up on the real test route and our car on test day, coached by a former DriveTest examiner.',
            'assets/img/car.webp', 'The blue DriveGo London training car with its Student Driver sign',
-           ['Vehicle for your road test', 'Pre test practice lesson on the DriveTest route', 'Pick up and drop off'],
+           ['Vehicle for your road test', 'Pre test practice lesson on the DriveTest route', 'Pick up and drop off at home: Complete road test only'],
            TEST_PRICE, book_actions('roadtest', 'Road test package', '            <a class="btn btn--outline btn--lg" href="road-test.html">Road test details</a>'),
            reverse=True)
      + svc('03', 'refresher', 'G-Full &amp; G2 Refresher',
