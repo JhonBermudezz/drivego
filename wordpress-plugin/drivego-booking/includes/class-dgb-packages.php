@@ -100,7 +100,7 @@ class DGB_Packages {
 			}
 			$out .= '</div>';
 			$out .= '<a href="#buy" class="btn ' . ( $feat ? 'btn--primary' : 'btn--outline' ) . ' btn--block" data-buy-package="' . esc_attr( $it['key'] ) . '">Buy now</a>';
-			$out .= '<p class="plan__secure dgi-regular-lock-simple-b">Secure checkout with Square</p></article>';
+			$out .= '<p class="plan__secure dgi-regular-lock-simple-b">Secure checkout</p></article>';
 		}
 		return $out;
 	}
