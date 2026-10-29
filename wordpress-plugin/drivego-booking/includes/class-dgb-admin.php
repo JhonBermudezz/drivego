@@ -82,8 +82,7 @@ class DGB_Admin {
 		$id = isset( $_GET['id'] ) ? (int) $_GET['id'] : 0;
 		if ( ! current_user_can( 'edit_post', $id ) || ! wp_verify_nonce( isset( $_GET['_wpnonce'] ) ? $_GET['_wpnonce'] : '', 'dgb_paid_' . $id ) ) { wp_die( 'Not allowed.' ); }
 		$now = 'paid' === get_post_meta( $id, '_dgb_payment', true ) ? 'unpaid' : 'paid';
-		update_post_meta( $id, '_dgb_payment', $now );
-		if ( 'paid' === $now ) { DGB_Wave::on_paid( $id ); }
+		if ( 'paid' === $now ) { DGB_Bookings::mark_paid( $id, false ); } else { update_post_meta( $id, '_dgb_payment', $now ); }
 		wp_safe_redirect( wp_get_referer() ?: admin_url( 'post.php?post=' . $id . '&action=edit' ) );
 		exit;
 	}
@@ -149,6 +148,7 @@ class DGB_Admin {
 			<tr><th>Business name in emails</th><td><input type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[from_name]" value="<?php echo esc_attr( $s['from_name'] ); ?>"></td></tr>
 			<tr><th>Phone shown to customers</th><td><input type="text" name="<?php echo esc_attr( $n ); ?>[phone]" value="<?php echo esc_attr( $s['phone'] ); ?>"></td></tr>
 			<tr><th>Interac e-Transfer email</th><td><input type="email" class="regular-text" name="<?php echo esc_attr( $n ); ?>[etransfer_email]" value="<?php echo esc_attr( $s['etransfer_email'] ); ?>" placeholder="<?php echo esc_attr( $s['notify_email'] ); ?>"> <span class="description">Where students send e-Transfers. Empty uses the booking email above.</span></td></tr>
+			<tr><th>Confirm when paid</th><td><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[auto_confirm]" value="1" <?php checked( $s['auto_confirm'] ); ?>> As soon as a booking is paid (Square, Wave, or when you press Mark as paid), confirm it automatically</label><p class="description">The student gets the confirmation email and the calendar invitation. Unpaid bookings stay Pending until you confirm them.</p></td></tr>
 			<tr><th>Bookings at the same time</th><td><input type="number" min="1" max="20" name="<?php echo esc_attr( $n ); ?>[capacity]" value="<?php echo esc_attr( $s['capacity'] ); ?>"> <span class="description">How many lessons can run at once (cars or instructors available).</span></td></tr>
 			<tr><th>Travel time between lessons</th><td><input type="number" min="0" max="240" step="5" name="<?php echo esc_attr( $n ); ?>[buffer_minutes]" value="<?php echo esc_attr( $s['buffer_minutes'] ); ?>"> minutes</td></tr>
 			<tr><th>Start times every</th><td><input type="number" min="5" max="120" step="5" name="<?php echo esc_attr( $n ); ?>[slot_minutes]" value="<?php echo esc_attr( $s['slot_minutes'] ); ?>"> minutes</td></tr>

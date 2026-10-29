@@ -153,7 +153,7 @@ class DGB_Rest {
 		}
 		$lines = DGB_Bookings::summary_lines( $id );
 		$first = trim( explode( ' ', (string) get_post_meta( $id, '_dgb_name', true ) )[0] );
-		return array( 'paid' => $paid, 'name' => $first, 'service' => isset( $lines['Service'] ) ? $lines['Service'] : $lines['Package'], 'when' => isset( $lines['When'] ) ? $lines['When'] : '' );
+		return array( 'paid' => $paid, 'confirmed' => 'confirmed' === get_post_meta( $id, '_dgb_status', true ), 'package' => 'package' === get_post_meta( $id, '_dgb_kind', true ), 'name' => $first, 'service' => isset( $lines['Service'] ) ? $lines['Service'] : $lines['Package'], 'when' => isset( $lines['When'] ) ? $lines['When'] : '' );
 	}
 
 	/** Square tells us when an order is paid. */

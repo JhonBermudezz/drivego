@@ -216,12 +216,25 @@ class DGB_Bookings {
 	}
 
 	/** Mark a booking as paid once and tell the owner. */
-	public static function mark_paid( $id ) {
+	/** Is automatic confirmation on? */
+	public static function auto_confirm_on() { return (bool) DGB_Settings::get( 'auto_confirm' ); }
+
+	/** Paying confirms a pending booking: the student gets the confirmation and the calendar event turns green. */
+	public static function auto_confirm( $id ) {
+		if ( self::auto_confirm_on() && 'pending' === ( get_post_meta( $id, '_dgb_status', true ) ?: 'pending' ) ) { self::set_status( $id, 'confirmed' ); return true; }
+		return false;
+	}
+
+	/** Mark a booking as paid once, confirm it, and tell the owner. */
+	public static function mark_paid( $id, $notify = true ) {
 		if ( 'paid' === get_post_meta( $id, '_dgb_payment', true ) ) { return; }
 		update_post_meta( $id, '_dgb_payment', 'paid' );
 		update_post_meta( $id, '_dgb_paid_at', time() );
-		self::send( DGB_Settings::get( 'notify_email' ), 'Payment received: ' . get_the_title( $id ),
-			"The student paid with Square.\n\n" . self::block( $id ) . "\nConfirm the booking here:\n" . admin_url( 'post.php?post=' . $id . '&action=edit' ) . "\n" );
+		$confirmed = self::auto_confirm( $id );
+		if ( $notify ) {
+			self::send( DGB_Settings::get( 'notify_email' ), 'Payment received: ' . get_the_title( $id ),
+				"The student paid online.\n\n" . self::block( $id ) . "\n" . ( $confirmed ? 'The booking was confirmed automatically' : 'Confirm the booking here' ) . ":\n" . admin_url( 'post.php?post=' . $id . '&action=edit' ) . "\n" );
+		}
 		DGB_Wave::on_paid( $id );
 	}
 

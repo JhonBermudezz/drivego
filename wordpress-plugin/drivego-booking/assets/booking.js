@@ -358,8 +358,8 @@
     fetch(CFG.rest + 'thanks?orderId=' + encodeURIComponent(order)).then(function (r) { return r.ok ? r.json() : Promise.reject(); }).then(function (j) {
       var what = j.service + ' on ' + j.when;
       if (j.paid) {
-        title.textContent = 'Payment received';
-        text.textContent = 'Thank you' + (j.name ? ', ' + j.name : '') + '. We got your payment for ' + what + '. We will confirm your booking by phone or WhatsApp within one business day.';
+        title.textContent = j.confirmed && !j.package ? 'Booking confirmed' : 'Payment received';
+        text.textContent = 'Thank you' + (j.name ? ', ' + j.name : '') + '. ' + (j.package ? 'We got your payment for ' + what + '. We will contact you by phone or WhatsApp within one business day to plan your course and first lessons.' : j.confirmed ? 'We got your payment and your ' + what + ' is confirmed. You will get a calendar invitation by email.' : 'We got your payment for ' + what + '. We will confirm your booking by phone or WhatsApp within one business day.');
       } else {
         title.textContent = 'Thank you';
         text.textContent = 'We received your booking for ' + what + '. Your payment is still being processed, we will confirm it shortly by phone or WhatsApp.';

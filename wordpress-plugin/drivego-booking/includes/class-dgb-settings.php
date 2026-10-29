@@ -53,6 +53,7 @@ class DGB_Settings {
 			'wave_auto'            => 0,
 			'wave_send'            => 0,
 			'wave_pay'             => 0,
+			'auto_confirm'         => 1,
 			'wave_income'          => '',
 			'google_client_id'     => '',
 			'google_client_secret' => '',
@@ -199,6 +200,7 @@ class DGB_Settings {
 		if ( ! empty( $in['wave_token_clear'] ) ) { $out['wave_token'] = ''; }
 		foreach ( array( 'wave_business', 'wave_product', 'wave_account', 'wave_tax', 'wave_income' ) as $k ) { if ( isset( $in[ $k ] ) ) { $out[ $k ] = sanitize_text_field( $in[ $k ] ); } }
 		if ( isset( $in['wave_business'] ) ) { $out['wave_auto'] = empty( $in['wave_auto'] ) ? 0 : 1; $out['wave_send'] = empty( $in['wave_send'] ) ? 0 : 1; $out['wave_pay'] = empty( $in['wave_pay'] ) ? 0 : 1; }
+		if ( isset( $in['capacity'] ) ) { $out['auto_confirm'] = empty( $in['auto_confirm'] ) ? 0 : 1; }
 		if ( isset( $in['packages'] ) && is_array( $in['packages'] ) ) { $out['packages'] = DGB_Packages::sanitize( $in['packages'], isset( $old['packages'] ) ? $old['packages'] : array() ); }
 		if ( isset( $in['services'] ) && is_array( $in['services'] ) ) {
 			foreach ( array_keys( $d['services'] ) as $key ) {
