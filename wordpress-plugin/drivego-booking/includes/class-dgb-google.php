@@ -233,7 +233,6 @@ class DGB_Google {
 		$lines = DGB_Bookings::summary_lines( $id );
 		$desc  = '';
 		foreach ( $lines as $k => $v ) { $desc .= $k . ': ' . $v . "\n"; }
-		$desc .= "\nManage: " . admin_url( 'post.php?post=' . $id . '&action=edit' );
 		$att = array();
 		foreach ( self::instructors() as $m ) { $att[] = array( 'email' => $m ); }
 		if ( 'confirmed' === $status && DGB_Settings::get( 'google_invite_customer' ) && is_email( $g( 'email' ) ) ) { $att[] = array( 'email' => $g( 'email' ), 'displayName' => $g( 'name' ) ); }
