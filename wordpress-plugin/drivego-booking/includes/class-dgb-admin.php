@@ -98,10 +98,13 @@ class DGB_Admin {
 		$st = get_post_meta( $post->ID, '_dgb_status', true ) ?: 'pending';
 		echo '<tr><th>Status</th><td>' . esc_html( DGB_Bookings::statuses()[ $st ] ) . '</td></tr>';
 		echo '<tr><th>Payment</th><td>' . ( 'paid' === get_post_meta( $post->ID, '_dgb_payment', true ) ? 'Paid' : 'Unpaid' ) . ' · ' . esc_html( DGB_Bookings::pay_label( get_post_meta( $post->ID, '_dgb_pay_method', true ) ) ) . '</td></tr>';
-		if ( DGB_Wave::configured() && DGB_Settings::get( 'wave_auto' ) ) {
+		if ( DGB_Wave::configured() && ( DGB_Settings::get( 'wave_auto' ) || 'wave' === get_post_meta( $post->ID, '_dgb_pay_method', true ) ) ) {
 			$werr = get_post_meta( $post->ID, '_dgb_wave_error', true );
 			$wnum = get_post_meta( $post->ID, '_dgb_wave_number', true );
-			echo '<tr><th>Wave</th><td>' . ( $werr ? 'Error: ' . esc_html( $werr ) : ( get_post_meta( $post->ID, '_dgb_wave_paid', true ) ? 'Invoice ' . esc_html( $wnum ) . ' created and paid' : 'Not sent yet (it is created when the booking is paid)' ) ) . '</td></tr>';
+			$wst = get_post_meta( $post->ID, '_dgb_wave_status', true ); $wck = (int) get_post_meta( $post->ID, '_dgb_wave_checked', true );
+			$wtxt = $werr ? 'Error: ' . esc_html( $werr ) : ( get_post_meta( $post->ID, '_dgb_wave_paid', true ) ? 'Invoice ' . esc_html( $wnum ) . ' created and paid' : ( get_post_meta( $post->ID, '_dgb_wave_invoice', true ) ? 'Invoice ' . esc_html( $wnum ) . ' waiting for payment' : 'Not sent yet (it is created when the booking is paid)' ) );
+			if ( $wck ) { $wtxt .= ' · Wave says: ' . esc_html( $wst ) . ', checked ' . esc_html( human_time_diff( $wck ) ) . ' ago'; }
+			echo '<tr><th>Wave</th><td>' . $wtxt . '</td></tr>';
 		}
 		if ( $err = get_post_meta( $post->ID, '_dgb_square_error', true ) ) { echo '<tr><th>Square error</th><td>' . esc_html( $err ) . '</td></tr>'; }
 		if ( DGB_Google::connected() ) {

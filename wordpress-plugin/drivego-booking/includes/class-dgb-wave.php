@@ -15,6 +15,7 @@ class DGB_Wave {
 		add_action( 'admin_post_dgb_wave_send', array( __CLASS__, 'send_now' ) );
 		add_action( 'admin_post_dgb_wave_products', array( __CLASS__, 'create_products' ) );
 		add_action( 'dgb_wave_poll', array( __CLASS__, 'poll' ) );
+		add_action( 'load-edit.php', array( __CLASS__, 'poll_on_screen' ) );
 		add_action( 'init', function () {
 			if ( DGB_Settings::get( 'wave_pay' ) && self::configured() && ! wp_next_scheduled( 'dgb_wave_poll' ) ) { wp_schedule_event( time() + 120, 'dgb_ten_minutes', 'dgb_wave_poll' ); }
 		} );
@@ -232,6 +233,13 @@ class DGB_Wave {
 		return $p['customer']['id'];
 	}
 
+	/** Opening the Bookings list also checks, so it does not depend on WP-Cron running (at most once a minute). */
+	public static function poll_on_screen() {
+		if ( ! isset( $_GET['post_type'] ) || DGB_Bookings::CPT !== $_GET['post_type'] || ! DGB_Settings::get( 'wave_pay' ) || get_transient( 'dgb_wave_screen_poll' ) ) { return; }
+		set_transient( 'dgb_wave_screen_poll', 1, 60 );
+		self::poll();
+	}
+
 	/** Wave does not call us when an invoice is paid, so look every few minutes. */
 	public static function poll() {
 		if ( ! self::configured() ) { return; }
@@ -254,6 +262,9 @@ class DGB_Wave {
 		$d = self::gql( 'query($b: ID!, $i: ID!) { business(id: $b) { invoice(id: $i) { id status amountDue { value } } } }', array( 'b' => DGB_Settings::get( 'wave_business' ), 'i' => $inv ) );
 		if ( is_wp_error( $d ) ) { update_post_meta( $id, '_dgb_wave_error', $d->get_error_message() ); return false; }
 		$i    = isset( $d['business']['invoice'] ) ? $d['business']['invoice'] : array();
+		update_post_meta( $id, '_dgb_wave_checked', time() );
+		update_post_meta( $id, '_dgb_wave_status', isset( $i['status'] ) ? (string) $i['status'] : 'unknown' );
+		if ( ! $i ) { update_post_meta( $id, '_dgb_wave_error', 'Wave did not return that invoice. Check that the business selected in the settings is the one that owns it.' ); return false; }
 		$paid = ( isset( $i['status'] ) && 'PAID' === strtoupper( $i['status'] ) ) || ( isset( $i['amountDue']['value'] ) && 0.0 === (float) $i['amountDue']['value'] && ! empty( $i['status'] ) && 'DRAFT' !== strtoupper( $i['status'] ) );
 		if ( $paid ) { update_post_meta( $id, '_dgb_wave_paid', 1 ); delete_post_meta( $id, '_dgb_wave_error' ); DGB_Bookings::mark_paid( $id ); }
 		return $paid;
