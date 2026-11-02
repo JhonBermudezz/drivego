@@ -128,3 +128,7 @@ dialog.bk{ width: 100%; height: 100%; max-height: 100%; border-radius: 0; }}
 .bk__sum-total{ margin-top: 2px; padding-top: 8px; border-top: 1px solid var(--ink); font-size: 1.0625rem; font-weight: 800; }
 .bk__review li.bk__review-sum{ display: block; }
 .bk__review .bk__sum{ margin: 0; padding: 0; border: 0; }
+
+.bk__inline-sum{ margin-top: 8px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--green-soft); }
+.bk__inline-sum .bk__sum{ margin: 0; padding: 0; border: 0; }
+.bk__inline-sum .bk__label{ margin: 0 0 8px; }

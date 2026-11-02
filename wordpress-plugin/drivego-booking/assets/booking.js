@@ -87,7 +87,7 @@
         '<button type="button" class="bk__carbtn" data-car="school" aria-pressed="' + (state.car === 'school') + '">DriveGo school car</button></div>' +
         '<p class="bk__small">Prices above change with your choice.</p></div>';
     }
-    function pickupOn() { return isTest() ? homeTest() : (state.details.meet || 'Pick me up at home') === 'Pick me up at home'; }
+    function pickupOn() { return isTest() ? homeTest() : (state.details.meet || 'Meet at White Oaks Mall') === 'Pick me up at home'; }
     function hasCar() { return !isTest() && state.service.options.some(function (o) { return o.car > 0; }); }
     function carExtra() { var o = opt(); return hasCar() && state.car === 'school' && o.car > 0 ? o.car : 0; }
     function listPrice(o) { return o.price + (hasCar() && state.car === 'school' && o.car > 0 ? o.car : 0); }
@@ -110,6 +110,7 @@
       rows = rows.concat([['Day', state.date ? fmtDate(state.date) : 'Not chosen yet'], ['Time', state.time !== null ? fmtTime(state.time) : 'Not chosen yet']]);
       dialog.querySelector('[data-bk-facts]').innerHTML = rows.map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('');
       dialog.querySelector('[data-bk-sum]').innerHTML = sumHtml();
+      var inl = dialog.querySelector('[data-bk-inline-sum]'); if (inl) inl.innerHTML = '<p class="bk__label">Your price</p>' + sumHtml();
     }
 
     function go(step) {
@@ -208,11 +209,12 @@
         '<div class="field-row">' + field('bk-name', 'Full name', '<input id="bk-name" type="text" autocomplete="name" value="' + v('name') + '">') + field('bk-phone', 'Phone or WhatsApp', '<input id="bk-phone" type="tel" autocomplete="tel" placeholder="(519) 000 0000" value="' + v('phone') + '">') + '</div>' +
         field('bk-email', 'Email', '<input id="bk-email" type="email" autocomplete="email" placeholder="you@email.com" value="' + v('email') + '">') +
         '<div class="field-row">' + field('bk-licence', 'Licence you have now', '<select id="bk-licence">' + sel('licence', ['G1', 'G2', 'Full G']) + '</select>') + field('bk-lang', 'Lesson language', '<select id="bk-lang">' + sel('lang', ['English', 'Spanish', 'Arabic', 'Portuguese']) + '</select>') + '</div>' +
-        (isTest ? field('bk-centre', 'DriveTest centre', '<select id="bk-centre">' + sel('centre', ['London']) + '</select><p class="bk__small">Taking your test outside London? Choose the <strong>Road test outside of London</strong> package instead.</p>') : field('bk-meet', 'Where should we start?', '<select id="bk-meet">' + sel('meet', ['Pick me up at home', 'Meet at White Oaks Mall']) + '</select>')) +
+        (isTest ? field('bk-centre', 'DriveTest centre', '<select id="bk-centre">' + sel('centre', ['London']) + '</select><p class="bk__small">Taking your test outside London? Choose the <strong>Road test outside of London</strong> package instead.</p>') : field('bk-meet', 'Where should we start?', '<select id="bk-meet">' + sel('meet', ['Meet at White Oaks Mall', 'Pick me up at home']) + '</select>')) +
         (Object.keys(payMethods()).length > 1 ? field('bk-pay', 'How would you like to pay?', '<select id="bk-pay">' + Object.keys(payMethods()).map(function (k) { return '<option value="' + k + '"' + (d.pay === k ? ' selected' : '') + '>' + esc(payMethods()[k]) + '</option>'; }).join('') + '</select>') : '') +
         field('bk-address', 'Pick up address', '<input id="bk-address" type="text" autocomplete="street-address" placeholder="Street, London, ON" value="' + v('address') + '">') +
-        field('bk-notes', 'Anything we should know?', '<textarea id="bk-notes" rows="2" placeholder="For example, what you want to practise.">' + v('notes') + '</textarea>', true) + '</div>';
+        field('bk-notes', 'Anything we should know?', '<textarea id="bk-notes" rows="2" placeholder="For example, what you want to practise.">' + v('notes') + '</textarea>', true) + '<div class="bk__inline-sum" data-bk-inline-sum></div></div>';
       var meet = body.querySelector('#bk-meet'), addr = body.querySelector('#bk-address').closest('.field');
+      summary();
       var sync = function () { addr.hidden = meet ? meet.value !== 'Pick me up at home' : !homeTest(); };
       if (meet) { meet.addEventListener('change', function () { state.details.meet = meet.value; sync(); summary(); }); }
       sync();
