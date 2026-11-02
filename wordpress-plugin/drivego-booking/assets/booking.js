@@ -109,7 +109,7 @@
       if (hasCar()) rows.push(['Car', state.car === 'school' ? 'DriveGo school car' : 'My own car']);
       rows = rows.concat([['Day', state.date ? fmtDate(state.date) : 'Not chosen yet'], ['Time', state.time !== null ? fmtTime(state.time) : 'Not chosen yet']]);
       dialog.querySelector('[data-bk-facts]').innerHTML = rows.map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('');
-      dialog.querySelector('[data-bk-sum]').innerHTML = sumHtml();
+      dialog.querySelector('[data-bk-sum]').innerHTML = state.step >= 3 ? sumHtml() : ''; // the price breakdown starts at the Details step
       var inl = dialog.querySelector('[data-bk-inline-sum]'); if (inl) inl.innerHTML = '<p class="bk__label">Your price</p>' + sumHtml();
     }
 
