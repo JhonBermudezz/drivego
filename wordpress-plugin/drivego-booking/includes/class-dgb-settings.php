@@ -141,7 +141,7 @@ class DGB_Settings {
 		foreach ( (array) self::get( 'services' ) as $svc ) { foreach ( $svc['options'] as $o ) { if ( ! empty( $o['pay'] ) ) { $square = true; } } }
 		if ( $square ) { $m['square'] = 'Card online (Square)'; }
 		if ( self::get( 'wave_pay' ) && DGB_Wave::configured() ) { $m['wave'] = 'Debit or credit card'; }
-		$m['etransfer'] = 'Interac e-Transfer';
+		$m['etransfer'] = 'Interac e-Transfer (' . self::etransfer_email() . ')'; // the address is right in the option
 		$m['cash']      = 'Cash at the lesson';
 		return $m;
 	}
