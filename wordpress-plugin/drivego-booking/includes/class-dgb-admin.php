@@ -158,24 +158,36 @@ class DGB_Admin {
 		</table>
 
 		<h2>Opening hours</h2>
-		<p class="description">Tick <strong>Closed</strong> on a day you do not work. Nobody can book that day.</p>
+		<p class="description">Tick <strong>Closed</strong> on a day you do not work. Tick <strong>Block lunch</strong> to keep a break free: nobody can book a lesson that runs into it.</p>
 		<table class="form-table dgb-hours"><?php foreach ( $days as $i => $label ) : $h = isset( $s['hours'][ $i ] ) ? $s['hours'][ $i ] : array( '', '' ); $closed = '' === $h[0] || '' === $h[1]; ?>
 			<tr><th><?php echo esc_html( $label ); ?></th><td>
 				<input type="time" name="<?php echo esc_attr( $n ); ?>[hours][<?php echo (int) $i; ?>][0]" value="<?php echo esc_attr( $h[0] ); ?>" <?php disabled( $closed ); ?>> to
 				<input type="time" name="<?php echo esc_attr( $n ); ?>[hours][<?php echo (int) $i; ?>][1]" value="<?php echo esc_attr( $h[1] ); ?>" <?php disabled( $closed ); ?>>
-				&nbsp; <label><input type="checkbox" class="dgb-closed" <?php checked( $closed ); ?>> Closed</label></td></tr>
+				&nbsp; <label><input type="checkbox" class="dgb-closed" <?php checked( $closed ); ?>> Closed</label>
+				<?php $br = isset( $s['breaks'][ $i ] ) ? $s['breaks'][ $i ] : array( '', '' ); $has = '' !== $br[0] && '' !== $br[1]; ?>
+				<div class="dgb-lunch-row" style="margin-top:6px"><label><input type="checkbox" class="dgb-lunch" <?php checked( $has ); ?> <?php disabled( $closed ); ?>> Block lunch</label>
+					<span class="dgb-lunch-times"> from <input type="time" name="<?php echo esc_attr( $n ); ?>[breaks][<?php echo (int) $i; ?>][0]" value="<?php echo esc_attr( $br[0] ); ?>" <?php disabled( ! $has || $closed ); ?>> to
+					<input type="time" name="<?php echo esc_attr( $n ); ?>[breaks][<?php echo (int) $i; ?>][1]" value="<?php echo esc_attr( $br[1] ); ?>" <?php disabled( ! $has || $closed ); ?>></span></div></td></tr>
 		<?php endforeach; ?>
 			<tr><th>Closed dates</th><td><textarea name="<?php echo esc_attr( $n ); ?>[closed_dates]" rows="3" class="large-text" placeholder="2026-12-25, 2027-01-01"><?php echo esc_textarea( implode( ', ', $s['closed_dates'] ) ); ?></textarea><p class="description">Holidays or days off, format YYYY-MM-DD, separated by commas.</p></td></tr>
 		</table>
 		<script>
 		document.querySelectorAll('.dgb-hours .dgb-closed').forEach(function (c) {
-			var row = c.closest('td'), times = row.querySelectorAll('input[type=time]');
+			var row = c.closest('td'), times = row.querySelectorAll('input[type=time]:not(.dgb-bt)'), lunch = row.querySelector('.dgb-lunch'), bt = row.querySelectorAll('.dgb-lunch-times input[type=time]');
+			var sync = function () {
+				lunch.disabled = c.checked;
+				bt.forEach(function (t) { t.disabled = c.checked || !lunch.checked; if (!lunch.checked || c.checked) { t.value = ''; } else if (!t.value) { t.value = t.name.slice(-2) === '0]' ? '12:00' : '13:00'; } });
+			};
+			times = Array.prototype.filter.call(row.querySelectorAll('input[type=time]'), function (t) { return !t.closest('.dgb-lunch-row'); });
 			c.addEventListener('change', function () {
 				times.forEach(function (t) {
 					t.disabled = c.checked;
 					if (c.checked) { t.value = ''; } else if (!t.value) { t.value = t.name.slice(-2) === '0]' ? '09:00' : '18:00'; }
 				});
+				if (c.checked) { lunch.checked = false; }
+				sync();
 			});
+			lunch.addEventListener('change', sync);
 		});
 		</script>
 

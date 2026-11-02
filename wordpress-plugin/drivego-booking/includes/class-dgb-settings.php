@@ -28,6 +28,7 @@ class DGB_Settings {
 				3 => array( '09:00', '18:00' ), 4 => array( '09:00', '18:00' ), 5 => array( '09:00', '18:00' ),
 				6 => array( '09:00', '16:00' ),
 			),
+			'breaks'         => array( 0 => array( '', '' ), 1 => array( '', '' ), 2 => array( '', '' ), 3 => array( '', '' ), 4 => array( '', '' ), 5 => array( '', '' ), 6 => array( '', '' ) ),
 			'slot_minutes'   => 30,
 			'buffer_minutes' => 30,
 			'capacity'       => 1,
@@ -175,6 +176,15 @@ class DGB_Settings {
 				$c = isset( $in['hours'][ $i ][1] ) ? $in['hours'][ $i ][1] : '';
 				$ok = preg_match( '/^\d{2}:\d{2}$/', $o ) && preg_match( '/^\d{2}:\d{2}$/', $c );
 				$out['hours'][ $i ] = $ok ? array( $o, $c ) : array( '', '' );
+			}
+		}
+		if ( isset( $in['breaks'] ) && is_array( $in['breaks'] ) ) {
+			for ( $i = 0; $i < 7; $i++ ) {
+				$f = isset( $in['breaks'][ $i ][0] ) ? $in['breaks'][ $i ][0] : '';
+				$t = isset( $in['breaks'][ $i ][1] ) ? $in['breaks'][ $i ][1] : '';
+				$open = isset( $out['hours'][ $i ] ) ? $out['hours'][ $i ] : array( '', '' );
+				$ok = preg_match( '/^\d{2}:\d{2}$/', $f ) && preg_match( '/^\d{2}:\d{2}$/', $t ) && $f < $t && '' !== $open[0] && '' !== $open[1];
+				$out['breaks'][ $i ] = $ok ? array( $f, $t ) : array( '', '' );
 			}
 		}
 		if ( isset( $in['closed_dates'] ) ) {

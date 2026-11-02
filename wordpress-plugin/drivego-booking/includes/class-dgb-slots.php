@@ -18,6 +18,16 @@ class DGB_Slots {
 		return ( $open < $close ) ? array( $open, $close ) : null;
 	}
 
+	/** Lunch (or any) break inside the opening hours of a date: [from, to] in minutes, or null. */
+	public static function break_for( $date, array $s ) {
+		$dow = (int) gmdate( 'w', strtotime( $date . ' 12:00:00 UTC' ) );
+		$b   = isset( $s['breaks'][ $dow ] ) ? $s['breaks'][ $dow ] : null;
+		if ( ! $b || '' === $b[0] || '' === $b[1] ) { return null; }
+		$from = self::to_min( $b[0] );
+		$to   = self::to_min( $b[1] );
+		return ( $from < $to ) ? array( $from, $to ) : null;
+	}
+
 	public static function to_min( $t ) {
 		$p = explode( ':', $t );
 		return (int) $p[0] * 60 + (int) ( isset( $p[1] ) ? $p[1] : 0 );
@@ -44,9 +54,11 @@ class DGB_Slots {
 	public static function free_slots( $date, $minutes, array $booked, array $s, $now_min = -1 ) {
 		$hours = self::hours_for( $date, $s );
 		if ( ! $hours ) { return array(); }
+		$break = self::break_for( $date, $s );
 		$out = array();
 		for ( $t = $hours[0]; $t + $minutes <= $hours[1]; $t += $s['slot_minutes'] ) {
 			if ( $now_min >= 0 && $t <= $now_min + $s['lead_hours'] * 60 ) { continue; }
+			if ( $break && $t < $break[1] && $t + $minutes > $break[0] ) { continue; } // a lesson cannot run into the break
 			if ( self::overlaps( $booked, $t, $t + $minutes, $s['buffer_minutes'] ) < $s['capacity'] ) { $out[] = $t; }
 		}
 		return $out;
