@@ -32,7 +32,7 @@
       dialog = document.createElement(modal ? 'dialog' : 'div');
       dialog.className = modal ? 'bk' : 'bk bk--inline';
       dialog.setAttribute('aria-labelledby', 'bk-title');
-      dialog.innerHTML = '<div class="bk__panel"><aside class="bk__summary"><h2 class="bk__title" id="bk-title"></h2><dl class="bk__facts" data-bk-facts></dl>' +
+      dialog.innerHTML = '<div class="bk__panel"><aside class="bk__summary"><h2 class="bk__title" id="bk-title"></h2><dl class="bk__facts" data-bk-facts></dl><div data-bk-sum></div>' +
         '<p class="bk__note">' + ICON.lock + (CFG.pay && CFG.pay.square ? 'Secure payment with Square' : 'Your details are kept private') + '</p></aside><div class="bk__main">' +
         '<button type="button" class="bk__close" data-bk-close aria-label="Close booking">' + ICON.close + '</button>' +
         '<ol class="bk__steps" data-bk-steps></ol><div class="bk__body" data-bk-body></div>' +
@@ -94,15 +94,22 @@
     function extra() { var o = opt(); return o.pickup > 0 && pickupOn() ? o.pickup : 0; }
     function total() { return opt().price + carExtra() + extra(); }
 
+    var fmt2 = function (n) { return '$' + Number(n).toFixed(2); };
+    /* The price as the student will pay it: what they chose, the subtotal, the HST and the total. */
+    function sumHtml() {
+      var o = opt(), pct = CFG.hst || 13, sub = total(), tax = Math.round(sub * pct) / 100;
+      var row = function (cls, label, amount) { return '<div' + (cls ? ' class="' + cls + '"' : '') + '><span>' + esc(label) + '</span><b>' + fmt2(amount) + '</b></div>'; };
+      return '<div class="bk__sum">' + row('', isTest() ? o.label : state.service.name, o.price) + (extra() ? row('', 'Home pick up', extra()) : '') + (carExtra() ? row('', 'DriveGo school car', carExtra()) : '') +
+        row('bk__sum-sub', 'Subtotal', sub) + row('', 'HST (' + pct + '%)', tax) + row('bk__sum-total', 'Total', sub + tax) + '</div>';
+    }
+
     function summary() {
       var o = opt();
       var rows = [['Option', o.label]];
       if (hasCar()) rows.push(['Car', state.car === 'school' ? 'DriveGo school car' : 'My own car']);
-      rows.push(['Price', money(o.price + carExtra()) + ' + HST']);
-      if (o.pickup > 0 && state.step >= 3) rows.push(['Home pick up', extra() ? '+ ' + money(extra()) : 'Not needed']);
-      if (extra()) rows[rows.length - 1] = ['Total', money(total()) + ' + HST'];
       rows = rows.concat([['Day', state.date ? fmtDate(state.date) : 'Not chosen yet'], ['Time', state.time !== null ? fmtTime(state.time) : 'Not chosen yet']]);
       dialog.querySelector('[data-bk-facts]').innerHTML = rows.map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('');
+      dialog.querySelector('[data-bk-sum]').innerHTML = sumHtml();
     }
 
     function go(step) {
@@ -239,7 +246,7 @@
       }
       body.innerHTML = '<h3 class="bk__h">Check your booking</h3><ul class="bk__review"><li><span>Service</span><strong>' + esc(state.service.name) + ' · ' + esc(o.label) + '</strong></li>' +
         '<li><span>When</span><strong>' + esc(fmtDate(state.date)) + ' at ' + esc(fmtTime(state.time)) + '</strong></li><li><span>Where</span><strong>' + esc(where) + '</strong></li>' +
-        (hasCar() ? '<li><span>Car</span><strong>' + (state.car === 'school' ? 'DriveGo school car' : 'My own car') + '</strong></li>' : '') + (d.pay && CFG.pay ? '<li><span>Payment</span><strong>' + esc(CFG.pay[d.pay] || '') + '</strong></li>' : '') + '<li><span>Name</span><strong>' + esc(d.name) + ' · ' + esc(d.phone) + '</strong></li><li><span>Total</span><strong>' + money(total()) + ' + HST' + (extra() || carExtra() ? ' <small>(includes ' + [extra() ? money(extra()) + ' home pick up' : '', carExtra() ? money(carExtra()) + ' DriveGo car' : ''].filter(Boolean).join(' and ') + ')</small>' : '') + '</strong></li></ul>' +
+        (hasCar() ? '<li><span>Car</span><strong>' + (state.car === 'school' ? 'DriveGo school car' : 'My own car') + '</strong></li>' : '') + (d.pay && CFG.pay ? '<li><span>Payment</span><strong>' + esc(CFG.pay[d.pay] || '') + '</strong></li>' : '') + '<li><span>Name</span><strong>' + esc(d.name) + ' · ' + esc(d.phone) + '</strong></li><li class="bk__review-sum">' + sumHtml() + '</li></ul>' +
         '<p class="bk__small">We confirm every booking. Free reschedule up to 24 hours before.</p><p class="bk__hint" data-bk-hint hidden></p>';
       nb.textContent = (state.details.pay === 'square' || state.details.pay === 'wave') ? 'Request booking and pay' : 'Request booking';
     }
@@ -287,7 +294,7 @@
     if (!pk) return false;
     if (!pkDialog) {
       pkDialog = document.createElement('dialog'); pkDialog.className = 'bk'; pkDialog.setAttribute('aria-labelledby', 'bkp-title');
-      pkDialog.innerHTML = '<div class="bk__panel"><aside class="bk__summary"><h2 class="bk__title" id="bkp-title"></h2><dl class="bk__facts" data-pk-facts></dl><p class="bk__note">' + ICON.lock + 'Secure checkout</p></aside><div class="bk__main">' +
+      pkDialog.innerHTML = '<div class="bk__panel"><aside class="bk__summary"><h2 class="bk__title" id="bkp-title"></h2><dl class="bk__facts" data-pk-facts></dl><div data-pk-sum></div><p class="bk__note">' + ICON.lock + 'Secure checkout</p></aside><div class="bk__main">' +
         '<button type="button" class="bk__close" data-pk-close aria-label="Close">' + ICON.close + '</button><div class="bk__body" data-pk-body></div>' +
         '<div class="bk__nav"><button type="button" class="dgb-btn dgb-btn--outline" data-pk-cancel>Cancel</button><button type="button" class="dgb-btn dgb-btn--dark" data-pk-go>Continue</button></div></div></div>';
       document.body.appendChild(pkDialog);
@@ -301,7 +308,9 @@
     pkState = { pk: pk, sent: false, busy: false, payUrl: '' };
     var body = pkDialog.querySelector('[data-pk-body]'), pay = CFG.pay || {};
     pkDialog.querySelector('#bkp-title').textContent = pk.name;
-    pkDialog.querySelector('[data-pk-facts]').innerHTML = [['Price', money(pk.price) + ' + HST'], ['Hours behind the wheel', pk.hours + ' h']].map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('');
+    pkDialog.querySelector('[data-pk-facts]').innerHTML = [['Hours behind the wheel', pk.hours + ' h']].map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('');
+    var pct = CFG.hst || 13, tax = Math.round(pk.price * pct) / 100, f2 = function (n) { return '$' + Number(n).toFixed(2); };
+    pkDialog.querySelector('[data-pk-sum]').innerHTML = '<div class="bk__sum"><div><span>' + esc(pk.name) + '</span><b>' + f2(pk.price) + '</b></div><div class="bk__sum-sub"><span>Subtotal</span><b>' + f2(pk.price) + '</b></div><div><span>HST (' + pct + '%)</span><b>' + f2(tax) + '</b></div><div class="bk__sum-total"><span>Total</span><b>' + f2(pk.price + tax) + '</b></div></div>';
     body.innerHTML = '<h3 class="bk__h">Your details</h3><div class="bk__form"><input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" id="bkp-website">' +
       '<div class="field-row">' + pkField('bkp-name', 'Full name', '<input id="bkp-name" type="text" autocomplete="name">') + pkField('bkp-phone', 'Phone or WhatsApp', '<input id="bkp-phone" type="tel" autocomplete="tel" placeholder="(519) 000 0000">') + '</div>' +
       pkField('bkp-email', 'Email', '<input id="bkp-email" type="email" autocomplete="email" placeholder="you@email.com">') +

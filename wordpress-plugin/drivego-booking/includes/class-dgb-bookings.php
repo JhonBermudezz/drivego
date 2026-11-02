@@ -72,6 +72,13 @@ class DGB_Bookings {
 		return DGB_Slots::free_slots( $date, $minutes, self::booked_on( $date ), $s, self::now_minute_if_today( $date ) );
 	}
 
+	/** "$65.00 + HST $8.45 = $73.45 total" */
+	public static function price_line( $net ) {
+		$net = (float) $net;
+		$tax = round( $net * (float) DGB_Settings::get( 'hst_percent' ) ) / 100;
+		return '$' . number_format( $net, 2 ) . ' + HST $' . number_format( $tax, 2 ) . ' = $' . number_format( $net + $tax, 2 ) . ' total';
+	}
+
 	public static function pay_label( $m ) {
 		$all = array( 'wave' => 'Wave invoice', 'square' => 'Card online (Square)', 'etransfer' => 'Interac e-Transfer', 'cash' => 'Cash at the lesson' );
 		return isset( $all[ $m ] ) ? $all[ $m ] : '-';
@@ -126,7 +133,7 @@ class DGB_Bookings {
 		if ( 'package' === $g( 'kind' ) ) {
 			return array(
 				'Package' => $g( 'service_name' ),
-				'Price'   => '$' . number_format( (float) $g( 'price' ), 2 ) . ' + HST',
+				'Price'   => self::price_line( $g( 'price' ) ),
 				'Payment' => self::pay_label( $g( 'pay_method' ) ),
 				'Name'    => $g( 'name' ),
 				'Phone'   => $g( 'phone' ),
@@ -141,7 +148,7 @@ class DGB_Bookings {
 			'Service' => $g( 'service_name' ) . ' · ' . $g( 'option' ),
 			'When'    => wp_date( 'l, F j, Y', strtotime( $g( 'date' ) . ' 12:00:00' ) ) . ' at ' . self::fmt_time( (int) $g( 'start' ) ),
 			'Where'   => $where,
-			'Price'   => '$' . number_format( (float) $g( 'price' ), 2 ) . ' + HST' . ( (float) $g( 'pickup_extra' ) > 0 || (float) $g( 'car_extra' ) > 0 ? ' (includes ' . implode( ' and ', array_filter( array( (float) $g( 'pickup_extra' ) > 0 ? '$' . number_format( (float) $g( 'pickup_extra' ), 2 ) . ' home pick up' : '', (float) $g( 'car_extra' ) > 0 ? '$' . number_format( (float) $g( 'car_extra' ), 2 ) . ' DriveGo car' : '' ) ) ) . ')' : '' ),
+			'Price'   => self::price_line( $g( 'price' ) ) . ( (float) $g( 'pickup_extra' ) > 0 || (float) $g( 'car_extra' ) > 0 ? ' (includes ' . implode( ' and ', array_filter( array( (float) $g( 'pickup_extra' ) > 0 ? '$' . number_format( (float) $g( 'pickup_extra' ), 2 ) . ' home pick up' : '', (float) $g( 'car_extra' ) > 0 ? '$' . number_format( (float) $g( 'car_extra' ), 2 ) . ' DriveGo car' : '' ) ) ) . ')' : '' ),
 			'Car'     => $g( 'car' ) ? ( 'school' === $g( 'car' ) ? 'DriveGo school car' : 'Own car' ) : '-',
 			'Payment' => self::pay_label( $g( 'pay_method' ) ),
 			'Name'    => $g( 'name' ),

@@ -120,3 +120,11 @@ dialog.bk{ width: 100%; height: 100%; max-height: 100%; border-radius: 0; }}
 
 .bk button.bk__back{ font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0 0 12px; padding: 4px 0; border: 0; background: transparent; color: var(--ink); font-weight: 600; font-size: 0.875rem; text-decoration: underline; text-underline-offset: 3px; }
 .bk button.bk__back:hover{ color: var(--green); }
+
+.bk__sum{ display: grid; gap: 6px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 0.875rem; line-height: 1.25rem; }
+.bk__sum div{ display: flex; justify-content: space-between; gap: 12px; }
+.bk__sum b{ font-weight: 700; white-space: nowrap; }
+.bk__sum-sub{ margin-top: 2px; padding-top: 6px; border-top: 1px dashed var(--line); font-weight: 600; }
+.bk__sum-total{ margin-top: 2px; padding-top: 8px; border-top: 1px solid var(--ink); font-size: 1.0625rem; font-weight: 800; }
+.bk__review li.bk__review-sum{ display: block; }
+.bk__review .bk__sum{ margin: 0; padding: 0; border: 0; }
