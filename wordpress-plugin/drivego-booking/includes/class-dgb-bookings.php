@@ -171,7 +171,7 @@ class DGB_Bookings {
 		$total = '$' . number_format( (float) get_post_meta( $id, '_dgb_price', true ) * ( 1 + (int) DGB_Settings::get( 'hst_percent' ) / 100 ), 2 );
 		if ( 'etransfer' === $m ) { return "\nHow to pay: send an Interac e-Transfer of $total (HST included) to " . DGB_Settings::etransfer_email() . ' and write your name in the message. No password needed.' . "\n"; }
 		if ( 'cash' === $m ) { return "\nHow to pay: cash at your lesson, $total (HST included). Please bring the exact amount if you can.\n"; }
-		if ( 'wave' === $m ) { return $pay_url ? "\nPay your invoice securely with Wave (card or bank):\n" . $pay_url . "\n" : ''; }
+		if ( 'wave' === $m ) { return $pay_url ? "\nPay securely by debit or credit card:\n" . $pay_url . "\n" : ''; }
 		return $pay_url ? "\nPay securely with Square:\n" . $pay_url . "\n" : '';
 	}
 

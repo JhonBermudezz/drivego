@@ -261,7 +261,7 @@ class DGB_Admin {
 			<tr><th>Income account</th><td><?php $wsel( 'wave_income', isset( $wc['income'] ) ? $wc['income'] : array(), 'Wave default' ); ?> <span class="description">Where the sales of the products are counted (usually "Sales").</span></td></tr>
 			<tr><th>Sales tax</th><td><?php $wsel( 'wave_tax', isset( $wc['taxes'] ) ? $wc['taxes'] : array(), 'No tax on invoices' ); ?> <span class="description">Choose HST. Its rate should match the HST % above.</span></td></tr>
 			<tr><th>When to send</th><td><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_auto]" value="1" <?php checked( $s['wave_auto'] ); ?>> Create the invoice in Wave when a booking or package is paid</label><br>
-				<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_pay]" value="1" <?php checked( $s['wave_pay'] ); ?>> Offer <strong>Pay with Wave</strong> at checkout (the student pays the Wave invoice online; Wave Payments must be on in your Wave account)</label><br>
+				<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_pay]" value="1" <?php checked( $s['wave_pay'] ); ?>> Offer <strong>Debit or credit card</strong> at checkout (the student pays a Wave invoice online; Wave Payments must be on in your Wave account). The student does not see the word Wave.</label><br>
 				<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[wave_send]" value="1" <?php checked( $s['wave_send'] ); ?>> Also email the invoice to the student from Wave</label></td></tr>
 		</table>
 
