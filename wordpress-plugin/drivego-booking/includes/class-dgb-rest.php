@@ -6,6 +6,20 @@ class DGB_Rest {
 
 	public static function init() {
 		add_action( 'rest_api_init', array( __CLASS__, 'routes' ) );
+		add_filter( 'rest_post_dispatch', array( __CLASS__, 'never_cache' ), 10, 3 );
+	}
+
+	/**
+	 * Free days and times must be live. Page caches (LiteSpeed caches REST answers by default) would otherwise keep
+	 * showing times that were taken after the first visitor, or that Google Calendar has busy now.
+	 */
+	public static function never_cache( $result, $server, $request ) {
+		if ( 0 === strpos( $request->get_route(), '/' . self::NS . '/' ) && $result instanceof WP_REST_Response ) {
+			$result->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0' );
+			$result->header( 'X-LiteSpeed-Cache-Control', 'no-cache' );
+			$result->header( 'Pragma', 'no-cache' );
+		}
+		return $result;
 	}
 
 	public static function routes() {

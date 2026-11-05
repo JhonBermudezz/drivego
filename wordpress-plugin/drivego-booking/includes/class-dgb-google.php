@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class DGB_Google {
 	const AUTH  = 'dgb_google_auth';
 	const CRON  = 'dgb_google_sync';
-	const SCOPE = 'openid email https://www.googleapis.com/auth/calendar.events';
+	const SCOPE = 'openid email https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.calendarlist.readonly';
 
 	public static $last_error = '';
 
@@ -85,7 +85,7 @@ class DGB_Google {
 			$pl    = isset( $parts[1] ) ? json_decode( base64_decode( strtr( $parts[1], '-_', '+/' ) ), true ) : array();
 			$email = isset( $pl['email'] ) ? sanitize_email( $pl['email'] ) : '';
 		}
-		update_option( self::AUTH, array( 'refresh' => $res['refresh_token'], 'email' => $email, 'since' => time() ), false );
+		update_option( self::AUTH, array( 'refresh' => $res['refresh_token'], 'email' => $email, 'since' => time(), 'scope' => isset( $res['scope'] ) ? $res['scope'] : '' ), false );
 		delete_transient( 'dgb_google_access' );
 		self::admin_back( 'Google Calendar connected' . ( $email ? ' as ' . $email : '' ) . '. Press "Test connection" to check it end to end.' );
 	}
@@ -155,17 +155,70 @@ class DGB_Google {
 	/** @return array|WP_Error decoded JSON ([] for empty 204) */
 	public static function api( $method, $path, $body = null ) {
 		$tok = self::access_token();
-		if ( is_wp_error( $tok ) ) { self::$last_error = $tok->get_error_message(); return $tok; }
+		if ( is_wp_error( $tok ) ) { self::$last_error = $tok->get_error_message(); self::note_health( false, $tok->get_error_message() ); return $tok; }
 		$args = array( 'method' => $method, 'timeout' => 15, 'headers' => array( 'Authorization' => 'Bearer ' . $tok, 'Content-Type' => 'application/json' ) );
 		if ( null !== $body ) { $args['body'] = wp_json_encode( $body ); }
 		$r = wp_remote_request( 'https://www.googleapis.com/calendar/v3/' . $path, $args );
-		if ( is_wp_error( $r ) ) { self::$last_error = $r->get_error_message(); return $r; }
+		if ( is_wp_error( $r ) ) { self::$last_error = $r->get_error_message(); self::note_health( false, $r->get_error_message() ); return $r; }
 		$code = (int) wp_remote_retrieve_response_code( $r );
 		$b    = json_decode( wp_remote_retrieve_body( $r ), true );
-		if ( $code >= 200 && $code < 300 ) { return is_array( $b ) ? $b : array(); }
+		if ( $code >= 200 && $code < 300 ) { self::note_health( true, '' ); return is_array( $b ) ? $b : array(); }
 		$msg = is_array( $b ) && isset( $b['error']['message'] ) ? $b['error']['message'] : 'HTTP ' . $code;
 		self::$last_error = $msg;
+		if ( 401 === $code || 403 === $code || $code >= 500 ) { self::note_health( false, $msg ); }
 		return new WP_Error( 'dgb_google_api', $msg, array( 'status' => $code ) );
+	}
+
+	/* ---------- health: is Google really being read? ---------- */
+
+	const HEALTH = 'dgb_google_health';
+
+	public static function health() {
+		$h = get_option( self::HEALTH, array() );
+		return is_array( $h ) ? $h : array();
+	}
+
+	/** Remember the last answer from Google. When it stops working, tell the owner (at most every 12 hours) because the website would then ignore the calendar. */
+	public static function note_health( $ok, $msg ) {
+		$old = self::health();
+		if ( $ok && ! empty( $old['ok'] ) && time() - (int) ( isset( $old['t'] ) ? $old['t'] : 0 ) < 300 ) { return; } // no need to write on every call
+		if ( stripos( $msg, 'invalid_grant' ) !== false || stripos( $msg, 'expired or revoked' ) !== false ) {
+			$msg = 'The Google authorization expired or was removed. Press Disconnect and Connect again. If the Google app is still in "Testing", Google ends the authorization every 7 days: publish the app (OAuth consent screen > Publish app) so it lasts.';
+		}
+		update_option( self::HEALTH, array( 'ok' => (bool) $ok, 'msg' => $ok ? '' : $msg, 't' => time() ), false );
+		if ( ! $ok && ! get_transient( 'dgb_google_alerted' ) ) {
+			set_transient( 'dgb_google_alerted', 1, 12 * HOUR_IN_SECONDS );
+			wp_mail( DGB_Settings::get( 'notify_email' ), 'Google Calendar stopped working on the DriveGo website',
+				"The website could not read your Google Calendar, so it may offer times that are already taken.\n\nReason: " . $msg . "\n\nFix it in Bookings > Settings > Google Calendar (press Disconnect and Connect again), then check Bookings > Agenda.\n" . admin_url( 'edit.php?post_type=' . DGB_Bookings::CPT . '&page=drivego-booking#google' ) . "\n" );
+		}
+	}
+
+	/** Which scopes did Google grant when the account was connected? */
+	public static function can_list_calendars() {
+		$a = self::auth();
+		return ! empty( $a['scope'] ) && false !== strpos( $a['scope'], 'calendarlist' );
+	}
+
+	/** All calendars the connected account can see: id => name. */
+	public static function calendars() {
+		$c = get_transient( 'dgb_gcals' );
+		if ( is_array( $c ) ) { return $c; }
+		$out = array();
+		if ( self::connected() && self::can_list_calendars() ) {
+			$r = self::api( 'GET', 'users/me/calendarList?minAccessRole=reader&fields=items(id,summary,summaryOverride,primary)' );
+			if ( ! is_wp_error( $r ) ) {
+				foreach ( isset( $r['items'] ) ? $r['items'] : array() as $it ) { $out[ $it['id'] ] = ( ! empty( $it['summaryOverride'] ) ? $it['summaryOverride'] : $it['summary'] ) . ( ! empty( $it['primary'] ) ? ' (main)' : '' ); }
+				set_transient( 'dgb_gcals', $out, HOUR_IN_SECONDS );
+			}
+		}
+		return $out;
+	}
+
+	/** The calendars whose events block the website: the ones ticked in settings, else the main calendar. */
+	public static function read_calendars() {
+		$sel = DGB_Settings::get( 'google_read' );
+		$sel = is_array( $sel ) ? array_values( array_filter( $sel ) ) : array();
+		return $sel ? $sel : array( self::calendar_id() );
 	}
 
 	/* ---------- Google -> website: busy time blocks slots ---------- */
@@ -177,31 +230,53 @@ class DGB_Google {
 		return array( $a, $b );
 	}
 
-	/** Busy intervals on one date, in minutes from midnight. One API call covers a whole month and is cached for a minute. */
+	/** Every event of a month on the calendars we read, normalised. One call per calendar, cached for a minute. */
+	public static function month_events( $month ) {
+		$key    = 'dgb_gev_' . $month;
+		$events = get_transient( $key );
+		if ( false !== $events ) { return $events; }
+		$tz   = wp_timezone();
+		$from = new DateTime( $month . '-01 00:00:00', $tz ); $from->modify( '-1 day' );
+		$to   = new DateTime( $month . '-01 00:00:00', $tz ); $to->modify( '+1 month +1 day' );
+		$events = array();
+		$failed = false;
+		foreach ( self::read_calendars() as $cal ) {
+			$page = '';
+			for ( $n = 0; $n < 4; $n++ ) { // up to 1000 events a month per calendar
+				$q = array( 'timeMin' => $from->format( 'c' ), 'timeMax' => $to->format( 'c' ), 'singleEvents' => 'true', 'maxResults' => 250, 'orderBy' => 'startTime',
+					'fields' => 'nextPageToken,items(id,status,summary,transparency,start,end,htmlLink,extendedProperties/private)' );
+				if ( $page ) { $q['pageToken'] = $page; }
+				$res = self::api( 'GET', 'calendars/' . rawurlencode( $cal ) . '/events?' . http_build_query( $q ) );
+				if ( is_wp_error( $res ) ) { $failed = true; break; }
+				foreach ( isset( $res['items'] ) ? $res['items'] : array() as $it ) {
+					if ( isset( $it['status'] ) && 'cancelled' === $it['status'] ) { continue; }
+					$p = isset( $it['extendedProperties']['private'] ) ? $it['extendedProperties']['private'] : array();
+					$events[] = array(
+						'id' => $it['id'], 'cal' => $cal, 'summary' => isset( $it['summary'] ) ? $it['summary'] : '(no title)', 'link' => isset( $it['htmlLink'] ) ? $it['htmlLink'] : '',
+						'start' => isset( $it['start']['dateTime'] ) ? $it['start']['dateTime'] : $it['start']['date'], 'end' => isset( $it['end']['dateTime'] ) ? $it['end']['dateTime'] : $it['end']['date'],
+						'all_day' => isset( $it['start']['date'] ), 'free' => isset( $it['transparency'] ) && 'transparent' === $it['transparency'],
+						'booking' => ! empty( $p['dgb_booking'] ) ? $p['dgb_booking'] : '', 'block' => ! empty( $p['dgb_block'] ),
+					);
+				}
+				if ( empty( $res['nextPageToken'] ) ) { break; }
+				$page = $res['nextPageToken'];
+			}
+		}
+		if ( ! $failed ) { set_transient( $key, $events, 60 ); } // fail open: the website keeps working if Google is unreachable, and the owner is told
+		return $events;
+	}
+
+	/** Busy intervals on one date, in minutes from midnight. */
 	public static function busy_on( $date ) {
 		if ( ! self::connected() ) { return array(); }
-		$month = substr( $date, 0, 7 );
-		$key   = 'dgb_gbusy_' . $month;
-		$events = get_transient( $key );
-		if ( false === $events ) {
-			$tz = wp_timezone();
-			$from = new DateTime( $month . '-01 00:00:00', $tz ); $from->modify( '-1 day' );
-			$to   = new DateTime( $month . '-01 00:00:00', $tz ); $to->modify( '+1 month +1 day' );
-			$res = self::api( 'GET', 'calendars/' . rawurlencode( self::calendar_id() ) . '/events?' . http_build_query( array(
-				'timeMin' => $from->format( 'c' ), 'timeMax' => $to->format( 'c' ), 'singleEvents' => 'true', 'maxResults' => 250, 'orderBy' => 'startTime',
-				'fields' => 'items(status,transparency,start,end,extendedProperties/private)',
-			) ) );
-			if ( is_wp_error( $res ) ) { return array(); } // fail open: the website keeps working if Google is unreachable
-			$events = array();
-			foreach ( isset( $res['items'] ) ? $res['items'] : array() as $it ) {
-				if ( isset( $it['status'] ) && 'cancelled' === $it['status'] ) { continue; }
-				if ( isset( $it['transparency'] ) && 'transparent' === $it['transparency'] ) { continue; } // marked "Free"
-				if ( ! empty( $it['extendedProperties']['private']['dgb_booking'] ) ) { continue; } // our own bookings are counted already
-				$events[] = array( 'start' => isset( $it['start']['dateTime'] ) ? $it['start']['dateTime'] : $it['start']['date'], 'end' => isset( $it['end']['dateTime'] ) ? $it['end']['dateTime'] : $it['end']['date'], 'all_day' => isset( $it['start']['date'] ) );
-			}
-			set_transient( $key, $events, 60 );
+		$block_free = (bool) DGB_Settings::get( 'google_block_free' );
+		$use = array();
+		foreach ( self::month_events( substr( $date, 0, 7 ) ) as $e ) {
+			if ( $e['booking'] ) { continue; }                 // our own bookings are counted already
+			if ( $e['free'] && ! $block_free ) { continue; }   // marked "Free"
+			$use[] = $e;
 		}
-		return self::clip( $events, $date );
+		return self::clip( $use, $date );
 	}
 
 	/** Pure: clip events to one date and return minute ranges. */
@@ -220,7 +295,7 @@ class DGB_Google {
 		return $out;
 	}
 
-	public static function forget_busy( $date ) { delete_transient( 'dgb_gbusy_' . substr( $date, 0, 7 ) ); }
+	public static function forget_busy( $date ) { delete_transient( 'dgb_gev_' . substr( $date, 0, 7 ) ); }
 
 	/* ---------- website -> Google ---------- */
 

@@ -22,6 +22,7 @@
   var esc = function (t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var api = function (path, opts) {
     var url = CFG.rest + (CFG.rest.indexOf('?') > -1 ? path.replace('?', '&') : path);
+    opts = opts || {}; if (!opts.method || opts.method === 'GET') { opts.cache = 'no-store'; }
     return fetch(url, opts).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.message || 'Request failed'); return j; }); });
   };
 

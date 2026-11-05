@@ -59,6 +59,8 @@ class DGB_Settings {
 			'google_client_id'     => '',
 			'google_client_secret' => '',
 			'google_calendar'      => 'primary',
+			'google_read'          => array(),
+			'google_block_free'    => 0,
 			'google_instructors'   => '',
 			'google_invite_customer' => 1,
 			'services'       => array(
@@ -205,6 +207,7 @@ class DGB_Settings {
 		if ( isset( $in['google_client_secret'] ) && '' !== trim( $in['google_client_secret'] ) ) { $out['google_client_secret'] = sanitize_text_field( $in['google_client_secret'] ); }
 		if ( isset( $in['google_calendar'] ) ) { $out['google_calendar'] = sanitize_text_field( $in['google_calendar'] ) ?: 'primary'; }
 		if ( isset( $in['google_instructors'] ) ) { $out['google_instructors'] = sanitize_text_field( $in['google_instructors'] ); }
+		if ( isset( $in['google_calendar'] ) ) { $out['google_read'] = isset( $in['google_read'] ) && is_array( $in['google_read'] ) ? array_values( array_filter( array_map( 'sanitize_text_field', $in['google_read'] ) ) ) : array(); $out['google_block_free'] = empty( $in['google_block_free'] ) ? 0 : 1; }
 		if ( isset( $in['google_calendar'] ) ) { $out['google_invite_customer'] = empty( $in['google_invite_customer'] ) ? 0 : 1; }
 		if ( isset( $in['wave_token'] ) && '' !== trim( $in['wave_token'] ) ) { $out['wave_token'] = sanitize_text_field( $in['wave_token'] ); }
 		if ( ! empty( $in['wave_token_clear'] ) ) { $out['wave_token'] = ''; }

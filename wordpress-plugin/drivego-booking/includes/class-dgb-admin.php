@@ -226,7 +226,7 @@ class DGB_Admin {
 		<?php $note = get_transient( 'dgb_google_notice' ); if ( $note ) { delete_transient( 'dgb_google_notice' ); echo '<div class="notice notice-' . ( $note['ok'] ? 'success' : 'error' ) . ' inline"><p>' . esc_html( $note['msg'] ) . '</p></div>'; }
 		$ga = DGB_Google::auth(); $gn = wp_create_nonce( 'dgb_google' ); ?>
 		<table class="form-table">
-			<tr><th>Status</th><td><?php if ( DGB_Google::connected() ) : ?><strong style="color:#1a7f37">Connected</strong><?php echo ! empty( $ga['email'] ) ? ' as ' . esc_html( $ga['email'] ) : ''; ?>
+			<tr><th>Status</th><td><?php if ( DGB_Google::connected() ) : ?><strong style="color:#1a7f37">Connected</strong><?php echo ! empty( $ga['email'] ) ? ' as ' . esc_html( $ga['email'] ) : ''; $gh = DGB_Google::health(); if ( $gh ) { echo ' &nbsp; ' . ( ! empty( $gh['ok'] ) ? '<span style="color:#1a7f37">Last check OK, ' . esc_html( human_time_diff( $gh['t'] ) ) . ' ago</span>' : '<span style="color:#a40e26"><strong>Problem:</strong> ' . esc_html( $gh['msg'] ) . '</span>' ); } ?>
 				&nbsp; <a class="button" href="<?php echo esc_url( admin_url( 'admin-post.php?action=dgb_google_test&_wpnonce=' . $gn ) ); ?>">Test connection</a>
 				<a class="button" href="<?php echo esc_url( admin_url( 'admin-post.php?action=dgb_google_disconnect&_wpnonce=' . $gn ) ); ?>">Disconnect</a>
 				<?php elseif ( DGB_Google::configured() ) : ?>Not connected yet. Save the settings, then
@@ -236,6 +236,16 @@ class DGB_Admin {
 			<tr><th>OAuth Client secret</th><td><input type="password" class="regular-text" autocomplete="new-password" name="<?php echo esc_attr( $n ); ?>[google_client_secret]" placeholder="<?php echo $s['google_client_secret'] ? 'Saved. Type a new one to replace it.' : 'Paste the client secret'; ?>">
 				<p class="description">Google Cloud Console → APIs &amp; Services → enable <strong>Google Calendar API</strong> → Credentials → Create OAuth client ID → <strong>Web application</strong>. Add this under "Authorized redirect URIs":<br><code><?php echo esc_html( DGB_Google::redirect_uri() ); ?></code></p></td></tr>
 			<tr><th>Calendar</th><td><input type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[google_calendar]" value="<?php echo esc_attr( $s['google_calendar'] ); ?>"> <span class="description">"primary" is the main calendar of the connected account. For a dedicated calendar paste its ID (Calendar settings → Integrate calendar).</span></td></tr>
+			<tr><th>Calendars that block times</th><td><?php
+				if ( ! DGB_Google::connected() ) { echo 'Connect Google first.'; }
+				elseif ( ! DGB_Google::can_list_calendars() ) { echo '<span class="description">Only the calendar above is read. To choose other calendars, press Disconnect, then Connect again and accept the new permission.</span>'; }
+				else {
+					$gc = DGB_Google::calendars(); $sel = DGB_Google::read_calendars();
+					foreach ( $gc as $cid => $cname ) { echo '<label style="display:block"><input type="checkbox" name="' . esc_attr( $n ) . '[google_read][]" value="' . esc_attr( $cid ) . '" ' . checked( in_array( $cid, $sel, true ), true, false ) . '> ' . esc_html( $cname ) . '</label>'; }
+					if ( ! $gc ) { echo '<span class="description">No calendars found yet. Press Test connection.</span>'; }
+					echo '<p class="description">Anything busy on the ticked calendars is hidden from the website calendar. See exactly what it reads in Bookings &gt; Agenda.</p>';
+				} ?></td></tr>
+			<tr><th>Events marked Free</th><td><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[google_block_free]" value="1" <?php checked( $s['google_block_free'] ); ?>> Also block times of events shown as "Free" (available) in Google</label><p class="description">Off by default: reminders and birthdays are usually Free. All day events only block the whole day when they are marked Busy.</p></td></tr>
 			<tr><th>Instructor email(s)</th><td><input type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[google_instructors]" value="<?php echo esc_attr( $s['google_instructors'] ); ?>" placeholder="instructor@gmail.com, another@gmail.com"> <span class="description">Each booking is sent to them as an invitation, so it shows on their calendar too. Separate several with commas.</span></td></tr>
 			<tr><th>Invite the student</th><td><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[google_invite_customer]" value="1" <?php checked( $s['google_invite_customer'] ); ?>> When you confirm a booking, send the student a calendar invitation</label></td></tr>
 		</table>
