@@ -49,6 +49,12 @@ class DGB_Packages {
 		return $p;
 	}
 
+	/** What a package says about a feature: 'yes' (check), 'no' (red X) or 'hide' (the line is not shown for that package). Old saved values 1 and 0 still work. */
+	public static function cell( $v ) {
+		if ( 'hide' === $v ) { return 'hide'; }
+		return ( 'yes' === $v || ( is_numeric( $v ) && (int) $v > 0 ) || true === $v ) ? 'yes' : 'no';
+	}
+
 	public static function find( $key ) {
 		foreach ( self::all()['items'] as $it ) { if ( $it['key'] === $key ) { return $it; } }
 		return null;
@@ -95,7 +101,11 @@ class DGB_Packages {
 			foreach ( $rows as $r ) {
 				if ( ! $r['card'] ) { continue; }
 				if ( $r['hours'] ) { $on = true; $label = (int) $it['hours'] . ' hours behind the wheel'; }
-				else { $on = ! empty( $r['v'][ $i ] ); $label = $r['label']; }
+				else {
+					$cell = self::cell( isset( $r['v'][ $i ] ) ? $r['v'][ $i ] : 0 );
+					if ( 'hide' === $cell ) { continue; } // this package does not mention it
+					$on = 'yes' === $cell; $label = $r['label'];
+				}
 				$out .= '<p class="' . ( $on ? 'is-on dgi-fill-check-circle-b' : 'is-off dgi-fill-x-circle-b' ) . ' dg-tag-li">' . ( $on ? esc_html( $label ) : '<span>' . esc_html( $label ) . '</span>' ) . '</p>';
 			}
 			$out .= '</div>';
@@ -118,7 +128,8 @@ class DGB_Packages {
 			foreach ( $items as $i => $it ) {
 				$cf = ! empty( $it['featured'] ) ? 'col-featured ' : '';
 				if ( $r['hours'] ) { $out .= '<p class="' . $cf . 'dg-tag-td">' . (int) $it['hours'] . ' h</p>'; }
-				elseif ( ! empty( $r['v'][ $i ] ) ) { $out .= '<p class="' . $cf . 'dg-tag-td yes dgi-fill-check-circle-b">&nbsp;</p>'; }
+				elseif ( 'hide' === self::cell( isset( $r['v'][ $i ] ) ? $r['v'][ $i ] : 0 ) ) { $out .= '<p class="' . $cf . 'dg-tag-td">&nbsp;</p>'; }
+				elseif ( 'yes' === self::cell( isset( $r['v'][ $i ] ) ? $r['v'][ $i ] : 0 ) ) { $out .= '<p class="' . $cf . 'dg-tag-td yes dgi-fill-check-circle-b">&nbsp;</p>'; }
 				else { $out .= '<p class="' . $cf . 'dg-tag-td no dgi-fill-x-circle-b">&nbsp;</p>'; }
 			}
 			$out .= '</div>';
@@ -161,7 +172,7 @@ class DGB_Packages {
 			foreach ( $in['features'] as $f ) {
 				$label = sanitize_text_field( isset( $f['label'] ) ? $f['label'] : '' );
 				if ( '' === $label ) { continue; }
-				$rows[] = array( 'label' => $label, 'card' => empty( $f['card'] ) ? 0 : 1, 'v' => array( empty( $f['v'][0] ) ? 0 : 1, empty( $f['v'][1] ) ? 0 : 1, empty( $f['v'][2] ) ? 0 : 1 ) );
+				$rows[] = array( 'label' => $label, 'card' => empty( $f['card'] ) ? 0 : 1, 'v' => array( self::cell( isset( $f['v'][0] ) ? $f['v'][0] : 0 ), self::cell( isset( $f['v'][1] ) ? $f['v'][1] : 0 ), self::cell( isset( $f['v'][2] ) ? $f['v'][2] : 0 ) ) );
 			}
 			$out['features'] = $rows;
 		}
@@ -188,17 +199,21 @@ class DGB_Packages {
 		<?php endforeach; ?>
 		</tbody></table>
 		<h3>What each package includes</h3>
-		<p class="description">Tick what is included. What is not included shows as a red X. "On cards" also lists the line on the cards; every line always shows in the compare table. The hours line is added automatically from the table above. Leave a name empty to remove a line.</p>
+		<p class="description">For each package choose: <strong>Included</strong> (green check), <strong>Not included</strong> (red X) or <strong>Don't show</strong> (the line does not appear at all for that package). "On cards" also lists the line on the cards; every line always shows in the compare table. The hours line is added automatically from the table above. Leave a name empty to remove a line.</p>
 		<table class="widefat" style="max-width:1100px"><thead><tr><th>Feature</th><th>On cards</th><?php foreach ( $items as $it ) : ?><th><?php echo esc_html( $it['label'] ); ?></th><?php endforeach; ?></tr></thead><tbody>
 		<?php
-		$blank = array( 'label' => '', 'card' => 1, 'v' => array( 0, 0, 0 ) );
+		$blank = array( 'label' => '', 'card' => 1, 'v' => array( 'yes', 'yes', 'yes' ) );
 		$rows  = array_pad( $feat, max( 8, count( $feat ) + 3 ), $blank );
 		foreach ( $rows as $r => $f ) : ?>
 			<tr>
 				<td><input type="text" style="width:100%;min-width:320px" name="<?php echo $base; ?>[features][<?php echo (int) $r; ?>][label]" value="<?php echo esc_attr( $f['label'] ); ?>"></td>
 				<td><input type="checkbox" name="<?php echo $base; ?>[features][<?php echo (int) $r; ?>][card]" value="1" <?php checked( ! empty( $f['card'] ) ); ?>></td>
 				<?php for ( $c = 0; $c < 3; $c++ ) : ?>
-				<td><input type="checkbox" name="<?php echo $base; ?>[features][<?php echo (int) $r; ?>][v][<?php echo (int) $c; ?>]" value="1" <?php checked( ! empty( $f['v'][ $c ] ) ); ?>></td>
+				<td><?php $cv = self::cell( isset( $f['v'][ $c ] ) ? $f['v'][ $c ] : 'yes' ); ?><select name="<?php echo $base; ?>[features][<?php echo (int) $r; ?>][v][<?php echo (int) $c; ?>]">
+					<option value="yes" <?php selected( $cv, 'yes' ); ?>>✓ Included</option>
+					<option value="no" <?php selected( $cv, 'no' ); ?>>✗ Not included</option>
+					<option value="hide" <?php selected( $cv, 'hide' ); ?>>— Don't show</option>
+				</select></td>
 				<?php endfor; ?>
 			</tr>
 		<?php endforeach; ?>
