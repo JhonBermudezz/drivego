@@ -12,7 +12,22 @@ class DGB_Packages {
 
 	public static function init() {
 		add_filter( 'the_content', array( __CLASS__, 'inject' ), 99 );
+		add_action( 'wp_head', array( __CLASS__, 'offers_schema' ), 20 );
 		add_action( 'update_option_' . DGB_Settings::OPTION, array( __CLASS__, 'purge_cache' ) );
+	}
+
+	/** Prices for Google (schema.org), straight from the settings so they never go out of date. Home page only. */
+	public static function offers_schema() {
+		if ( ! is_front_page() ) { return; }
+		$offers = array();
+		foreach ( self::all()['items'] as $pk ) { $offers[] = array( '@type' => 'Offer', 'name' => $pk['name'], 'price' => number_format( (float) $pk['price'], 2, '.', '' ), 'priceCurrency' => 'CAD' ); }
+		$svc = (array) DGB_Settings::get( 'services' );
+		foreach ( array( 'lessons' => 'Single lesson', 'refresher' => 'G-Full & G2 Refresher' ) as $k => $label ) {
+			if ( ! empty( $svc[ $k ]['options'][0] ) ) { $o = $svc[ $k ]['options'][0]; $offers[] = array( '@type' => 'Offer', 'name' => $label . ' (' . $o['label'] . ')', 'price' => number_format( (float) $o['price'], 2, '.', '' ), 'priceCurrency' => 'CAD' ); }
+		}
+		foreach ( isset( $svc['roadtest']['options'] ) ? $svc['roadtest']['options'] : array() as $o ) { $offers[] = array( '@type' => 'Offer', 'name' => $o['label'], 'price' => number_format( (float) $o['price'], 2, '.', '' ), 'priceCurrency' => 'CAD' ); }
+		$ld = array( '@context' => 'https://schema.org', '@type' => 'DrivingSchool', '@id' => home_url( '/#school' ), 'hasOfferCatalog' => array( '@type' => 'OfferCatalog', 'name' => 'Driving packages and lessons', 'itemListElement' => $offers ) );
+		echo "\n" . '<script type="application/ld+json">' . wp_json_encode( $ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
 	}
 
 	/** Pages are cached: after a price change, clear the cache so visitors see it. */
