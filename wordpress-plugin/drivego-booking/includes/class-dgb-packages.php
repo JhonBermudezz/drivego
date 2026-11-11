@@ -133,23 +133,24 @@ class DGB_Packages {
 	public static function table_html() {
 		$items = self::all()['items'];
 		$rows  = self::rows( $items );
-		$out   = '<div class="dg-tag-table"><div class="dg-tag-thead"><div class="dg-tag-tr"><p class="dg-tag-th">What you get</p>';
+		$yes = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#2a7a00"/><path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="screen-reader-text">Included</span>';
+		$no  = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#d93025"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg><span class="screen-reader-text">Not included</span>';
+		$out = '<div class="dgb-cmp-wrap"><table class="dgb-cmp"><thead><tr><th scope="col">What you get</th>';
 		foreach ( $items as $it ) {
-			$out .= '<div class="' . ( ! empty( $it['featured'] ) ? 'col-featured ' : '' ) . 'dg-tag-th"><p>' . esc_html( $it['label'] ) . '</p><p class="dg-tag-small">' . esc_html( self::money( $it['price'] ) ) . ' + HST</p></div>';
+			$out .= '<th scope="col"' . ( ! empty( $it['featured'] ) ? ' class="is-feat"' : '' ) . '>' . esc_html( $it['label'] ) . '<small>' . esc_html( self::money( $it['price'] ) ) . ' + HST</small></th>';
 		}
-		$out .= '</div></div><div class="dg-tag-tbody">';
+		$out .= '</tr></thead><tbody>';
 		foreach ( $rows as $r ) {
-			$out .= '<div class="dg-tag-tr"><p class="dg-tag-td">' . esc_html( $r['label'] ) . '</p>';
+			$out .= '<tr><th scope="row">' . esc_html( $r['label'] ) . '</th>';
 			foreach ( $items as $i => $it ) {
-				$cf = ! empty( $it['featured'] ) ? 'col-featured ' : '';
-				if ( $r['hours'] ) { $out .= '<p class="' . $cf . 'dg-tag-td">' . (int) $it['hours'] . ' h</p>'; }
-				elseif ( 'hide' === self::cell( isset( $r['v'][ $i ] ) ? $r['v'][ $i ] : 0 ) ) { $out .= '<p class="' . $cf . 'dg-tag-td">&nbsp;</p>'; }
-				elseif ( 'yes' === self::cell( isset( $r['v'][ $i ] ) ? $r['v'][ $i ] : 0 ) ) { $out .= '<p class="' . $cf . 'dg-tag-td yes dgi-fill-check-circle-b">&nbsp;</p>'; }
-				else { $out .= '<p class="' . $cf . 'dg-tag-td no dgi-fill-x-circle-b">&nbsp;</p>'; }
+				$cf = ! empty( $it['featured'] ) ? ' class="is-feat"' : '';
+				if ( $r['hours'] ) { $out .= '<td' . $cf . '>' . (int) $it['hours'] . ' h</td>'; continue; }
+				$cell = self::cell( isset( $r['v'][ $i ] ) ? $r['v'][ $i ] : 0 );
+				$out .= '<td' . $cf . '>' . ( 'hide' === $cell ? '' : ( 'yes' === $cell ? $yes : $no ) ) . '</td>';
 			}
-			$out .= '</div>';
+			$out .= '</tr>';
 		}
-		return $out . '</div></div>';
+		return $out . '</tbody></table></div>';
 	}
 
 	/** Fill the empty placeholder blocks the pages carry. */

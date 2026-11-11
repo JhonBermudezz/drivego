@@ -134,3 +134,25 @@ dialog.bk{ width: 100%; height: 100%; max-height: 100%; border-radius: 0; }}
 .bk__inline-sum .bk__label{ margin: 0 0 8px; }
 
 @container (min-width: 761px){ .bk__inline-sum{ display: none; } }
+
+/* Compare packages table (written by the plugin, independent of the theme) */
+.dgb-cmp-wrap{ width: 100%; overflow-x: auto; }
+.dgb-cmp-wrap table.dgb-cmp{ width: 100%; margin: 0; border: 0; border-collapse: collapse; background: transparent; font-size: 0.9375rem; line-height: 1.4; color: #111; }
+.dgb-cmp-wrap table.dgb-cmp th, .dgb-cmp-wrap table.dgb-cmp td{ padding: 14px 18px; border: 0; border-bottom: 1px solid #e3e8d9; background: transparent; text-align: center; vertical-align: middle; font-weight: 500; color: #111; }
+.dgb-cmp-wrap table.dgb-cmp tbody tr:nth-child(odd) td, .dgb-cmp-wrap table.dgb-cmp tbody tr:nth-child(even) td, .dgb-cmp-wrap table.dgb-cmp tbody tr:hover td{ background: transparent; }
+.dgb-cmp-wrap table.dgb-cmp thead th{ padding: 22px 18px 16px; font-weight: 800; font-size: 1rem; letter-spacing: 0.02em; text-transform: uppercase; }
+.dgb-cmp-wrap table.dgb-cmp thead th small{ display: block; margin-top: 4px; font-weight: 600; font-size: 0.875rem; letter-spacing: 0; text-transform: none; color: #5b5d57; }
+.dgb-cmp-wrap table.dgb-cmp th:first-child, .dgb-cmp-wrap table.dgb-cmp td:first-child{ width: 44%; text-align: left; }
+.dgb-cmp-wrap table.dgb-cmp thead th:first-child{ font-size: 0.8125rem; letter-spacing: 0.06em; }
+.dgb-cmp-wrap table.dgb-cmp tbody th{ font-weight: 500; }
+.dgb-cmp-wrap table.dgb-cmp tbody tr:last-child th, .dgb-cmp-wrap table.dgb-cmp tbody tr:last-child td{ border-bottom: 0; }
+.dgb-cmp-wrap table.dgb-cmp .is-feat, .dgb-cmp-wrap table.dgb-cmp tbody tr:nth-child(n) td.is-feat{ background: #edf8e0; }
+.dgb-cmp-wrap table.dgb-cmp svg{ display: inline-block; width: 22px; height: 22px; vertical-align: middle; }
+@media (max-width: 640px){
+  .dgb-cmp-wrap table.dgb-cmp{ font-size: 0.8125rem; }
+  .dgb-cmp-wrap table.dgb-cmp th, .dgb-cmp-wrap table.dgb-cmp td{ padding: 11px 6px; }
+  .dgb-cmp-wrap table.dgb-cmp thead th{ padding: 16px 6px 12px; font-size: 0.8125rem; }
+  .dgb-cmp-wrap table.dgb-cmp thead th small{ font-size: 0.6875rem; }
+  .dgb-cmp-wrap table.dgb-cmp th:first-child, .dgb-cmp-wrap table.dgb-cmp td:first-child{ width: 40%; padding-left: 12px; }
+  .dgb-cmp-wrap table.dgb-cmp svg{ width: 18px; height: 18px; }
+}
