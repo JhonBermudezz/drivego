@@ -146,7 +146,7 @@ class DGB_Packages {
 				$cf = ! empty( $it['featured'] ) ? ' class="is-feat"' : '';
 				if ( $r['hours'] ) { $out .= '<td' . $cf . '>' . (int) $it['hours'] . ' h</td>'; continue; }
 				$cell = self::cell( isset( $r['v'][ $i ] ) ? $r['v'][ $i ] : 0 );
-				$out .= '<td' . $cf . '>' . ( 'hide' === $cell ? '' : ( 'yes' === $cell ? $yes : $no ) ) . '</td>';
+				$out .= '<td' . $cf . '>' . ( 'hide' === $cell ? '<span class="dgb-cmp-na" aria-label="Not applicable">&mdash;</span>' : ( 'yes' === $cell ? $yes : $no ) ) . '</td>';
 			}
 			$out .= '</tr>';
 		}
