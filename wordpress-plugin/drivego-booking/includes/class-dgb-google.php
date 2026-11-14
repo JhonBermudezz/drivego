@@ -22,6 +22,10 @@ class DGB_Google {
 		add_action( 'admin_post_dgb_google_test', array( __CLASS__, 'test' ) );
 		add_filter( 'cron_schedules', function ( $s ) { $s['dgb_ten_minutes'] = array( 'interval' => 600, 'display' => 'Every 10 minutes' ); return $s; } );
 		add_action( self::CRON, array( __CLASS__, 'sync' ) );
+		add_action( 'dgb_google_ping', array( __CLASS__, 'ping' ) );
+		add_action( 'init', function () {
+			if ( self::connected() && ! wp_next_scheduled( 'dgb_google_ping' ) ) { wp_schedule_event( time() + 3600, 'twicedaily', 'dgb_google_ping' ); }
+		} );
 		add_action( 'init', function () {
 			if ( self::connected() && ! wp_next_scheduled( self::CRON ) ) { wp_schedule_event( time() + 120, 'dgb_ten_minutes', self::CRON ); }
 		} );
@@ -85,9 +89,10 @@ class DGB_Google {
 			$pl    = isset( $parts[1] ) ? json_decode( base64_decode( strtr( $parts[1], '-_', '+/' ) ), true ) : array();
 			$email = isset( $pl['email'] ) ? sanitize_email( $pl['email'] ) : '';
 		}
-		update_option( self::AUTH, array( 'refresh' => $res['refresh_token'], 'email' => $email, 'since' => time(), 'scope' => isset( $res['scope'] ) ? $res['scope'] : '' ), false );
+		update_option( self::AUTH, array( 'refresh' => $res['refresh_token'], 'email' => $email, 'since' => time(), 'scope' => isset( $res['scope'] ) ? $res['scope'] : '', 'expires' => isset( $res['refresh_token_expires_in'] ) ? time() + (int) $res['refresh_token_expires_in'] : 0 ), false );
 		delete_transient( 'dgb_google_access' );
-		self::admin_back( 'Google Calendar connected' . ( $email ? ' as ' . $email : '' ) . '. Press "Test connection" to check it end to end.' );
+		$warn = isset( $res['refresh_token_expires_in'] ) ? ' WARNING: your Google app is in "Testing" mode, so Google will end this connection in about ' . max( 1, (int) round( (int) $res['refresh_token_expires_in'] / DAY_IN_SECONDS ) ) . ' days. Publish the app in Google Cloud (OAuth consent screen > Publish app), then press Disconnect and Connect again.' : '';
+		self::admin_back( 'Google Calendar connected' . ( $email ? ' as ' . $email : '' ) . '. Press "Test connection" to check it end to end.' . $warn, '' === $warn );
 	}
 
 	public static function disconnect() {
@@ -190,6 +195,24 @@ class DGB_Google {
 			set_transient( 'dgb_google_alerted', 1, 12 * HOUR_IN_SECONDS );
 			wp_mail( DGB_Settings::get( 'notify_email' ), 'Google Calendar stopped working on the DriveGo website',
 				"The website could not read your Google Calendar, so it may offer times that are already taken.\n\nReason: " . $msg . "\n\nFix it in Bookings > Settings > Google Calendar (press Disconnect and Connect again), then check Bookings > Agenda.\n" . admin_url( 'edit.php?post_type=' . DGB_Bookings::CPT . '&page=drivego-booking#google' ) . "\n" );
+		}
+	}
+
+	/** Seconds left before Google ends the connection (only when the Google app is in Testing mode), or null. */
+	public static function seconds_left() {
+		$a = self::auth();
+		return ! empty( $a['expires'] ) ? (int) $a['expires'] - time() : null;
+	}
+
+	/** Twice a day: use the connection (it keeps it alive and shows a problem early) and warn before a Testing-mode authorization ends. */
+	public static function ping() {
+		if ( ! self::connected() ) { return; }
+		self::api( 'GET', 'calendars/' . rawurlencode( self::calendar_id() ) . '/events?maxResults=1&fields=items(id)' );
+		$left = self::seconds_left();
+		if ( null !== $left && $left < 2 * DAY_IN_SECONDS && ! get_transient( 'dgb_google_expiry_warned' ) ) {
+			set_transient( 'dgb_google_expiry_warned', 1, DAY_IN_SECONDS );
+			wp_mail( DGB_Settings::get( 'notify_email' ), 'Google Calendar will disconnect from the DriveGo website soon',
+				"Google ends this connection on " . wp_date( 'F j', time() + max( 0, $left ) ) . " because the Google app is in Testing mode.\n\nTo stop it happening again: in Google Cloud open APIs & Services > OAuth consent screen and press Publish app. Then in the website press Disconnect and Connect again.\n" . admin_url( 'edit.php?post_type=' . DGB_Bookings::CPT . '&page=drivego-booking#google' ) . "\n" );
 		}
 	}
 
