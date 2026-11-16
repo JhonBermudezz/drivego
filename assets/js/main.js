@@ -442,9 +442,7 @@ document.querySelectorAll('form[data-form]').forEach((form) => {
       var VIDEOS = [
         ['yt', 'agYiBPHlPqw', '3 point turn lesson with DriveGo London'],
         ['yt', 'vwhhK4iT1AE', 'Uphill parking for your test with DriveGo London'],
-        ['yt', 'BO63IpllLmQ', 'Basic parallel parking lesson with DriveGo London'],
-        ['tt', '7675925313003687175', 'A new student starts her lessons with DriveGo London'],
-        ['tt', '7487427706892586295', 'Student testimonial: from G1 to full G with DriveGo London']
+        ['yt', 'BO63IpllLmQ', 'Basic parallel parking lesson with DriveGo London']
       ];
       function load(card, i) {
         var v = VIDEOS[i]; if (!v || card.querySelector('iframe')) return;
