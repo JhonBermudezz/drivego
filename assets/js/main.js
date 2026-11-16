@@ -440,9 +440,9 @@ document.querySelectorAll('form[data-form]').forEach((form) => {
       var cards = Array.prototype.slice.call(document.querySelectorAll('.vcard'));
       if (!cards.length) return;
       var VIDEOS = [
-        ['yt', 'agYiBPHlPqw', 'DriveGo London student video'],
-        ['yt', 'vwhhK4iT1AE', 'DriveGo London student video'],
-        ['tt', '7479163137048972550', 'G2 road test results with DriveGo London'],
+        ['yt', 'agYiBPHlPqw', '3 point turn lesson with DriveGo London'],
+        ['yt', 'vwhhK4iT1AE', 'Uphill parking for your test with DriveGo London'],
+        ['yt', 'BO63IpllLmQ', 'Basic parallel parking lesson with DriveGo London'],
         ['tt', '7675925313003687175', 'A new student starts her lessons with DriveGo London'],
         ['tt', '7487427706892586295', 'Student testimonial: from G1 to full G with DriveGo London']
       ];
