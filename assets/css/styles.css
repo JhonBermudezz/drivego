@@ -868,3 +868,18 @@ dialog.bk::backdrop { background: rgba(0, 0, 0, 0.64); backdrop-filter: blur(6px
 .vcard { aspect-ratio: 9 / 16; position: relative; border-radius: 16px; overflow: hidden; background: #111; }
 .vcard iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 @media (max-width: 640px) { .videos__strip { grid-template-columns: 1fr; } .vcard { width: min(100%, 340px); justify-self: center; } }
+
+/* Paid video banner */
+.promo { background: var(--black); color: var(--white); }
+.promo__grid { padding-top: 56px; padding-bottom: 56px; }
+.promo__body { max-width: 760px; }
+.promo__eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--lime); font-weight: 700; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 12px; }
+.promo__title { font-size: clamp(1.75rem, 3vw, 2.5rem); line-height: 1.15; margin: 0 0 12px; color: var(--white); }
+.promo__text { color: rgba(255,255,255,0.82); margin: 0 0 16px; }
+.promo__list { list-style: none; padding: 0; margin: 0 0 24px; display: grid; gap: 8px; }
+.promo__list li { position: relative; padding-left: 28px; color: rgba(255,255,255,0.9); }
+.promo__list li::before { content: ""; position: absolute; left: 0; top: 0.35em; width: 16px; height: 16px; border-radius: 50%; background: var(--lime); }
+.promo__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
+.promo__price { margin: 0; display: grid; }
+.promo__price strong { font-size: 1.5rem; color: var(--lime); }
+.promo__price span { font-size: 0.875rem; color: rgba(255,255,255,0.7); }
